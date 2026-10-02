@@ -10,7 +10,20 @@ export const seccionDeseo = ({ pagina = false } = {}) => `
       <div class="wk-deseo__orbe-col" data-rev>
         <div class="wk-orbe" aria-hidden="true">
           <canvas class="wk-orbe__lienzo"></canvas>
-          <span class="wk-orbe__base"></span>
+          <svg class="wk-orbe__pedestal" viewBox="0 0 200 150">
+            <defs>
+              <linearGradient id="ped-metal" x1="0" x2="1"><stop offset="0" stop-color="#0b2470"/><stop offset=".35" stop-color="#3b6fd8"/><stop offset=".55" stop-color="#1a44a8"/><stop offset="1" stop-color="#0a1f62"/></linearGradient>
+              <linearGradient id="ped-sombra" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a5cc8"/><stop offset="1" stop-color="#071a52"/></linearGradient>
+              <radialGradient id="ped-luz" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e6f6ff"/><stop offset=".45" stop-color="#92d2f5"/><stop offset="1" stop-color="#2a6fd0"/></radialGradient>
+            </defs>
+            <path d="M30 108 L24 126 Q100 142 176 126 L170 108 Q100 120 30 108Z" fill="url(#ped-metal)"/>
+            <ellipse cx="100" cy="108" rx="70" ry="10" fill="url(#ped-sombra)"/>
+            <path d="M60 84 L56 100 Q100 110 144 100 L140 84Z" fill="url(#ped-metal)"/>
+            <ellipse cx="100" cy="84" rx="40" ry="7" fill="url(#ped-sombra)"/>
+            <path d="M88 52 Q93 66 90 80 L110 80 Q107 66 112 52Z" fill="url(#ped-metal)"/>
+            <path d="M34 16 Q38 50 100 56 Q162 50 166 16Z" fill="url(#ped-metal)"/>
+            <ellipse class="wk-orbe__copa" cx="100" cy="16" rx="66" ry="11" fill="url(#ped-luz)"/>
+          </svg>
         </div>
         <p class="wk-antetitulo">${esc(T.deseo.antetitulo)}</p>
         <${pagina ? 'h1' : 'h2'} id="deseo-titulo">${esc(T.deseo.titulo)}</${pagina ? 'h1' : 'h2'}>
@@ -174,9 +187,16 @@ function crearOrbe(lienzo) {
   let px = 1, lado = 300, e = 0.15, objetivo = 0.15, pulsoV = 0, flash = 0, sobre = 0, visible = true;
   const nieblas = Array.from({ length: 46 }, (_, i) => ({
     a: Math.random() * Math.PI * 2, r: 0.15 + Math.random() * 0.65, v: (Math.random() * 0.5 + 0.2) * (i % 2 ? 1 : -1),
-    t: 0.18 + Math.random() * 0.3, c: ['146,210,245', '204,225,218', '255,255,255', '60,120,220'][i % 4], y: (Math.random() - 0.5) * 0.9,
+    t: 0.18 + Math.random() * 0.3, c: ['255,255,255', '204,225,218', '230,246,255', '146,210,245'][i % 4], y: (Math.random() - 0.5) * 0.9,
   }));
   const chispas = Array.from({ length: 26 }, () => ({ a: Math.random() * Math.PI * 2, r: Math.random() * 0.8, f: Math.random() * 6 }));
+  // Puntos de la constelación (x, y relativos al radio; g = estrella grande)
+  const constelacion = [[-0.72, 0.12], [-0.5, -0.02], [-0.28, -0.16, 1], [-0.06, -0.24], [0.16, -0.3], [0.38, -0.36, 1], [0.6, -0.4]];
+  const estrella4 = (x, y, r) => {
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) { const a = (i * Math.PI) / 4; const rr = i % 2 ? r * 0.3 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    ctx.closePath(); ctx.fill();
+  };
   const medir = () => {
     px = Math.min(devicePixelRatio || 1, 2);
     lado = lienzo.clientWidth || 300;
@@ -209,15 +229,19 @@ function crearOrbe(lienzo) {
     // Esfera
     ctx.save();
     ctx.beginPath(); ctx.arc(c, c, R, 0, Math.PI * 2); ctx.clip();
-    const base = ctx.createRadialGradient(c - R * 0.35, c - R * 0.4, R * 0.1, c, c, R);
-    base.addColorStop(0, '#2a5cb8'); base.addColorStop(0.55, '#0b2f86'); base.addColorStop(1, '#020f40');
+    // Vidrio celeste claro, más oscuro abajo (como la referencia)
+    const base = ctx.createRadialGradient(c - R * 0.35, c - R * 0.45, R * 0.05, c, c, R * 1.05);
+    base.addColorStop(0, '#b9e3f8'); base.addColorStop(0.35, '#69ace0'); base.addColorStop(0.75, '#2c6cc0'); base.addColorStop(1, '#173f96');
     ctx.fillStyle = base; ctx.fillRect(0, 0, W, W);
+    const abajo = ctx.createLinearGradient(0, c - R * 0.1, 0, c + R);
+    abajo.addColorStop(0, 'rgba(14,52,140,0)'); abajo.addColorStop(1, 'rgba(10,40,120,0.55)');
+    ctx.fillStyle = abajo; ctx.fillRect(0, 0, W, W);
     ctx.globalCompositeOperation = 'lighter';
     for (const n of nieblas) {
       n.a += n.v * dt * (0.4 + k * 2.2);
       const x = c + Math.cos(n.a) * n.r * R; const y = c + (Math.sin(n.a) * 0.45 + n.y) * n.r * R;
       const g = ctx.createRadialGradient(x, y, 0, x, y, R * n.t * (1 + k * 0.5));
-      g.addColorStop(0, `rgba(${n.c},${(0.05 + k * 0.12).toFixed(3)})`); g.addColorStop(1, `rgba(${n.c},0)`);
+      g.addColorStop(0, `rgba(${n.c},${(0.015 + k * 0.045).toFixed(3)})`); g.addColorStop(1, `rgba(${n.c},0)`);
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
     }
     for (const s of chispas) {
@@ -227,6 +251,17 @@ function crearOrbe(lienzo) {
     }
     if (flash > 0.01) { ctx.fillStyle = `rgba(230,245,255,${flash.toFixed(3)})`; ctx.fillRect(0, 0, W, W); }
     ctx.globalCompositeOperation = 'source-over';
+    // Constelación que cruza la esfera
+    ctx.strokeStyle = `rgba(255,255,255,${(0.18 + k * 0.25).toFixed(3)})`; ctx.lineWidth = 0.8 * px;
+    ctx.beginPath();
+    constelacion.forEach(([x, y], i) => { const X = c + x * R, Y = c + y * R; if (i) ctx.lineTo(X, Y); else ctx.moveTo(X, Y); });
+    ctx.stroke();
+    constelacion.forEach(([x, y, g], i) => {
+      const X = c + x * R, Y = c + y * R;
+      const al = 0.55 + 0.45 * Math.sin(t * 2.2 + i * 1.7);
+      ctx.fillStyle = `rgba(255,255,255,${al.toFixed(3)})`;
+      if (g) estrella4(X, Y, (3.2 + k * 2) * px * al); else { ctx.beginPath(); ctx.arc(X, Y, (1.4 + k * 0.6) * px, 0, Math.PI * 2); ctx.fill(); }
+    });
     // Brillo del cristal
     const brillo = ctx.createRadialGradient(c - R * 0.38, c - R * 0.45, 0, c - R * 0.38, c - R * 0.45, R * 0.55);
     brillo.addColorStop(0, 'rgba(255,255,255,0.55)'); brillo.addColorStop(1, 'rgba(255,255,255,0)');

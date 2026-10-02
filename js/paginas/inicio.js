@@ -1,34 +1,55 @@
-// Inicio: puertas (Criaturas / Objetos) → duendes → recién salidos → deseo → videos → reseñas → preguntas.
-import { tienda, T, $, $$, esc, app, estado, categoria, foto, sinFoto, precio, tarjeta, fantasmas, revelar, contarHasta, textoPlano, agregarRapido, modal, aviso, acordeon, romano, reducido, tactil, espera } from '../base.js';
-import { videos, resenas, preguntas, enlaces } from '../config.js';
+// Inicio: Portal de Raíces → colecciones → duendes → recién salidos → deseo → espejos (videos) → reseñas → preguntas.
+import { tienda, T, $, $$, esc, app, estado, ui, categoria, colecciones, foto, sinFoto, precio, tarjeta, fantasmas, revelar, contarHasta, textoPlano, modal, aviso, acordeon, romano, reducido, tactil, espera, botonFavorito } from '../base.js';
+import { videos, resenas, preguntas, enlaces, pestanas as pestanasExtra } from '../config.js';
 import { seccionDeseo, activarDeseo } from './deseo.js';
+import { crearEntrada } from '../entrada.js';
+import { repintarFavoritos } from '../cuenta.js';
 import { rafaga } from '../polvo.js';
+
+const primeraVez = () => { try { return sessionStorage.getItem('wk-entrada') !== '1'; } catch { return true; } };
 
 export async function inicio() {
   document.title = estado.info.seo.title || estado.info.name;
-  const criaturas = categoria('criaturas');
-  const objetos = categoria('objetos');
+  const cols = colecciones().filter((c) => c.productCount);
   const duendes = categoria('duendes');
-  const puertas = [criaturas, objetos].filter((c) => c?.productCount);
+  const tabs = [['nuevos', T.recientes.pestanas.nuevos], ['ofertas', T.recientes.pestanas.ofertas],
+    ...pestanasExtra.map(categoria).filter((c) => c?.productCount).map((c) => [c.handle, c.name])];
 
   app.innerHTML = `
-    ${puertas.length ? `
-    <section class="wk-seccion wk-puertas-sec" id="recorrer">
-      <div class="contenedor"><div class="wk-titulo wk-titulo--centro" data-rev><p class="wk-antetitulo">${esc(T.categorias.antetitulo)}</p><h2>${esc(T.categorias.titulo)}</h2></div></div>
-      <div class="wk-puertas">
-        ${puertas.map((c, i) => `
-          <a class="wk-puerta" href="/categoria/${esc(c.handle)}" data-link data-tono="${i}" data-rev style="--d:${i * 120}ms" data-puerta="${esc(c.handle)}">
-            <span class="wk-puerta__fondo">${c.image ? foto(c.image, c.name, 1600, '', '(max-width: 750px) 100vw, 50vw') : '<span class="wk-puerta__escena" aria-hidden="true"><i></i><i></i><i></i></span>'}</span>
-            <span class="wk-puerta__luz" aria-hidden="true"></span>
-            <span class="wk-puerta__abanico" aria-hidden="true"></span>
-            <span class="wk-puerta__texto">
-              <small>${String(i + 1).padStart(2, '0')}</small>
+    <section class="wk-entrada" id="entrada" aria-label="${esc(estado.info.name)}">
+      <canvas class="wk-entrada__vortice" aria-hidden="true"></canvas>
+      <svg class="wk-entrada__raices" aria-hidden="true"></svg>
+      <button type="button" class="wk-entrada__tocar" hidden><span class="wk-entrada__tocar-anillo" aria-hidden="true"></span>${esc(T.entrada.tocar)}</button>
+      <button type="button" class="wk-entrada__saltar">${esc(T.entrada.saltar)}</button>
+      <div class="wk-entrada__texto">
+        <p class="wk-antetitulo">${esc(T.hero.antetitulo)}</p>
+        <h1 class="wk-hero__titulo">${T.hero.titulo.split(' ').map((w, i) => `<span class="wk-palabra" style="--i:${i}">${esc(w)}</span>`).join(' ')}</h1>
+        <p class="wk-hero__bajada">${esc(estado.info.seo.description || T.hero.bajada)}</p>
+        <div class="wk-hero__botones">
+          <a class="wk-btn wk-btn--luz" href="/tienda" data-link>${esc(T.hero.boton)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a>
+          <a class="wk-btn wk-btn--vidrio" href="/walkurio" data-link><svg aria-hidden="true"><use href="#i-planeta"/></svg>${esc(T.hero.boton2)}</a>
+        </div>
+      </div>
+      <a class="wk-mundo__bajar wk-entrada__bajar" href="#recorrer" aria-label="${esc(T.entrada.bajar)}"><span></span></a>
+    </section>
+
+    ${cols.length ? `
+    <section class="wk-seccion wk-colecciones" id="recorrer">
+      <div class="contenedor">
+        <div class="wk-titulo wk-titulo--centro" data-rev><p class="wk-antetitulo">${esc(T.categorias.antetitulo)}</p><h2>${esc(T.categorias.titulo)}</h2></div>
+        <div class="wk-ventanas">
+          ${cols.map((c, i) => `
+            <a class="wk-ventana" href="/categoria/${esc(c.handle)}" data-link data-rev style="--d:${i * 70}ms" data-ventana="${esc(c.handle)}">
+              <span class="wk-ventana__arco">
+                <span class="wk-ventana__vidrio">${c.image ? foto(c.image, c.name, 640) : sinFoto(c.name)}</span>
+                <span class="wk-ventana__brillo" aria-hidden="true"></span>
+                <span class="wk-ventana__chispas" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+              </span>
               <strong>${esc(c.name)}</strong>
-              ${c.description ? `<span class="wk-puerta__desc">${esc(c.description)}</span>` : ''}
-              <em>${esc(T.categorias.piezas(c.productCount))}</em>
-              <span class="wk-btn wk-btn--vidrio">${esc(T.categorias.boton)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></span>
-            </span>
-          </a>`).join('')}
+              <small>${esc(T.categorias.piezas(c.productCount))}</small>
+            </a>`).join('')}
+        </div>
+        <div class="wk-colecciones__todas" data-rev><a class="wk-btn wk-btn--linea" href="/tienda" data-link><svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(T.categorias.todas)}</a></div>
       </div>
     </section>` : '<span id="recorrer"></span>'}
 
@@ -60,8 +81,7 @@ export async function inicio() {
           <a class="wk-btn wk-btn--linea" href="/tienda" data-link>${esc(T.recientes.boton)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a>
         </div>
         <div class="wk-pestanas" role="tablist" aria-label="${esc(T.recientes.titulo)}" data-rev>
-          ${Object.entries(T.recientes.pestanas).filter(([k]) => !['criaturas', 'objetos'].includes(k) || categoria(k)?.productCount)
-            .map(([k, v], i) => `<button type="button" role="tab" data-pestana="${k}" aria-selected="${i === 0}">${esc(v)}</button>`).join('')}
+          ${tabs.map(([k, v], i) => `<button type="button" role="tab" data-pestana="${esc(k)}" aria-selected="${i === 0}">${esc(v)}</button>`).join('')}
           <span class="wk-pestanas__luz" aria-hidden="true"></span>
         </div>
         <div class="grilla" id="recientes" role="tabpanel">${fantasmas(4)}</div>
@@ -80,13 +100,20 @@ export async function inicio() {
           </div>
         </div>
       </div>
-      <div class="wk-videos__pista">
+      <div class="wk-espejos">
         ${videos.map((v, i) => {
           const id = idYoutube(v.url);
-          return `<button type="button" class="wk-reel${id ? '' : ' is-pronto'}" data-rev style="--d:${i * 90}ms" ${id ? `data-video="${esc(id)}"` : 'disabled'} aria-label="${esc(v.titulo)}${id ? '' : ` · ${T.videos.pronto}`}">
-            ${id ? `<img src="https://i.ytimg.com/vi/${esc(id)}/hq720.jpg" alt="" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg'">` : '<span class="wk-reel__niebla" aria-hidden="true"></span>'}
-            <span class="wk-reel__play" aria-hidden="true">${id ? '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>' : '<svg><use href="#i-chispa"/></svg>'}</span>
-            <span class="wk-reel__pie"><small>${id ? '' : esc(T.videos.pronto)}</small><strong>${esc(v.titulo)}</strong></span>
+          return `<button type="button" class="wk-espejo${id ? '' : ' is-pronto'}" data-rev style="--d:${i * 90}ms" ${id ? `data-video="${esc(id)}"` : 'disabled'} aria-label="${esc(v.titulo)}${id ? '' : ` · ${T.videos.pronto}`}">
+            <span class="wk-espejo__marco" aria-hidden="true">
+              <span class="wk-espejo__corona"></span>
+              <span class="wk-espejo__vidrio">
+                ${id ? `<img src="https://i.ytimg.com/vi/${esc(id)}/hq720.jpg" alt="" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg'">` : '<span class="wk-espejo__niebla"></span>'}
+                <span class="wk-espejo__reflejo"></span>
+                <span class="wk-espejo__play">${id ? '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>' : '<svg><use href="#i-chispa"/></svg>'}</span>
+              </span>
+              <span class="wk-espejo__pie"></span>
+            </span>
+            <span class="wk-espejo__placa"><small>${id ? esc(T.videos.mirar) : esc(T.videos.pronto)}</small><strong>${esc(v.titulo)}</strong></span>
           </button>`;
         }).join('')}
       </div>
@@ -101,8 +128,7 @@ export async function inicio() {
       </div>
       <div class="wk-resenas__filas" aria-label="Reseñas">
         ${[0, 1].map((f) => {
-          const fila = resenas.filter((_, i) => i % 2 === f);
-          const cartas = fila.map(resena).join('');
+          const cartas = resenas.filter((_, i) => i % 2 === f).map(resena).join('');
           return `<div class="wk-resenas__fila${f ? ' wk-resenas__fila--inversa' : ''}"><div class="wk-resenas__pista">${cartas}<span class="wk-resenas__copia" aria-hidden="true">${cartas}</span></div></div>`;
         }).join('')}
       </div>
@@ -133,8 +159,21 @@ export async function inicio() {
       </div>
     </section>`;
 
+  // Portal: la primera vez en la sesión espera que lo toques; después se abre solo
+  const esperarToque = primeraVez();
+  const seccion = $('#entrada');
+  document.body.classList.add('en-entrada');
+  const entrada = crearEntrada(seccion, {
+    esperarToque,
+    alAbrir: () => {
+      document.body.classList.remove('en-entrada');
+      try { sessionStorage.setItem('wk-entrada', '1'); } catch { /* sin almacenamiento */ }
+    },
+  });
+  ui.alSalir = () => { entrada.destruir(); document.body.classList.remove('en-entrada'); };
+
   activarDeseo(app.querySelector('.wk-deseo'));
-  activarPuertas();
+  activarVentanas();
   activarRecientes();
   activarVideos();
   activarResenas();
@@ -143,20 +182,15 @@ export async function inicio() {
   if (duendes?.productCount) await activarDuendes(duendes);
 }
 
-// ---------------------------------------------------------------- puertas
-async function activarPuertas() {
-  for (const el of $$('[data-puerta]', app)) {
-    // Tres piezas de la colección se abren en abanico al pasar por la puerta
-    tienda.productos.listar({ categoria: el.dataset.puerta, porPagina: 3, soloDisponibles: true }).then(({ items }) => {
-      el.querySelector('.wk-puerta__abanico').innerHTML = items.map((p, i) => `<span style="--n:${i}">${foto(p.image, p.title, 320) || sinFoto(p.title)}</span>`).join('');
+// ---------------------------------------------------------------- colecciones (ventanas)
+function activarVentanas() {
+  for (const el of $$('[data-ventana]', app)) {
+    if (el.querySelector('img')) continue;
+    // Sin imagen de la colección: se usa la foto de su primera pieza
+    tienda.productos.listar({ categoria: el.dataset.ventana, porPagina: 1 }).then(({ items }) => {
+      const img = items[0]?.image;
+      if (img) el.querySelector('.wk-ventana__vidrio').innerHTML = foto(img, items[0].title, 640);
     }).catch(() => {});
-    if (!tactil) {
-      el.addEventListener('pointermove', (e) => {
-        const r = el.getBoundingClientRect();
-        el.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        el.style.setProperty('--my', `${e.clientY - r.top}px`);
-      });
-    }
   }
 }
 
@@ -168,14 +202,14 @@ async function activarDuendes(duendes) {
     tienda.productos.listar({ categoria: duendes.handle, soloDisponibles: true, porPagina: 1 }).catch(() => null),
   ]);
   if (!pista) return;
-  // Primero los que buscan hogar
   const orden = [...items.filter((p) => p.available), ...items.filter((p) => !p.available)];
   pista.innerHTML = orden.map((p, i) => carta(p, i)).join('');
+  repintarFavoritos();
   const quedan = disponibles?.total ?? orden.filter((p) => p.available).length;
   contarHasta($('#contador-duendes'), quedan, T.duendes.contador);
 
   pista.addEventListener('click', (e) => {
-    if (e.target.closest('a, [data-agregar]')) return;
+    if (e.target.closest('a, [data-agregar], [data-fav]')) return;
     const c = e.target.closest('.wk-carta');
     if (!c || pista.dataset.arrastro === '1') return;
     c.classList.toggle('is-girada');
@@ -185,34 +219,7 @@ async function activarDuendes(duendes) {
   $$('[data-mover]', pista.parentElement).forEach((b) => b.addEventListener('click', () => {
     pista.scrollBy({ left: Number(b.dataset.mover) * pista.clientWidth * 0.8, behavior: reducido ? 'auto' : 'smooth' });
   }));
-
-  // "Que un duende te elija": recorre las cartas como una ruleta y se detiene en uno
-  $('#elegir-duende').addEventListener('click', async (e) => {
-    const b = e.currentTarget;
-    const cartas = $$('.wk-carta:not(.is-hogar)', pista);
-    if (!cartas.length || b.disabled) return;
-    b.disabled = true;
-    const etiqueta = b.querySelector('span');
-    etiqueta.textContent = T.duendes.eligiendo;
-    $$('.wk-carta', pista).forEach((c) => c.classList.remove('is-girada', 'is-elegida'));
-    const final = Math.floor(Math.random() * cartas.length);
-    const vueltas = reducido ? 0 : cartas.length * 2 + final;
-    for (let i = 0; i <= vueltas; i++) {
-      const c = cartas[i % cartas.length];
-      cartas.forEach((x) => x.classList.toggle('is-ruleta', x === c));
-      if (i % 2 === 0) c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      await espera(70 + Math.pow(i / Math.max(vueltas, 1), 3) * 380);
-    }
-    const elegida = cartas[final];
-    cartas.forEach((x) => x.classList.remove('is-ruleta'));
-    elegida.scrollIntoView({ behavior: reducido ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
-    await espera(350);
-    elegida.classList.add('is-elegida', 'is-girada');
-    rafaga(elegida, 40);
-    etiqueta.textContent = T.duendes.elegido(elegida.dataset.nombre);
-    b.disabled = false;
-    setTimeout(() => { etiqueta.textContent = T.duendes.elegir; }, 5000);
-  });
+  $('#elegir-duende').addEventListener('click', () => ritualDuende(orden.filter((p) => p.available)));
 }
 
 function carta(p, i) {
@@ -220,24 +227,100 @@ function carta(p, i) {
   return `
   <article class="wk-carta${p.available ? '' : ' is-hogar'}" data-nombre="${esc(p.title)}" style="--i:${i}">
     <div class="wk-carta__giro">
-      <div class="wk-carta__cara wk-carta__cara--frente">
-        <span class="wk-carta__foto">${foto(p.image, p.title, 640) || sinFoto(p.title)}</span>
-        <span class="wk-carta__marco" aria-hidden="true"></span>
-        <span class="wk-carta__num">Nº ${String(i + 1).padStart(2, '0')}</span>
-        ${p.available ? '' : `<span class="wk-carta__sello">${esc(T.recientes.adoptada)}</span>`}
-        <span class="wk-carta__nombre">${esc(nombre)}</span>
-        <button type="button" class="wk-carta__girar" aria-pressed="false" aria-label="Dar vuelta la carta de ${esc(p.title)}"><svg aria-hidden="true"><use href="#i-girar"/></svg></button>
-      </div>
-      <div class="wk-carta__cara wk-carta__cara--dorso">
-        <small>${esc(T.duendes.antetitulo)}</small>
-        <h3>${esc(p.title)}</h3>
-        <p>${esc(textoPlano(p.description, 110))}</p>
-        ${precio(p)}
-        ${p.available ? `<button type="button" class="wk-btn wk-btn--luz" data-agregar="${esc(p.handle)}">${esc(T.duendes.adoptar)}</button>` : `<p class="wk-carta__hogar">${esc(T.recientes.adoptada)}</p>`}
-        <a href="/producto/${esc(p.handle)}" data-link class="wk-carta__link">${esc(T.duendes.conocer)} →</a>
-      </div>
+      <div class="wk-carta__cara wk-carta__cara--frente">${frente(p, nombre, i)}</div>
+      <div class="wk-carta__cara wk-carta__cara--dorso">${dorso(p)}</div>
     </div>
   </article>`;
+}
+const frente = (p, nombre, i) => `
+  <span class="wk-carta__foto">${foto(p.image, p.title, 640) || sinFoto(p.title)}</span>
+  <span class="wk-carta__marco" aria-hidden="true"></span>
+  <span class="wk-carta__num">Nº ${String(i + 1).padStart(2, '0')}</span>
+  ${p.available ? '' : `<span class="wk-carta__sello">${esc(T.recientes.adoptada)}</span>`}
+  <span class="wk-carta__nombre">${esc(nombre)}</span>
+  <button type="button" class="wk-carta__girar" aria-pressed="false" aria-label="Dar vuelta la carta de ${esc(p.title)}"><svg aria-hidden="true"><use href="#i-girar"/></svg></button>`;
+const dorso = (p) => `
+  ${botonFavorito(p, 'wk-carta__fav')}
+  <small>${esc(T.duendes.antetitulo)}</small>
+  <h3>${esc(p.title)}</h3>
+  <p>${esc(textoPlano(p.description, 110))}</p>
+  ${precio(p)}
+  ${p.available ? `<button type="button" class="wk-btn wk-btn--luz" data-agregar="${esc(p.handle)}">${esc(T.duendes.adoptar)}</button>` : `<p class="wk-carta__hogar">${esc(T.recientes.adoptada)}</p>`}
+  <a href="/producto/${esc(p.handle)}" data-link class="wk-carta__link">${esc(T.duendes.conocer)} →</a>`;
+
+/**
+ * "Que un duende te elija": las cartas forman una rueda de luz que gira y se frena sola en un duende;
+ * su carta viene al centro y se da vuelta.
+ */
+async function ritualDuende(lista) {
+  const candidatos = lista.slice(0, 10);
+  if (!candidatos.length) return;
+  const n = candidatos.length;
+  const k = Math.floor(Math.random() * n);
+  const capa = document.createElement('div');
+  capa.className = 'wk-ritual';
+  capa.setAttribute('role', 'dialog');
+  capa.setAttribute('aria-modal', 'true');
+  capa.setAttribute('aria-label', T.duendes.elegir);
+  capa.innerHTML = `
+    <div class="wk-ritual__velo"></div>
+    <div class="wk-ritual__halo" aria-hidden="true"></div>
+    <div class="wk-ritual__rueda" aria-hidden="true">
+      ${candidatos.map((p, i) => `<div class="wk-ritual__carta" style="--a:${((i * 360) / n).toFixed(2)}deg;--i:${i}"><div class="wk-carta__cara wk-carta__cara--frente">${frente(p, p.title.replace(/^duende\s+(de(l)?\s+)?/i, ''), i)}</div></div>`).join('')}
+    </div>
+    <p class="wk-ritual__texto" aria-live="polite">${esc(T.duendes.eligiendo)}</p>
+    <button type="button" class="wk-modal__cerrar wk-ritual__cerrar" aria-label="${esc(T.duendes.cerrar)}"><svg aria-hidden="true"><use href="#i-cerrar"/></svg></button>`;
+  document.body.append(capa);
+  document.body.classList.add('con-modal');
+  const previo = document.activeElement;
+  const cerrar = () => {
+    capa.classList.add('is-cerrando');
+    document.body.classList.remove('con-modal');
+    removeEventListener('keydown', tecla);
+    setTimeout(() => capa.remove(), 450);
+    previo?.focus?.();
+  };
+  const tecla = (e) => { if (e.key === 'Escape') cerrar(); };
+  addEventListener('keydown', tecla);
+  capa.addEventListener('click', (e) => {
+    if (e.target.closest('.wk-ritual__velo, .wk-ritual__cerrar, [data-cerrar-ritual], a[data-link]')) cerrar();
+    if (e.target.closest('[data-otra-vez]')) { capa.remove(); document.body.classList.remove('con-modal'); removeEventListener('keydown', tecla); ritualDuende(lista); }
+  });
+  capa.querySelector('.wk-ritual__cerrar').focus({ preventScroll: true });
+
+  requestAnimationFrame(() => requestAnimationFrame(() => capa.classList.add('is-abierta')));
+  await espera(reducido ? 0 : 1000);
+  // La rueda gira y se frena con el elegido arriba
+  const rueda = capa.querySelector('.wk-ritual__rueda');
+  const giro = 1080 + ((360 - (k * 360) / n) % 360);
+  if (!reducido) {
+    await rueda.animate([{ transform: 'rotate(0deg)' }, { transform: `rotate(${giro}deg)` }], { duration: 4200, easing: 'cubic-bezier(0.22, 0.61, 0.08, 1)', fill: 'forwards' }).finished.catch(() => {});
+  }
+  if (!capa.isConnected) return;
+  const cartas = $$('.wk-ritual__carta', capa);
+  cartas.forEach((c, i) => c.classList.add(i === k ? 'is-elegida' : 'is-desvanece'));
+  rafaga(cartas[k], 36);
+  await espera(reducido ? 0 : 650);
+  if (!capa.isConnected) return;
+  // Su carta viene al centro y se da vuelta
+  const p = candidatos[k];
+  capa.classList.add('is-revela');
+  capa.querySelector('.wk-ritual__texto').textContent = T.duendes.elegido(p.title);
+  capa.insertAdjacentHTML('beforeend', `
+    <div class="wk-ritual__elegida">
+      <article class="wk-carta wk-carta--grande">
+        <div class="wk-carta__giro">
+          <div class="wk-carta__cara wk-carta__cara--frente">${frente(p, p.title.replace(/^duende\s+(de(l)?\s+)?/i, ''), k)}</div>
+          <div class="wk-carta__cara wk-carta__cara--dorso">${dorso(p)}</div>
+        </div>
+      </article>
+      <div class="wk-ritual__acciones"><button type="button" class="wk-btn wk-btn--vidrio" data-otra-vez><svg aria-hidden="true"><use href="#i-girar"/></svg>${esc(T.duendes.otraVez)}</button></div>
+    </div>`);
+  repintarFavoritos();
+  const grande = capa.querySelector('.wk-carta--grande');
+  await espera(reducido ? 0 : 900);
+  grande.classList.add('is-girada');
+  rafaga(grande, 30);
 }
 
 /** Con mouse, la pista se puede arrastrar (en táctiles ya se desliza sola). */
@@ -268,9 +351,8 @@ function activarRecientes() {
   const consulta = {
     nuevos: () => tienda.productos.listar({ porPagina: 8 }).then((r) => r.items),
     ofertas: () => tienda.productos.listar({ porPagina: 48, soloDisponibles: true }).then((r) => r.items.filter((p) => p.compareAtPrice > p.price).slice(0, 8)),
-    criaturas: () => tienda.productos.listar({ categoria: categoria('criaturas').handle, porPagina: 8 }).then((r) => r.items),
-    objetos: () => tienda.productos.listar({ categoria: categoria('objetos').handle, porPagina: 8 }).then((r) => r.items),
   };
+  const traer = (k) => (consulta[k] ?? (() => tienda.productos.listar({ categoria: k, porPagina: 8 }).then((r) => r.items)))();
   const mover = (b) => {
     pestanas.style.setProperty('--x', `${b.offsetLeft}px`);
     pestanas.style.setProperty('--w', `${b.offsetWidth}px`);
@@ -280,9 +362,10 @@ function activarRecientes() {
     mover(b);
     const k = b.dataset.pestana;
     lista.classList.add('is-cambiando');
-    const [items] = await Promise.all([cache[k] ??= consulta[k]().catch(() => []), espera(reducido ? 0 : 220)]);
+    const [items] = await Promise.all([cache[k] ??= traer(k).catch(() => []), espera(reducido ? 0 : 220)]);
     lista.innerHTML = items.length ? items.map(tarjeta).join('') : `<p class="vacio">${esc(T.recientes.vacio)}</p>`;
     lista.classList.remove('is-cambiando');
+    repintarFavoritos();
     revelar();
   };
   pestanas.addEventListener('click', (e) => { const b = e.target.closest('[role=tab]'); if (b) mostrar(b); });
@@ -300,10 +383,10 @@ function activarRecientes() {
 // ---------------------------------------------------------------- videos
 const idYoutube = (u) => /(?:shorts\/|v=|youtu\.be\/|embed\/)([\w-]{11})/.exec(u ?? '')?.[1] ?? '';
 function activarVideos() {
-  $('.wk-videos__pista').addEventListener('click', (e) => {
+  $('.wk-espejos').addEventListener('click', (e) => {
     const b = e.target.closest('[data-video]');
     if (!b) return;
-    modal(`<div class="wk-video-marco"><iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.video}?autoplay=1&rel=0&playsinline=1" title="${esc(b.getAttribute('aria-label'))}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`, 'wk-modal--video');
+    modal(`<div class="wk-video-marco wk-video-marco--espejo"><iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.video}?autoplay=1&rel=0&playsinline=1" title="${esc(b.getAttribute('aria-label'))}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`, 'wk-modal--video');
   });
 }
 

@@ -56,3 +56,20 @@ if (precios.length) {
     precios.forEach((el) => el.closest('.wkv-price__row')?.setAttribute('hidden', ''));
   });
 }
+
+// Linterna: una luz clara que sigue al mouse por toda la página (la del tema era casi invisible).
+// Usa las coordenadas que ya actualiza wkv.js (--wkv-lx / --wkv-ly).
+document.head.insertAdjacentHTML('beforeend', `<style>
+  @media (hover: hover) and (pointer: fine) {
+    .wkv-lantern {
+      background:
+        radial-gradient(220px circle at var(--wkv-lx, 50%) var(--wkv-ly, -40%), rgb(146 210 245 / 0.22), rgb(146 210 245 / 0.07) 45%, transparent 70%),
+        radial-gradient(900px circle at var(--wkv-lx, 50%) var(--wkv-ly, -40%), transparent 25%, rgb(0 6 30 / 0.28) 100%) !important;
+      mix-blend-mode: normal !important;
+    }
+    .wkv-lantern::after {
+      content: ''; position: absolute; left: var(--wkv-lx, -100px); top: var(--wkv-ly, -100px); width: 10px; height: 10px; margin: -5px 0 0 -5px;
+      border-radius: 50%; background: #e6f6ff; box-shadow: 0 0 18px 6px rgb(146 210 245 / 0.7);
+    }
+  }
+</style>`);

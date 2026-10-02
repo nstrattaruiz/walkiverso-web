@@ -7,6 +7,11 @@ export const textos = {
     entrar: 'Entrar al Walkiverso',
     saltar: 'Saltar intro',
   },
+  entrada: {
+    tocar: 'Tocá el portal para entrar', // (P)
+    saltar: 'Saltar',
+    bajar: 'Bajá para recorrer',
+  },
   hero: {
     antetitulo: 'Taller de criaturas · Hecho a mano',
     titulo: 'Arte, Magia y Reciclaje',
@@ -27,7 +32,7 @@ export const textos = {
     verEnMapa: 'Ver en el planeta',
   },
   region: { antetitulo: 'Región de Walkurio', explorar: 'Explorar región', vacia: 'Nadie vive acá todavía… por ahora.' },
-  categorias: { antetitulo: 'Explorá', titulo: 'Habitantes del Walkiverso', boton: 'Ver colección', piezas: (n) => `${n} ${n === 1 ? 'pieza' : 'piezas'}` },
+  categorias: { antetitulo: 'Explorá', titulo: 'Habitantes del Walkiverso', boton: 'Ver colección', todas: 'Todas las piezas', piezas: (n) => `${n} ${n === 1 ? 'pieza' : 'piezas'}` },
   duendes: {
     antetitulo: 'Del bosque de Milarko',
     titulo: 'Los duendes buscan hogar',
@@ -36,6 +41,8 @@ export const textos = {
     elegir: 'Que un duende te elija', // (P)
     eligiendo: 'Escuchando al bosque…', // (P)
     elegido: (n) => `${n} te eligió`, // (P)
+    otraVez: 'Que elija otro', // (P)
+    cerrar: 'Volver al bosque', // (P)
     girar: 'Tocá la carta para conocerlo', // (P)
     adoptar: 'Adoptar',
     conocer: 'Conocerlo',
@@ -74,7 +81,7 @@ export const textos = {
   videos: {
     antetitulo: 'Desde el taller', titulo: 'Magia en movimiento',
     bajada: 'Así nacen las criaturas: del cartón reciclado a su primera mirada.',
-    boton: 'Seguinos en Instagram', canal: 'Más vídeos en el canal de Walkiver', pronto: 'Muy pronto',
+    boton: 'Seguinos en Instagram', canal: 'Más vídeos en el canal de Walkiver', pronto: 'Muy pronto', mirar: 'Asomate al espejo',
   },
   resenas: {
     antetitulo: 'Voces de Walkurio', titulo: 'Lo que dicen quienes adoptaron', adopto: 'Adoptó a',
@@ -91,7 +98,7 @@ export const textos = {
   },
   tienda: {
     titulo: 'Tienda', bajada: 'Todas las criaturas y objetos del Walkiverso.', // (P)
-    buscar: 'Buscar en la tienda', todo: 'Todo', colecciones: 'Colecciones', regiones: 'Regiones',
+    buscar: 'Buscar en la tienda', todo: 'Todo', colecciones: 'Colecciones', categorias: 'Categorías', regiones: 'Regiones de Walkurio',
     vacio: 'No encontramos nada por acá.', mas: 'Ver más',
     orden: { recientes: 'Más nuevos', 'price-asc': 'Menor precio', 'price-desc': 'Mayor precio' },
   },
@@ -110,12 +117,24 @@ export const textos = {
     antetitulo: 'Correo de raíces', titulo: 'Escribinos',
     bajada: '¿Tenés una pregunta sobre una pieza, un envío o una idea para una criatura nueva? Contanos y te respondemos desde el taller.',
     asuntos: ['Consulta sobre una pieza', 'Envíos', 'Solicitudes y sugerencias', 'Prensa y colaboraciones', 'Otro'],
-    querido: 'Querido Walkiverso:', // (P)
-    firma: 'Con cariño,', // (P)
+    formAnte: 'Desde el taller', formTitulo: 'Mandanos tu mensaje', // (P)
     enviar: 'Enviar mensaje',
     nota: 'Recordá que no hacemos encargos personalizados ni pedimos pagos por adelantado.',
     exito: '¡Tu mensaje ya está en camino!', exitoTexto: 'Te respondemos desde el taller lo antes posible.', otro: 'Escribir otra carta',
     taller: 'El taller', tallerTexto: 'Uruguay · Envíos a todo el país', horario: 'Lunes a viernes, 10 a 18 h', seguinos: 'Seguinos',
+  },
+  cuenta: {
+    titulo: 'Mi cuenta', bienvenida: 'Entrá al Walkiverso', // (P)
+    bajada: 'Guardá tus favoritos, seguí tus pedidos y enterate primero cuando nace una pieza.', // (P)
+    ingresar: 'Ingresar', crear: 'Crear cuenta', hola: 'Hola', salir: 'Salir', salirTexto: 'Cerrar sesión en este dispositivo',
+    pedidos: 'Mis pedidos', pedidosPronto: 'Muy pronto',
+    pronto: 'Las cuentas llegan muy pronto. Mientras tanto, tus favoritos se guardan en este dispositivo.', // (P)
+    beneficios: ['Tus favoritos en todos tus dispositivos', 'El historial de tus adopciones', 'Aviso cuando nace una pieza nueva'], // (P)
+    favoritos: 'Tus favoritos', favAnte: 'Tu constelación', // (P)
+    favBajada: 'Las piezas que te llamaron. Cuando una encuentra hogar, desaparece de acá.', // (P)
+    favNota: 'Tus favoritos se guardan en este dispositivo.', // (P)
+    favVacio: 'Tu constelación está vacía', favVacioTexto: 'Tocá el corazón de cualquier pieza para guardarla acá.', // (P)
+    explorar: 'Explorar la tienda', guardado: 'Guardado en tus favoritos',
   },
   buscar: {
     titulo: '¿Qué buscás en el Walkiverso?', // (P)

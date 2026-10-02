@@ -31,21 +31,22 @@ export function contacto() {
         </div>
 
         <div class="wk-escritorio">
-          <form class="wk-carta-papel" id="carta" data-rev>
-            <span class="wk-carta-papel__esquina" aria-hidden="true"></span>
-            <p class="wk-carta-papel__fecha">${new Date().toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-            <p class="wk-carta-papel__saludo">${esc(T.contacto.querido)}</p>
-            <fieldset class="wk-asuntos"><legend>Te escribo por…</legend>
-              ${T.contacto.asuntos.map((a, i) => `<label><input type="radio" name="asunto" value="${esc(a)}"${i === 0 ? ' checked' : ''}><span>${esc(a)}</span></label>`).join('')}
-            </fieldset>
-            <label class="wk-renglon wk-renglon--texto"><span class="visually-hidden">Mensaje</span><textarea name="message" rows="6" required placeholder="Contanos…"></textarea></label>
-            <div class="wk-carta-papel__datos">
-              <label class="wk-renglon"><span>Nombre</span><input name="name" required autocomplete="name" id="carta-nombre"></label>
-              <label class="wk-renglon"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
-              <label class="wk-renglon"><span>Teléfono</span><input name="phone" type="tel" autocomplete="tel"></label>
+          <form class="wk-misiva" id="carta" data-rev>
+            <span class="wk-misiva__luz" aria-hidden="true"></span>
+            <span class="wk-misiva__rama wk-misiva__rama--a" aria-hidden="true"></span>
+            <span class="wk-misiva__rama wk-misiva__rama--b" aria-hidden="true"></span>
+            <div class="wk-misiva__cab">
+              <span class="wk-lacre" aria-hidden="true">W</span>
+              <div><p class="wk-antetitulo">${esc(T.contacto.formAnte)}</p><h2>${esc(T.contacto.formTitulo)}</h2></div>
             </div>
-            <p class="wk-carta-papel__firma">${esc(T.contacto.firma)}<br><span id="firma" aria-hidden="true"></span></p>
-            <div class="wk-carta-papel__pie">
+            <div class="wk-misiva__campos">
+              <label class="wk-flotante"><input name="name" required autocomplete="name" placeholder=" "><span>Nombre</span></label>
+              <label class="wk-flotante"><input name="email" type="email" required autocomplete="email" placeholder=" "><span>Email</span></label>
+              <label class="wk-flotante"><input name="phone" type="tel" autocomplete="tel" placeholder=" "><span>Teléfono (opcional)</span></label>
+              <label class="wk-flotante wk-flotante--select"><select name="asunto">${T.contacto.asuntos.map((a) => `<option>${esc(a)}</option>`).join('')}</select><span>Asunto</span></label>
+              <label class="wk-flotante wk-flotante--texto"><textarea name="message" rows="5" required placeholder=" "></textarea><span>Tu mensaje</span></label>
+            </div>
+            <div class="wk-misiva__pie">
               <small>${esc(T.contacto.nota)}</small>
               <button class="wk-lacre-boton"><span class="wk-lacre" aria-hidden="true">W</span><span>${esc(T.contacto.enviar)}</span></button>
             </div>
@@ -62,7 +63,6 @@ export function contacto() {
     </section>`;
 
   const form = $('#carta');
-  $('#carta-nombre').addEventListener('input', (e) => { $('#firma').textContent = e.target.value; });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const b = form.querySelector('.wk-lacre-boton');
@@ -77,7 +77,7 @@ export function contacto() {
     b.disabled = false;
   });
   $('#otra-carta').addEventListener('click', () => {
-    form.reset(); $('#firma').textContent = '';
+    form.reset();
     $('#enviada').hidden = true;
     $('.wk-escritorio').classList.remove('is-enviada');
     form.getAnimations().forEach((a) => a.cancel());

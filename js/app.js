@@ -1,15 +1,16 @@
 // Walkiverso · web para la plataforma (Kit NS).
 // Todos los datos salen de la tienda con el SDK: el cliente los cambia desde su panel.
-// Rutas: /  ·  /walkurio  ·  /tienda  ·  /categoria/:handle  ·  /producto/:handle  ·  /cursos  ·  /deseos  ·  /contacto  ·  /legal/:tipo
+// Rutas: /  ·  /walkurio  ·  /tienda  ·  /categoria/:handle  ·  /producto/:handle  ·  /cursos  ·  /contacto  ·  /favoritos  ·  /cuenta  ·  /legal/:tipo
 // (Walkiver vive aparte en /walkiver/ y /walkiver/somos-mitos/)
-import { tienda, T, $, $$, esc, app, estado, ui, reducido, tactil, espera, regiones, categoria, foto, sinFoto, precio, cabecera, revelar, agregarRapido, aviso } from './base.js';
+import { tienda, T, $, $$, esc, app, estado, ui, reducido, tactil, espera, regiones, categoria, colecciones, foto, sinFoto, precio, cabecera, revelar, agregarRapido, aviso } from './base.js';
 import { polvoDeHadas } from './polvo.js';
 import { inicio } from './paginas/inicio.js';
 import { catalogo } from './paginas/tienda.js';
 import { ficha } from './paginas/ficha.js';
 import { walkurio, mostrarRegion, cerrarRegion } from './paginas/walkurio.js';
 import { cursos } from './paginas/cursos.js';
-import { deseos } from './paginas/deseo.js';
+import { iniciarCuenta, favoritosPagina, cuentaPagina, repintarFavoritos } from './cuenta.js';
+import { cubrir, descubrir } from './transicion.js';
 import { contacto } from './paginas/contacto.js';
 
 let rutaActual = '';
@@ -19,13 +20,10 @@ let mundoPromesa = null;
 const BASE = window.WK_BASE || '';
 const camino = () => location.pathname.slice(BASE.length) || '/';
 const seccionDe = (p = camino()) => p.split('/').filter(Boolean)[0] ?? '';
-const conMundo = (s) => s === '' || s === 'index.html' || s === 'walkurio';
+const conMundo = (s) => s === 'walkurio'; // el planeta vive solo en Walkurio
 
 // ---------------------------------------------------------------- arranque
 async function arrancar() {
-  const conPortal = ['', 'index.html'].includes(seccionDe()) && !reducido && !visto();
-  if (conPortal) abrirPortal();
-
   const [info, categorias] = await Promise.all([tienda.info(), tienda.categorias()]);
   Object.assign(estado, { info, categorias });
   document.title = info.seo.title || info.name;
@@ -42,7 +40,6 @@ async function arrancar() {
 
   pintarMenus();
   pintarHablemos();
-  pintarAviso();
   pintarCookies();
   pintarMundo();
   $('#pie-legales').innerHTML = info.legal.map((l) => `<a href="/legal/${l.kind}" data-link>${esc(l.title)}</a>`).join('');
@@ -51,44 +48,12 @@ async function arrancar() {
   pintarCarrito(await tienda.carrito.ver());
   window.addEventListener('popstate', () => { if (location.pathname !== rutaActual) ruta(); });
   polvoDeHadas();
+  await iniciarCuenta();
   await ruta();
-  if (conPortal) portalListo();
   if (new URLSearchParams(location.search).has('carrito')) abrirCarrito();
 }
 
-// ---------------------------------------------------------------- portal de entrada
-const visto = () => { try { return sessionStorage.getItem('wk-portal') === '1'; } catch { return false; } };
-function abrirPortal() {
-  $('#portal-linea').textContent = T.portal.linea;
-  $('#portal-carga').textContent = T.portal.cargando;
-  $('#portal-saltar').textContent = T.portal.saltar;
-  $('#portal').hidden = false;
-  document.body.classList.add('en-portal');
-  $('#portal-entrar').addEventListener('click', () => cruzarPortal(false));
-  $('#portal-saltar').addEventListener('click', () => cruzarPortal(true));
-}
-async function portalListo() {
-  await mundoPromesa;
-  const b = $('#portal-entrar');
-  $('#portal-marca').textContent = estado.info.name;
-  b.disabled = false;
-  b.innerHTML = `<span>${esc(T.portal.entrar)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg>`;
-  $('#portal').classList.add('is-listo');
-  b.focus({ preventScroll: true });
-}
-async function cruzarPortal(rapido) {
-  const p = $('#portal');
-  if (p.classList.contains('is-entrando')) return;
-  try { sessionStorage.setItem('wk-portal', '1'); } catch { /* sin almacenamiento */ }
-  p.classList.add('is-entrando');
-  await mundoPromesa;
-  const viaje = mundo ? mundo.entrar({ rapido }) : Promise.resolve();
-  setTimeout(() => { p.hidden = true; document.body.classList.remove('en-portal'); }, rapido ? 350 : 1600);
-  await viaje;
-  $('#mundo').classList.add('is-listo');
-}
-
-// ---------------------------------------------------------------- mundo 3D (inicio y Walkurio)
+// ---------------------------------------------------------------- mundo 3D (Walkurio)
 function prenderMundo() {
   if (mundoPromesa) return mundoPromesa;
   mundoPromesa = (async () => {
@@ -97,10 +62,9 @@ function prenderMundo() {
       mundo = crearMundo($('#lienzo'), {
         capaPines: $('#pines'),
         alSeleccionar: (r) => mostrarRegion(r, () => mundo.soltarFoco()),
-        alTocarPlaneta: () => ui.navegar('/walkurio'),
       });
       mundo.setRegiones(regiones());
-      mundo.modo(seccionDe() === 'walkurio' ? 'walkurio' : 'inicio');
+      mundo.modo('walkurio');
       const ver = () => mundo.activo(!document.hidden && document.body.classList.contains('con-mundo') && mundoVisible);
       let mundoVisible = true;
       new IntersectionObserver(([e]) => { mundoVisible = e.isIntersecting; ver(); }).observe($('#mundo'));
@@ -110,23 +74,20 @@ function prenderMundo() {
       console.warn('Sin 3D:', e);
       document.body.classList.add('sin-3d');
     }
-    if (!document.body.classList.contains('en-portal')) {
-      await mundo?.entrar({ rapido: true });
-      $('#mundo').classList.add('is-listo');
-    }
   })();
   return mundoPromesa;
 }
 
+/** Cada vez que se entra a Walkurio, el viaje entre las estrellas hasta el planeta. */
+async function viajarAWalkurio() {
+  await prenderMundo();
+  $('#mundo').classList.remove('is-listo');
+  ui.mundoVer?.();
+  await mundo?.entrar({ rapido: false });
+  $('#mundo').classList.add('is-listo');
+}
+
 function pintarMundo() {
-  // Inicio
-  $('#hero-ante').textContent = T.hero.antetitulo;
-  $('#hero-titulo').innerHTML = T.hero.titulo.split(' ').map((w, i) => `<span class="wk-palabra" style="--i:${i}">${esc(w)}</span>`).join(' ');
-  $('#hero-bajada').textContent = T.hero.bajada;
-  $('#hero-boton').innerHTML = `${esc(T.hero.boton)}<svg aria-hidden="true"><use href="#i-flecha"/></svg>`;
-  $('#hero-boton2').innerHTML = `<svg aria-hidden="true"><use href="#i-planeta"/></svg>${esc(T.hero.boton2)}`;
-  $('#hero-planeta span').textContent = T.hero.planeta;
-  // Walkurio
   $('#wkr-ante').textContent = T.walkurio.antetitulo;
   $('#wkr-titulo').textContent = T.walkurio.titulo;
   $('#wkr-bajada').textContent = T.walkurio.bajada;
@@ -176,6 +137,7 @@ function pintarMenus() {
   // El menú grande (☰) muestra también los hijos
   $('#panel-nav').innerHTML = main.map((l, i) =>
     `${enlace(l, ` style="--i:${i}"`)}<small>${String(i + 1).padStart(2, '0')}</small>${esc(l.label)}</a>${l.children?.length ? `<div class="wk-panel-hijos" style="--i:${i}">${l.children.map((c) => `${enlace(c)}${esc(c.label)}</a>`).join('')}</div>` : ''}`).join('');
+  $('#panel-nav').insertAdjacentHTML('beforeend', `<div class="wk-panel-extra"><a href="/favoritos" data-link><svg aria-hidden="true"><use href="#i-corazon"/></svg>${esc(T.cuenta.favoritos)}</a><a href="/cuenta" data-link><svg aria-hidden="true"><use href="#i-usuario"/></svg>${esc(T.cuenta.titulo)}</a></div>`);
   $('#pie-menu').innerHTML = info.menus.footer.map((l) => l.children?.length
     ? `<div><strong>${esc(l.label)}</strong><ul>${l.children.map((c) => `<li>${enlace(c)}${esc(c.label)}</a></li>`).join('')}</ul></div>`
     : `<div>${enlace(l)}${esc(l.label)}</a></div>`).join('');
@@ -208,14 +170,6 @@ function pintarHablemos() {
     redes.length && `<div class="ns-panel__social">${redes.map(([k, i]) => `<a href="${esc(c[k])}" target="_blank" rel="noopener" aria-label="${k}"><svg aria-hidden="true"><use href="#${i}"/></svg></a>`).join('')}</div>`,
   ].filter(Boolean).join(''));
   if (!$('#hablemos').querySelector('a, p:not(.ns-panel__label)')) $('#hablemos').hidden = true;
-}
-
-function pintarAviso() {
-  const a = estado.info.announcement;
-  if (!a?.text) return;
-  $('#aviso').innerHTML = `<svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(a.text)}${a.buttonText && a.link ? ` <a href="${esc(a.link)}">${esc(a.buttonText)} →</a>` : ''}`;
-  $('#aviso').hidden = false;
-  document.body.classList.add('con-aviso');
 }
 
 // ---------------------------------------------------------------- cookies y medición
@@ -267,20 +221,10 @@ async function navegar(href, x = innerWidth / 2, y = innerHeight / 2) {
   if (misma && url.hash) { history.pushState(null, '', destino); document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView({ behavior: reducido ? 'auto' : 'smooth' }); return; }
   if (misma && url.search === location.search) { window.scrollTo({ top: 0, behavior: reducido ? 'auto' : 'smooth' }); return; }
   navegando = true;
-  const velo = $('#transicion');
-  if (!reducido) {
-    velo.style.setProperty('--x', `${x}px`);
-    velo.style.setProperty('--y', `${y}px`);
-    velo.className = 'wk-transicion is-cubre';
-    await espera(520);
-  }
+  await cubrir(x, y);
   history.pushState(null, '', destino);
   await ruta();
-  if (!reducido) {
-    velo.className = 'wk-transicion is-descubre';
-    await espera(650);
-    velo.className = 'wk-transicion';
-  }
+  await descubrir();
   navegando = false;
 }
 ui.navegar = (href) => navegar(href);
@@ -323,6 +267,8 @@ async function ruta() {
   const partes = camino().split('/').filter(Boolean).map(decodeURIComponent);
   const [seccion = '', valor] = partes;
   const params = new URLSearchParams(location.search);
+  ui.alSalir?.();
+  ui.alSalir = null;
   const cuerpo = document.body.classList;
   cuerpo.toggle('con-mundo', conMundo(seccion));
   cuerpo.toggle('es-inicio', ['', 'index.html'].includes(seccion));
@@ -331,9 +277,8 @@ async function ruta() {
   document.documentElement.dataset.pagina = seccion || 'inicio';
   document.documentElement.classList.remove('arranca-con-mundo');
   cerrarRegion();
-  if (conMundo(seccion)) {
-    prenderMundo().then(() => { mundo?.modo(seccion === 'walkurio' ? 'walkurio' : 'inicio'); ui.mundoVer?.(); });
-  } else mundo?.activo(false);
+  if (conMundo(seccion)) viajarAWalkurio();
+  else mundo?.activo(false);
   $$('#nav a, #nav .wk-desplegable__boton').forEach((a) => {
     const h = a.getAttribute('href');
     const activo = h ? (h === '/' ? !seccion : camino().startsWith(h.replace(/\/$/, '')) && h !== '/') : seccion === 'tienda' || seccion === 'categoria';
@@ -346,7 +291,8 @@ async function ruta() {
     else if (seccion === 'tienda') await catalogo(null, params.get('buscar') ?? '');
     else if (seccion === 'walkurio') await walkurio(await prenderMundo().then(() => mundo));
     else if (seccion === 'cursos') await cursos();
-    else if (seccion === 'deseos') await deseos();
+    else if (seccion === 'favoritos') await favoritosPagina();
+    else if (seccion === 'cuenta') await cuentaPagina();
     else if (seccion === 'contacto') contacto();
     else if (seccion === 'legal' && valor) await legal(valor);
     else if (seccion === 'carrito') await carritoRuta(valor);
@@ -356,6 +302,7 @@ async function ruta() {
     if (e.message !== '404') console.warn(e);
     noEncontrado();
   }
+  repintarFavoritos();
   revelar();
   app.focus({ preventScroll: true });
 }
@@ -391,10 +338,11 @@ function noEncontrado() {
 const lugares = () => [
   { titulo: 'Walkurio', texto: T.walkurio.antetitulo, href: '/walkurio', icono: 'i-planeta' },
   { titulo: 'Tienda', texto: T.tienda.bajada, href: '/tienda', icono: 'i-bag' },
-  ...['criaturas', 'objetos', 'duendes'].map(categoria).filter(Boolean).map((c) => ({ titulo: c.name, texto: `${c.productCount} piezas`, href: `/categoria/${c.handle}`, icono: 'i-chispa' })),
+  ...colecciones().map((c) => ({ titulo: c.name, texto: `${c.productCount} piezas`, href: `/categoria/${c.handle}`, icono: 'i-chispa' })),
   ...regiones().map((c) => ({ titulo: c.name, texto: T.region.antetitulo, href: `/categoria/${c.handle}`, icono: 'i-pin' })),
   { titulo: T.cursos.titulo, texto: T.cursos.antetitulo, href: '/cursos', icono: 'i-bitacora' },
-  { titulo: 'Pedí un deseo', texto: T.deseo.titulo, href: '/deseos', icono: 'i-chispa' },
+  { titulo: T.cuenta.favoritos, texto: T.cuenta.favAnte, href: '/favoritos', icono: 'i-corazon' },
+  { titulo: T.cuenta.titulo, texto: T.cuenta.ingresar, href: '/cuenta', icono: 'i-usuario' },
   { titulo: 'Walkiver', texto: 'Sobre mí, e-book y vídeos', href: '/walkiver/', icono: 'i-pluma', aparte: true },
   { titulo: 'Contacto', texto: T.contacto.titulo, href: '/contacto', icono: 'i-mail' },
 ];

@@ -1,6 +1,6 @@
 // Núcleo compartido de Walkiverso: datos de la tienda, ayudantes y piezas que usan todas las páginas.
 import { textos as T } from './textos.js';
-import { categoriasClave, categoriasOcultas } from './config.js';
+import { categoriasClave, categoriasOcultas, categoriasObjeto, prefijoRegion } from './config.js';
 import { rafaga } from './polvo.js';
 
 // SDK de la plataforma. Sin plataforma (carpeta suelta o servidor de demo) se usa la tienda de ejemplo.
@@ -22,9 +22,11 @@ export const estado = { info: null, categorias: [] };
 export const ui = { abrirCarrito() {}, navegar(url) { location.href = url; } };
 
 // ---------------------------------------------------------------- categorías y regiones
-const claves = new Set([...Object.values(categoriasClave), ...categoriasOcultas]);
-export const categoria = (rol) => estado.categorias.find((c) => c.handle === categoriasClave[rol]) ?? null;
-export const esRegion = (c) => c && !claves.has(c.handle);
+const ocultas = new Set(categoriasOcultas);
+export const categoria = (rol) => estado.categorias.find((c) => c.handle === (categoriasClave[rol] ?? rol)) ?? null;
+export const esRegion = (c) => !!c && c.handle.startsWith(prefijoRegion);
+/** Colecciones de la tienda (Bitácoras, Criaturas, Duendes Milarko…): todo lo que no es región ni está oculto. */
+export const colecciones = () => estado.categorias.filter((c) => !esRegion(c) && !ocultas.has(c.handle));
 export const regiones = () => estado.categorias.filter(esRegion);
 export const numeroRegion = (c) => String(regiones().findIndex((x) => x.handle === c?.handle) + 1).padStart(2, '0');
 const handleDe = (c) => (typeof c === 'string' ? c : c?.handle);
@@ -36,7 +38,9 @@ export const regionDe = (p) => {
   }
   return null;
 };
-export const esDe = (p, rol) => (p.categories ?? []).some((c) => handleDe(c) === categoriasClave[rol]);
+export const esDe = (p, rol) => (p.categories ?? []).some((c) => handleDe(c) === (categoriasClave[rol] ?? rol));
+/** Los objetos (bitácoras) se agregan al carrito; las criaturas se adoptan. */
+export const esObjeto = (p) => (p.categories ?? []).some((c) => categoriasObjeto.includes(handleDe(c)));
 
 // ---------------------------------------------------------------- piezas
 export const foto = (img, alt, ancho = 640, clase = '', sizes = '(max-width: 700px) 50vw, 25vw') => img
@@ -68,9 +72,12 @@ export const tarjeta = (p, i = 0) => {
         <strong>${esc(p.title)}</strong>${precio(p)}
       </span>
     </a>
+    ${botonFavorito(p)}
     ${p.available ? `<button type="button" class="tarjeta__agregar" data-agregar="${esc(p.handle)}" aria-label="Agregar ${esc(p.title)} al carrito"><svg aria-hidden="true"><use href="#i-mas"/></svg></button>` : ''}
   </article>`;
 };
+/** Corazón para guardar en favoritos (lo maneja cuenta.js). */
+export const botonFavorito = (p, clase = 'tarjeta__fav') => `<button type="button" class="wk-fav ${clase}" data-fav="${esc(p.handle)}" aria-pressed="false" aria-label="Guardar ${esc(p.title)} en favoritos"><svg aria-hidden="true"><use href="#i-corazon"/></svg></button>`;
 export const fantasmas = (n = 4) => '<span class="tarjeta tarjeta--fantasma"></span>'.repeat(n);
 
 /**

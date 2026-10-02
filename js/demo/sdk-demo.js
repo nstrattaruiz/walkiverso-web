@@ -1,16 +1,19 @@
 // SOLO PARA VER LA WEB SIN LA PLATAFORMA. Imita el SDK (/api/v1/sdk.js) con datos de ejemplo.
 // En la plataforma se usa el SDK real y este archivo no se carga. Se puede borrar antes de publicar.
 const categorias = [
-  { handle: 'criaturas', name: 'Criaturas', description: 'Mandrágoras, duendes y seres del bosque, esculpidos a mano con materiales reciclados.' },
-  { handle: 'objetos', name: 'Objetos', description: 'Bitácoras y objetos esculpidos a mano para guardar tus propias crónicas.' },
-  { handle: 'duendes', name: 'Duendes', description: 'Cada duende nace único, con nombre propio y un don.' },
+  { handle: 'bitacoras', name: 'Bitácoras', description: 'Libretas con tapas esculpidas para escribir tus propias crónicas.' },
+  { handle: 'criaturas', name: 'Criaturas', description: 'Seres del Walkiverso esculpidos a mano con materiales reciclados.' },
+  { handle: 'duendes-milarko', name: 'Duendes Milarko', description: 'Los habitantes traviesos de las Colinas Milarko. Cada uno con nombre propio y un don.' },
+  { handle: 'mandragoras', name: 'Mandrágoras', description: 'Criaturas de raíz nacidas en Solantera, siempre medio dormidas.' },
+  { handle: 'minidragoras', name: 'Minidrágoras', description: 'Las mandrágoras más pequeñas: caben en la palma de la mano.' },
+  { handle: 'pixies', name: 'Pixies', description: 'Seres alados del Bosque de Musgoluz. Pequeños, silenciosos y curiosos.' },
   { handle: 'cursos', name: 'Cursos', description: 'Aprendé en el taller de Walkiver.' },
   { handle: 'ebooks', name: 'E-books', description: '' },
-  { handle: 'colinas-milarko', name: 'Colinas Milarko', description: 'Lomas redondas y musgosas donde viven los duendes más traviesos del planeta.' },
-  { handle: 'solantera', name: 'Solantera', description: 'Tierra de raíces profundas. Acá nacen las mandrágoras, siempre medio dormidas.' },
-  { handle: 'bosque-de-musgoluz', name: 'Bosque de Musgoluz', description: 'Un bosque que brilla de noche. Sus habitantes son pequeños, silenciosos y curiosos.' },
-  { handle: 'picos-vacuum', name: 'Picos Vacuum', description: 'Montañas de piedra antigua donde duermen las bitácoras que nadie terminó de escribir.' },
-  { handle: 'lago-espejo', name: 'Lago Espejo', description: 'Aguas quietas que reflejan otro cielo. Dicen que algunas criaturas vienen de ese reflejo.' },
+  { handle: 'region-colinas-milarko', name: 'Colinas Milarko', description: 'Lomas redondas y musgosas donde viven los duendes más traviesos del planeta.' },
+  { handle: 'region-solantera', name: 'Solantera', description: 'Tierra de raíces profundas. Acá nacen las mandrágoras, siempre medio dormidas.' },
+  { handle: 'region-bosque-de-musgoluz', name: 'Bosque de Musgoluz', description: 'Un bosque que brilla de noche. Sus habitantes son pequeños, silenciosos y curiosos.' },
+  { handle: 'region-picos-vacuum', name: 'Picos Vacuum', description: 'Montañas de piedra antigua donde duermen las bitácoras que nadie terminó de escribir.' },
+  { handle: 'region-lago-espejo', name: 'Lago Espejo', description: 'Aguas quietas que reflejan otro cielo. Dicen que algunas criaturas vienen de ese reflejo.' },
 ];
 const p = (handle, title, cats, price, extra = {}) => ({
   id: handle, handle, title, price, compareAtPrice: extra.compareAtPrice ?? null, currency: 'UYU', available: extra.available ?? true,
@@ -20,7 +23,7 @@ const p = (handle, title, cats, price, extra = {}) => ({
   variants: [{ id: `${handle}-v`, title: 'Única', options: [], price, compareAtPrice: extra.compareAtPrice ?? null, available: extra.available ?? true, stock: 1 }],
   ...extra,
 });
-const D = ['criaturas', 'duendes', 'colinas-milarko'];
+const D = ['criaturas', 'duendes-milarko', 'region-colinas-milarko'];
 const productos = [
   p('duende-brizo', 'Duende Brizo', D, 189000),
   p('duende-tilo', 'Duende Tilo', D, 175000, { compareAtPrice: 210000 }),
@@ -30,20 +33,21 @@ const productos = [
   p('duende-del-amor', 'Duende del Amor', D, 198000),
   p('duende-sadybud', 'Duende Sadybud', D, 215000),
   p('duende-pimpollo', 'Duende Pimpollo', D, 169000),
-  p('mandragora-tuna', 'Mandrágora Tuna', ['criaturas', 'solantera'], 145000),
-  p('minidragora-ocre', 'Minidrágora Ocre', ['criaturas', 'solantera'], 98000),
-  p('polilla-nebli', 'Polilla Nebli', ['criaturas', 'bosque-de-musgoluz'], 126000),
-  p('ajolote-reflejo', 'Ajolote Reflejo', ['criaturas', 'lago-espejo'], 168000),
-  p('hongo-farolito', 'Hongo Farolito', ['objetos', 'bosque-de-musgoluz'], 98000, {
-    options: [{ name: 'Luz', values: ['Celeste', 'Blanca'] }],
+  p('mandragora-tuna', 'Mandrágora Tuna', ['criaturas', 'mandragoras', 'region-solantera'], 145000),
+  p('mandragora-ocre', 'Mandrágora Ocre', ['criaturas', 'mandragoras', 'region-solantera'], 152000),
+  p('minidragora-brote', 'Minidrágora Brote', ['criaturas', 'minidragoras', 'region-solantera'], 98000),
+  p('minidragora-lila', 'Minidrágora Lila', ['criaturas', 'minidragoras', 'region-solantera'], 98000, { compareAtPrice: 115000 }),
+  p('pixie-nebli', 'Pixie Nebli', ['criaturas', 'pixies', 'region-bosque-de-musgoluz'], 126000),
+  p('pixie-aleta', 'Pixie Aleta', ['criaturas', 'pixies', 'region-lago-espejo'], 132000),
+  p('bitacora-corpus-vacuum', 'Bitácora · Corpus Vacuum', ['bitacoras', 'region-picos-vacuum'], 312000),
+  p('bitacora-del-cartografo', 'Bitácora del Cartógrafo', ['bitacoras', 'region-picos-vacuum'], 289000, { compareAtPrice: 340000 }),
+  p('bitacora-de-niebla', 'Bitácora de Niebla', ['bitacoras', 'region-lago-espejo'], 276000, {
+    options: [{ name: 'Hojas', values: ['Lisas', 'Rayadas'] }],
     variants: [
-      { id: 'hf-c', title: 'Celeste', options: ['Celeste'], price: 98000, available: true, stock: 3 },
-      { id: 'hf-b', title: 'Blanca', options: ['Blanca'], price: 104000, available: true, stock: 2 },
+      { id: 'bn-l', title: 'Lisas', options: ['Lisas'], price: 276000, available: true, stock: 1 },
+      { id: 'bn-r', title: 'Rayadas', options: ['Rayadas'], price: 276000, available: true, stock: 1 },
     ],
   }),
-  p('bitacora-corpus-vacuum', 'Bitácora · Corpus Vacuum', ['objetos', 'picos-vacuum'], 312000),
-  p('bitacora-del-cartografo', 'Bitácora del Cartógrafo', ['objetos', 'picos-vacuum'], 289000, { compareAtPrice: 340000 }),
-  p('frasco-de-niebla', 'Frasco de niebla', ['objetos', 'lago-espejo'], 76000),
   p('curso-de-mandragoras', 'Curso de Mandrágoras', ['cursos'], 120000, {
     description: '<p>Aprendé a darle vida a tu propia mandrágora con pasta de cartón reciclado, alambre y acrílicos, paso a paso y a tu ritmo.</p><p>3 módulos · 6 clases · Acceso para siempre</p>',
     variants: [{ id: 'curso-mandragoras-v', title: 'Curso', options: [], price: 120000, available: true, stock: null }],
@@ -85,23 +89,22 @@ export const tienda = {
       colors: { primary: '#92d2f5', dark: '#021a62' },
       seo: { title: 'Walkiverso · Criaturas hechas a mano', description: 'Criaturas y objetos esculpidos a mano con materiales reciclados. Piezas únicas que llegan desde Walkurio hasta tu casa.' },
       contact: { phone: '099 123 456', email: 'hola@walkiverso.com', whatsapp: '099123456', whatsappMessage: '¡Hola Walkiverso!', instagram: 'https://www.instagram.com/walkiverso', facebook: 'https://www.facebook.com/walkiverso', location: 'Montevideo, Uruguay' },
-      announcement: { text: 'Envíos a todo Uruguay · Cada pieza es única', buttonText: '', link: '' },
+      announcement: null,
       cookies: { mode: 'notice', text: 'Usamos cookies para que la tienda funcione.', acceptText: 'Entendido' },
       legal: [{ kind: 'privacy', title: 'Privacidad' }, { kind: 'terms', title: 'Términos' }, { kind: 'returns', title: 'Cambios y devoluciones' }],
       analytics: {},
       menus: {
         main: [
-          { label: 'Tienda', kind: 'catalog', children: [enlaceCat('criaturas'), enlaceCat('objetos'), enlaceCat('duendes'), { label: 'Toda la tienda', kind: 'catalog', children: [] }] },
+          { label: 'Tienda', kind: 'catalog', children: [{ label: 'Todas las piezas', kind: 'catalog', children: [] }, ...['bitacoras', 'criaturas', 'duendes-milarko', 'mandragoras', 'minidragoras', 'pixies'].map(enlaceCat)] },
           { label: 'Walkurio', kind: 'url', url: '/walkurio', children: [] },
           { label: 'Cursos', kind: 'url', url: '/cursos', children: [] },
-          { label: 'Deseos', kind: 'url', url: '/deseos', children: [] },
           { label: 'Walkiver', kind: 'url', url: '/walkiver/', children: [] },
           { label: 'Contacto', kind: 'url', url: '/contacto', children: [] },
         ],
         footer: [
-          { label: 'Tienda', children: ['criaturas', 'objetos', 'duendes', 'cursos'].map(enlaceCat) },
-          { label: 'Walkurio', children: categorias.slice(5).map((c) => enlaceCat(c.handle)) },
-          { label: 'Walkiverso', children: [{ label: 'Pedí un deseo', kind: 'url', url: '/deseos' }, { label: 'Walkiver', kind: 'url', url: '/walkiver/' }, { label: 'Contacto', kind: 'url', url: '/contacto' }] },
+          { label: 'Tienda', children: ['bitacoras', 'criaturas', 'duendes-milarko', 'mandragoras', 'minidragoras', 'pixies'].map(enlaceCat) },
+          { label: 'Walkurio', children: categorias.filter((c) => c.handle.startsWith('region-')).map((c) => enlaceCat(c.handle)) },
+          { label: 'Walkiverso', children: [{ label: 'Cursos', kind: 'url', url: '/cursos' }, { label: 'Walkiver', kind: 'url', url: '/walkiver/' }, { label: 'Contacto', kind: 'url', url: '/contacto' }] },
         ],
       },
     };
@@ -147,6 +150,28 @@ export const tienda = {
     async vaciar() { lineas = []; return guardar(); },
     async nota() { return armarCarrito(); },
     alCambiar(fn) { oyentes.add(fn); return () => oyentes.delete(fn); },
+  },
+  cuenta: {
+    _leer() { try { return JSON.parse(localStorage.getItem('wk-demo-cuenta')) || null; } catch { return null; } },
+    _guardar(c) { try { localStorage.setItem('wk-demo-cuenta', JSON.stringify(c)); } catch { /* sin almacenamiento */ } return c; },
+    async yo() { await espera(80); return this._leer(); },
+    async ingresar({ email, password }) {
+      await espera(500);
+      if (!email || !password || password.length < 6) throw new Error('Revisá tu email y tu contraseña (mínimo 6 caracteres).');
+      const c = this._leer();
+      return this._guardar(c?.email === email ? c : { name: email.split('@')[0], email, favoritos: [] });
+    },
+    async registrar({ name, email, password }) {
+      await espera(600);
+      if (!password || password.length < 6) throw new Error('La contraseña tiene que tener al menos 6 caracteres.');
+      return this._guardar({ name, email, favoritos: this._leer()?.favoritos ?? [] });
+    },
+    async salir() { await espera(150); try { localStorage.removeItem('wk-demo-cuenta'); } catch { /* sin almacenamiento */ } },
+    favoritos: {
+      async listar() { return tienda.cuenta._leer()?.favoritos ?? []; },
+      async agregar(h) { const c = tienda.cuenta._leer(); if (c && !c.favoritos.includes(h)) { c.favoritos.push(h); tienda.cuenta._guardar(c); } },
+      async quitar(h) { const c = tienda.cuenta._leer(); if (c) { c.favoritos = c.favoritos.filter((x) => x !== h); tienda.cuenta._guardar(c); } },
+    },
   },
   async contacto(datos) { await espera(500); console.info('[demo] mensaje al panel:', datos); return { ok: true }; },
   async legal(tipo) {

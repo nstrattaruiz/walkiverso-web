@@ -1,16 +1,20 @@
 // Configuración de Walkiverso: qué categoría de la tienda cumple cada rol y los contenidos
 // que la plataforma todavía no deja cargar desde el panel (videos, reseñas y preguntas).
 
-// Handles de las categorías principales (se crean en el panel con estos handles).
-// Todas las DEMÁS categorías son regiones de Walkurio (aparecen como puntos en el planeta).
+// Categorías con un rol especial (por handle, como se crean en el panel)
 export const categoriasClave = {
-  criaturas: 'criaturas',
-  objetos: 'objetos',
-  duendes: 'duendes',
-  cursos: 'cursos',
+  duendes: 'duendes-milarko', // sección "Los duendes buscan hogar"
+  cursos: 'cursos',           // página /cursos
 };
-// Categorías que no son regiones ni se muestran como colección (ej.: el e-book de Walkiver)
-export const categoriasOcultas = ['ebooks'];
+// Pestañas de "Recién salidos" (además de Novedades y Ofertas)
+export const pestanas = ['criaturas', 'bitacoras'];
+// Categorías de objetos: sus piezas se "agregan al carrito" (las demás se "adoptan")
+export const categoriasObjeto = ['bitacoras'];
+// Las categorías cuyo handle empieza así son REGIONES de Walkurio (puntos del planeta), no colecciones de la tienda.
+// Ej.: nombre "Solantera", handle "region-solantera".
+export const prefijoRegion = 'region-';
+// Categorías que no se muestran como colección de la tienda
+export const categoriasOcultas = ['ebooks', 'cursos'];
 
 export const enlaces = {
   walkiver: '/walkiver/',
@@ -18,7 +22,7 @@ export const enlaces = {
   youtube: 'https://www.youtube.com/@walkiver',
 };
 
-// Videos del taller ("Magia en movimiento"). Sin URL se muestran como "Muy pronto".
+// Videos del taller (espejos mágicos). Sin URL se muestran como "Muy pronto".
 export const videos = [
   { url: 'https://www.youtube.com/shorts/5DDQchotJdw', titulo: 'Nace una mandrágora' },
   { url: '', titulo: 'Pintando a Sadybud' },
@@ -31,7 +35,7 @@ export const resenas = [
   { nombre: 'Carolina', lugar: 'Montevideo', estrellas: 5, texto: 'Mi mandrágora llegó perfecta y tiene una personalidad hermosa. Ya es parte de la familia.', adopto: 'Mandrágora Tuna' },
   { nombre: 'Martín', lugar: 'Canelones', estrellas: 5, texto: 'El detalle de cada pieza es increíble, se nota el amor en cada hoja.', adopto: 'Duende Brizo' },
   { nombre: 'Lucía', lugar: 'Maldonado', estrellas: 5, texto: 'La bitácora es una obra de arte, y el certificado un detalle mágico.', adopto: 'Bitácora · Corpus Vacuum' },
-  { nombre: 'Sofía', lugar: 'Colonia', estrellas: 5, texto: 'Se la regalé a mi hermana y lloró. El empaque, la carta, todo es especial.', adopto: 'Polilla Nebli' },
+  { nombre: 'Sofía', lugar: 'Colonia', estrellas: 5, texto: 'Se la regalé a mi hermana y lloró. El empaque, la carta, todo es especial.', adopto: 'Pixie Nebli' },
   { nombre: 'Diego', lugar: 'Paysandú', estrellas: 5, texto: 'Nunca vi algo así hecho con cartón reciclado. Una pieza única de verdad.', adopto: 'Duende Tilo' },
   { nombre: 'Valentina', lugar: 'Rocha', estrellas: 5, texto: 'Mi duende vigila mi escritorio todos los días. Gracias por tanta magia.', adopto: 'Duende Ramón' },
 ];

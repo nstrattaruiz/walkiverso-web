@@ -1,11 +1,11 @@
 // Ficha de producto: galería en relieve, certificado de origen y "Adoptar" con vuelo al carrito.
-import { tienda, T, $, $$, esc, app, estado, regionDe, esDe, numeroRegion, foto, sinFoto, precio, tarjeta, revelar, agregar, hash } from '../base.js';
+import { tienda, T, $, $$, esc, app, estado, regionDe, esObjeto, botonFavorito, numeroRegion, foto, sinFoto, precio, tarjeta, revelar, agregar, hash } from '../base.js';
 
 export async function ficha(handle) {
   const p = await tienda.productos.uno(handle);
   document.title = `${p.title} · ${estado.info.name}`;
   const r = regionDe(p);
-  const esCriatura = esDe(p, 'criaturas') || esDe(p, 'duendes');
+  const esCriatura = !esObjeto(p);
   const elegido = [...(p.variants.find((v) => v.available)?.options ?? p.variants[0].options)];
   const unica = p.variants.length === 1 && p.variants[0].stock === 1;
   const fotos = p.images?.length ? p.images : (p.image ? [p.image] : []);
@@ -33,7 +33,7 @@ export async function ficha(handle) {
           <div class="opcion"><strong>${esc(o.name)}</strong>
             <div class="opcion__valores" data-opcion="${i}">${o.values.map((v) => `<button type="button" aria-pressed="${v === elegido[i]}" data-valor="${esc(v)}">${esc(v)}</button>`).join('')}</div>
           </div>`).join('')}
-        <button class="wk-btn wk-btn--noche wk-btn--grande wk-btn--adoptar" id="agregar"><svg aria-hidden="true"><use href="#i-bag"/></svg><span>${esc(textoBoton)}</span></button>
+        <div class="ficha__comprar"><button class="wk-btn wk-btn--noche wk-btn--grande wk-btn--adoptar" id="agregar"><svg aria-hidden="true"><use href="#i-bag"/></svg><span>${esc(textoBoton)}</span></button>${botonFavorito(p, 'ficha__fav')}</div>
         <p class="error" id="error" role="alert"></p>
 
         ${esCriatura || r ? `

@@ -12,14 +12,15 @@
   <link rel="icon" type="image/png" href="walkiver/assets/wk-favicon-64.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
   <link rel="modulepreload" href="js/vendor/three.module.min.js">
   <link rel="stylesheet" href="css/ns-firma.css">
   <link rel="stylesheet" href="css/walkiverso.css">
   <link rel="stylesheet" href="css/secciones.css">
+  <link rel="stylesheet" href="css/experiencias.css">
   <script>
     // Antes de pintar: si la página lleva el planeta, para que no parpadee
-    (function () { var s = location.pathname.slice(window.WK_BASE.length).split('/').filter(Boolean)[0] || ''; if (s === '' || s === 'index.html' || s === 'walkurio') document.documentElement.classList.add('arranca-con-mundo'); })();
+    (function () { var s = location.pathname.slice(window.WK_BASE.length).split('/').filter(Boolean)[0] || ''; if (s === 'walkurio') document.documentElement.classList.add('arranca-con-mundo'); })();
   </script>
 </head>
 <body>
@@ -47,22 +48,20 @@
     <symbol id="i-criatura" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1 2-3 2.5-3 5 0 1 .4 1.6 1 2"/><path d="M12 3c1 2 3 2.5 3 5 0 1-.4 1.6-1 2"/><path d="M7 21c0-6 2-9 5-9s5 3 5 9"/><path d="M9 17c-2 0-4-1-5-3M15 17c2 0 4-1 5-3"/><circle cx="10.5" cy="15" r=".6" fill="currentColor"/><circle cx="13.5" cy="15" r=".6" fill="currentColor"/></g></symbol>
     <symbol id="i-bitacora" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M8 3v18"/><path d="M12 9l1 2 2 .3-1.5 1.4.4 2.1L12 13.8l-1.9 1 .4-2.1L9 11.3l2-.3z"/></g></symbol>
     <symbol id="i-taller" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V10l8-6 8 6v11"/><path d="M9 21v-6h6v6"/><path d="M12 8.5v2"/></g></symbol>
+    <symbol id="i-corazon" viewBox="0 0 24 24"><path style="fill: var(--relleno, none)" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></symbol>
+    <symbol id="i-usuario" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.3-3.8 4.2-5.6 7.5-5.6s6.2 1.8 7.5 5.6"/></g></symbol>
+    <symbol id="i-caja" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></g></symbol>
   </svg>
 
-  <!-- ============ Portal de entrada (solo al llegar al inicio) ============ -->
-  <div class="wk-portal" id="portal" hidden>
-    <div class="wk-portal__anillo" aria-hidden="true"><span></span><span></span><span></span></div>
-    <div class="wk-portal__centro">
-      <p class="wk-portal__marca" id="portal-marca">Walkiverso</p>
-      <p class="wk-portal__linea" id="portal-linea"></p>
-      <button type="button" class="wk-portal__entrar" id="portal-entrar" disabled>
-        <span class="wk-portal__carga" id="portal-carga"></span>
-      </button>
-    </div>
-    <button type="button" class="wk-portal__saltar" id="portal-saltar"></button>
-  </div>
-
-  <div class="aviso" id="aviso" hidden></div>
+  <!-- Ondas del espejo (videos): el vidrio se mueve como agua al pasar -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <filter id="ondas" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="3" result="ruido">
+        <animate attributeName="baseFrequency" dur="6s" values="0.012 0.02;0.02 0.012;0.012 0.02" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
 
   <!-- ============ Firma NS: header pildora + ☰ en circulo + menu grande ============ -->
   <header class="ns-header" id="ns-header">
@@ -73,6 +72,8 @@
       <a class="ns-brand" href="/" data-link aria-label="Ir al inicio"><span id="marca">Walkiverso</span></a>
       <nav class="ns-nav" aria-label="Principal" id="nav"></nav>
       <button class="wk-icono-btn" type="button" id="abrir-busqueda" aria-label="Buscar en el Walkiverso" title="Buscar ( / )"><svg aria-hidden="true"><use href="#i-buscar"/></svg></button>
+      <a class="wk-icono-btn wk-icono-btn--extra" href="/favoritos" data-link id="abrir-favoritos" aria-label="Mis favoritos"><svg aria-hidden="true"><use href="#i-corazon"/></svg><b class="wk-icono-btn__num" id="contador-fav" hidden>0</b></a>
+      <a class="wk-icono-btn wk-icono-btn--extra" href="/cuenta" data-link id="abrir-cuenta" aria-label="Ingresar a mi cuenta"><svg aria-hidden="true"><use href="#i-usuario"/></svg></a>
       <button class="ns-cta" type="button" id="abrir-carrito" aria-label="Abrir carrito">
         <svg aria-hidden="true"><use href="#i-bag"/></svg>
         <span>Carrito</span><b class="contador" id="contador">0</b>
@@ -85,21 +86,10 @@
   </header>
   <div class="ns-scrim" aria-hidden="true"></div>
 
-  <!-- ============ Walkurio en 3D (inicio y /walkurio). Vive fuera de #app para no recrearse al navegar ============ -->
+  <!-- ============ Walkurio en 3D (/walkurio). Vive fuera de #app para no recrearse al navegar ============ -->
   <section class="wk-mundo" id="mundo" aria-label="Walkurio, el planeta del Walkiverso">
     <canvas class="wk-mundo__lienzo" id="lienzo" aria-hidden="true"></canvas>
     <div class="wk-mundo__pines" id="pines"></div>
-
-    <div class="wk-mundo__texto wk-mundo__texto--inicio">
-      <p class="wk-antetitulo" id="hero-ante"></p>
-      <h1 class="wk-hero__titulo" id="hero-titulo"></h1>
-      <p class="wk-hero__bajada" id="hero-bajada"></p>
-      <div class="wk-hero__botones">
-        <a class="wk-btn wk-btn--luz" href="/tienda" data-link id="hero-boton"></a>
-        <a class="wk-btn wk-btn--vidrio" href="/walkurio" data-link id="hero-boton2"></a>
-      </div>
-    </div>
-    <p class="wk-mundo__pista wk-mundo__pista--inicio" id="hero-planeta"><svg aria-hidden="true"><use href="#i-chispa"/></svg><span></span></p>
 
     <div class="wk-mundo__texto wk-mundo__texto--walkurio">
       <p class="wk-antetitulo" id="wkr-ante"></p>
@@ -113,7 +103,7 @@
     <p class="wk-mundo__pista wk-mundo__pista--walkurio" id="wkr-pista"><svg aria-hidden="true"><use href="#i-chispa"/></svg><span></span></p>
 
     <aside class="wk-region" id="region" aria-live="polite" hidden></aside>
-    <a class="wk-mundo__bajar" href="#recorrer" aria-label="Bajar"><span></span></a>
+    <a class="wk-mundo__bajar" href="#guia" aria-label="Bajar a la guía de regiones"><span></span></a>
   </section>
 
   <main id="app" tabindex="-1"></main>
@@ -142,9 +132,6 @@
       <div class="wk-busqueda__res" id="busqueda-res" aria-live="polite"></div>
     </div>
   </div>
-
-  <!-- Transición entre páginas -->
-  <div class="wk-transicion" id="transicion" aria-hidden="true"><span class="wk-transicion__marca">✦</span></div>
 
   <!-- ============ Firma NS: carrito deslizable con fondo desenfocado ============ -->
   <div class="carrito-velo" id="carrito-velo" hidden></div>
