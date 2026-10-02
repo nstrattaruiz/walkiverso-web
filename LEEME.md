@@ -44,6 +44,7 @@ En toda la web: polvo de hadas que sigue al mouse y al dedo, y un destello en ca
 | `js/demo/sdk-demo.js`, `.dev/servir.mjs` | Tienda de ejemplo y servidor para verla sin la plataforma |
 
 ## Verla
+- **Vista previa en línea:** https://nstrattaruiz.github.io/walkiverso-web/ (repo: https://github.com/nstrattaruiz/walkiverso-web). Cada push a `main` se publica solo en 1–2 minutos (`.github/workflows/pages.yml`). Usa la tienda de ejemplo.
 - **Sin la plataforma (demo):** `node .dev/servir.mjs` y abrir `http://localhost:5173`.
 - **Con la plataforma:** `npm run sitio -- dev --tienda walkiverso.localhost --carpeta "<esta carpeta>"`.
 
