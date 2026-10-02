@@ -8,9 +8,10 @@ export const textos = {
     saltar: 'Saltar intro',
   },
   entrada: {
-    tocar: 'Tocá el portal para entrar', // (P)
+    tocar: 'Tocá para entrar', // (P)
+    lema: 'Arte, magia y reciclaje', // (P)
     saltar: 'Saltar',
-    bajar: 'Bajá para recorrer',
+    bajar: 'Descubrí',
   },
   hero: {
     antetitulo: 'Taller de criaturas · Hecho a mano',

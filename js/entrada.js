@@ -1,272 +1,272 @@
-// El Portal de Raíces: la entrada del Walkiverso (se abre cada vez que se llega al inicio).
-// Raíces que crecen desde los bordes y forman un anillo, runas que se encienden y un vórtice (WebGL) que se abre.
-// La primera vez en la sesión espera a que toques el portal; después se abre solo. Abierto, queda de fondo de la portada.
+// Portada del Walkiverso: la entrada "El bosque despierta" + el hero (como el de la web de Shopify).
+// Entrada (cada vez que se llega al inicio): noche con niebla, las raíces crecen desde los bordes,
+// las luciérnagas se juntan en el centro y aparece "Walkiverso". La primera vez espera que toques;
+// después se abre sola. Al abrirse, las raíces se corren como un telón y las luciérnagas se dispersan.
+// Hero: fotos que se alternan, raíces desde la izquierda, polvo que gira alrededor del mouse.
+import { growBranches } from './ramas.js';
+
 const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const tactil = matchMedia('(pointer: coarse)').matches;
+const suave = (t) => 1 - Math.pow(1 - t, 3);
 
-const VERT = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }';
-const FRAG = `
-precision highp float;
-uniform vec2 uRes; uniform float uT; uniform float uAbre; uniform vec2 uCentro; uniform float uFlash;
-uniform vec2 uOndaPos; uniform float uOnda;
-float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
-  return mix(mix(hash(i), hash(i+vec2(1.0,0.0)), f.x), mix(hash(i+vec2(0.0,1.0)), hash(i+vec2(1.0,1.0)), f.x), f.y); }
-float fbm(vec2 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ s += a*noise(p); p = p*2.03 + 7.1; a *= 0.5; } return s; }
-void main(){
-  float m = min(uRes.x, uRes.y);
-  vec2 uv = (gl_FragCoord.xy - uCentro) / m;
-  float r = length(uv); float ang = atan(uv.y, uv.x);
-  float R = mix(0.0, 0.27, smoothstep(0.0, 0.35, uAbre)) + pow(smoothstep(0.35, 1.0, uAbre), 2.0) * 2.2;
-  // Remolino: el ángulo gira más cerca del centro
-  float giro = ang + 2.4 / (r + 0.18) - uT * 0.35;
-  vec2 q = vec2(cos(giro), sin(giro)) * r;
-  float n = fbm(q * 3.2 + vec2(uT * 0.05, -uT * 0.04));
-  float n2 = fbm(q * 7.0 - uT * 0.12);
-  vec3 noche = vec3(0.004, 0.035, 0.16);
-  vec3 azul = vec3(0.03, 0.14, 0.45);
-  vec3 celeste = vec3(0.57, 0.82, 0.96);
-  vec3 pantano = vec3(0.80, 0.88, 0.85);
-  vec3 col = mix(azul, celeste, smoothstep(0.38, 0.88, n));
-  col = mix(col, pantano, smoothstep(0.62, 0.95, n2) * 0.45);
-  float brazos = 0.5 + 0.5 * sin(ang * 3.0 + 7.0 / (r + 0.2) - uT * 1.1 + n * 5.0);
-  col += celeste * brazos * 0.22;
-  // Corazón de luz
-  float abre = smoothstep(0.0, 0.3, uAbre);
-  col += vec3(0.92, 0.97, 1.0) * exp(-r * r / (0.003 + R * R * 0.06)) * abre * (1.0 - 0.7 * smoothstep(0.5, 1.0, uAbre));
-  float dentro = 1.0 - smoothstep(R * 0.86, R, r);
-  float aro = exp(-pow((r - R) / (0.010 + R * 0.025), 2.0)) * abre;
-  // Cielo de afuera con estrellas
-  vec3 fondo = noche * (1.15 - r * 0.5);
-  vec2 celda = floor(gl_FragCoord.xy / 2.0);
-  fondo += step(0.9975, hash(celda)) * (0.45 + 0.55 * sin(uT * 2.5 + hash(celda + 3.0) * 30.0)) * 0.9;
-  fondo += celeste * fbm(uv * 2.0 + uT * 0.02) * 0.06;
-  // Abierto del todo: el remolino queda de fondo, más calmo, para que se lean los textos
-  float calma = smoothstep(0.82, 1.0, uAbre);
-  col = mix(col, col * 0.42 + noche * 0.45, calma);
-  vec3 c = mix(fondo, col, dentro) + celeste * aro * 1.3;
-  // Onda donde se toca
-  float d = length((gl_FragCoord.xy - uOndaPos) / m);
-  c += celeste * exp(-pow((d - uOnda * 0.55) / 0.018, 2.0)) * exp(-uOnda * 1.6) * 0.8;
-  c = mix(c, vec3(0.94, 0.98, 1.0), uFlash);
-  c *= 1.0 - 0.35 * smoothstep(0.55, 1.25, length((gl_FragCoord.xy / uRes - 0.5) * vec2(uRes.x / m, uRes.y / m)));
-  gl_FragColor = vec4(c, 1.0);
-}`;
-
-const suave = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-const SIGILOS = [
-  'M0-7V7M-4-3 4 3', 'M-5-6 0 6 5-6', 'M0-7V7M0-2 5-6M0 2 5 6', 'M-5 0A5 5 0 1 0 5 0A5 5 0 1 0-5 0M0-7V7',
-  'M-5-6H5L-5 6H5', 'M0-7 5 0 0 7-5 0Z', 'M-5 6V-6L5 6V-6', 'M0-7V7M-5-3H5M-3 3H3',
-];
-
-/** Curva suave por varios puntos (Catmull-Rom → Bézier). */
-function camino(pts) {
-  let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i - 1] ?? pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] ?? p2;
-    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
-    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-    d += ` C${c1.map((v) => v.toFixed(1))} ${c2.map((v) => v.toFixed(1))} ${p2.map((v) => v.toFixed(1))}`;
-  }
-  return d;
+/** Halo de luz pre-dibujado (como en wk-hero.js) */
+function sprite([r, g, b]) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const x = c.getContext('2d');
+  const g2 = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g2.addColorStop(0, 'rgba(255,255,255,1)');
+  g2.addColorStop(0.12, `rgba(${r},${g},${b},0.95)`);
+  g2.addColorStop(0.35, `rgba(${r},${g},${b},0.28)`);
+  g2.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  x.fillStyle = g2; x.fillRect(0, 0, 64, 64);
+  return c;
 }
-/** Rulo de raíz: espiral que termina hacia adentro (como las ramas de la marca). */
-function rulo(x, y, dir, largo, sentido) {
-  const pts = [[x, y]];
-  const cx = x + Math.cos(dir) * largo, cy = y + Math.sin(dir) * largo;
-  const r0 = largo * 0.42;
-  const a0 = dir + Math.PI * (sentido > 0 ? -0.5 : 0.5);
-  for (let k = 1; k <= 14; k++) {
-    const t = k / 14;
-    const a = a0 + sentido * t * Math.PI * 2.6;
-    const rr = r0 * (1 - t * 0.85);
-    pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]);
-  }
-  return pts;
-}
+const PALETA = [[146, 214, 255], [204, 225, 218], [255, 255, 255], [120, 190, 255]];
+const SPRITES = PALETA.map(sprite);
 
-export function crearEntrada(seccion, { esperarToque = false, alAbrir } = {}) {
-  const lienzo = seccion.querySelector('.wk-entrada__vortice');
-  const svg = seccion.querySelector('.wk-entrada__raices');
-  const tocar = seccion.querySelector('.wk-entrada__tocar');
-  const saltar = seccion.querySelector('.wk-entrada__saltar');
-  const px = Math.min(devicePixelRatio || 1, tactil ? 1 : 1.5);
-  let W = 1, H = 1, gl = null, prog = null, u = {}, raf = 0, visible = true, vivo = true;
-  const st = { abre: 0, flash: 0, t0: performance.now(), fase: 'creciendo', abrirDesde: 0, abrirDur: 1900, cx: 0, cy: 0, mx: 0, my: 0, onda: 99, ox: 0, oy: 0 };
-
-  // ---------- WebGL
-  try {
-    gl = lienzo.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
-    const sh = (tipo, src) => { const s = gl.createShader(tipo); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
-    prog = gl.createProgram();
-    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
-    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
-    gl.linkProgram(prog);
-    gl.useProgram(prog);
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(prog, 'p');
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    for (const n of ['uRes', 'uT', 'uAbre', 'uCentro', 'uFlash', 'uOndaPos', 'uOnda']) u[n] = gl.getUniformLocation(prog, n);
-  } catch (e) {
-    console.warn('Portal sin WebGL:', e);
-    gl = null;
-    seccion.classList.add('sin-webgl');
-  }
-
-  // ---------- Raíces y runas
-  function dibujarRaices() {
-    const R = Math.min(W, H) * 0.27;
-    const cx = W / 2, cy = H / 2;
-    const lejos = Math.hypot(W, H) / 2 + 60;
-    const n = W < 750 ? 7 : 10;
-    let semilla = 7;
-    const azar = () => { semilla = (semilla * 9301 + 49297) % 233280; return semilla / 233280; };
-    const raices = [];
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2 + (azar() - 0.5) * 0.35 - Math.PI / 2;
-      const dx = Math.cos(a), dy = Math.sin(a), px2 = -dy, py2 = dx;
-      const fase = azar() * Math.PI * 2;
-      const pts = [];
-      for (let k = 0; k <= 9; k++) {
-        const t = k / 9;
-        const dist = lejos + (R * 1.04 - lejos) * t;
-        const ond = Math.sin(t * Math.PI * 2.2 + fase) * R * 0.22 * (1 - t * 0.8);
-        pts.push([cx + dx * dist + px2 * ond, cy + dy * dist + py2 * ond]);
-      }
-      const ancho = 3 + azar() * 4;
-      raices.push({ d: camino(pts), ancho, demora: azar() * 0.35 });
-      // Ramitas con rulo
-      for (const t of [0.42, 0.68]) {
-        const k = Math.round(t * 9);
-        const [bx, by] = pts[k];
-        const lado = azar() > 0.5 ? 1 : -1;
-        const dir = a + Math.PI + lado * (0.9 + azar() * 0.5);
-        raices.push({ d: camino(rulo(bx, by, dir, R * (0.18 + azar() * 0.14), lado)), ancho: ancho * 0.55, demora: 0.5 + t * 0.6 + azar() * 0.2 });
-      }
-    }
-    // Anillo del portal (dos aros, uno cortado)
-    const aro = (rr) => `M${cx + rr},${cy} A${rr},${rr} 0 1 1 ${cx - rr},${cy} A${rr},${rr} 0 1 1 ${cx + rr},${cy}`;
-    const runas = Array.from({ length: 12 }, (_, i) => {
-      const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-      const x = cx + Math.cos(a) * R * 1.2, y = cy + Math.sin(a) * R * 1.2;
-      return `<g class="wk-runa" style="--i:${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${((a * 180) / Math.PI + 90).toFixed(1)})"><path d="${SIGILOS[i % SIGILOS.length]}"/></g>`;
-    }).join('');
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    svg.innerHTML = `
-      <g class="wk-raices">${raices.map((r) => `<path class="wk-raiz" d="${r.d}" style="--w:${r.ancho.toFixed(1)};--d:${r.demora.toFixed(2)}s"/>`).join('')}</g>
-      <g class="wk-raices wk-raices--luz">${raices.map((r) => `<path class="wk-raiz" d="${r.d}" style="--w:${(r.ancho * 0.35).toFixed(1)};--d:${r.demora.toFixed(2)}s"/>`).join('')}</g>
-      <path class="wk-aro" d="${aro(R * 1.06)}"/><path class="wk-aro wk-aro--fino" d="${aro(R * 1.32)}"/>
-      <g class="wk-runas">${runas}</g>`;
-    svg.querySelectorAll('.wk-raiz, .wk-aro').forEach((p) => { const l = p.getTotalLength(); p.style.setProperty('--l', l.toFixed(0)); });
-    seccion.style.setProperty('--r', `${R}px`);
-  }
-
-  function medir() {
-    W = seccion.clientWidth || innerWidth;
-    H = seccion.clientHeight || innerHeight;
-    lienzo.width = W * px; lienzo.height = H * px;
-    st.cx = W / 2; st.cy = H / 2;
-    if (gl) gl.viewport(0, 0, lienzo.width, lienzo.height);
-    dibujarRaices();
-  }
+/** Polvo de hadas sobre un canvas: flota, gira alrededor del mouse y estalla al tocar. */
+function crearPolvo(canvas, { cantidad = 70 } = {}) {
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, motas = [], raf = 0, vivo = true, visible = true;
+  const puntero = { x: -9999, y: -9999, activo: false };
+  const imán = { activo: false, x: 0, y: 0, fuerza: 0 };
+  const mota = (x, y, tipo = null) => {
+    const a = Math.random() * Math.PI * 2;
+    const v = tipo === 'estallido' ? 1.5 + Math.random() * 4.5 : 0;
+    const estrella = Math.random() < (tipo ? 0.35 : 0.14);
+    return {
+      x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - (tipo ? 0.5 : 0), estrella,
+      r: (W < 750 ? 0.85 : 1) * (estrella ? 2.5 + Math.random() * 3.5 : 0.6 + Math.random() * 1.6),
+      c: Math.floor(Math.random() * PALETA.length), rot: Math.random() * Math.PI, giro: (Math.random() - 0.5) * 0.03,
+      tit: 1.2 + Math.random() * 3, sube: 0.08 + Math.random() * 0.3, fase: Math.random() * Math.PI * 2,
+      alfa: 0.35 + Math.random() * 0.6, vida: tipo ? 1 : Infinity, decae: tipo ? 0.006 + Math.random() * 0.01 : 0,
+    };
+  };
+  const medir = () => {
+    const r = canvas.getBoundingClientRect();
+    const px = Math.min(devicePixelRatio || 1, 2);
+    W = r.width; H = r.height;
+    canvas.width = Math.round(W * px); canvas.height = Math.round(H * px);
+    ctx.setTransform(px, 0, 0, px, 0, 0);
+    if (!motas.length) motas = Array.from({ length: Math.round(cantidad * (W < 750 ? 0.55 : 1)) }, () => mota(Math.random() * W, Math.random() * H));
+  };
   medir();
-  const ro = new ResizeObserver(() => { if (Math.abs(seccion.clientWidth - W) > 2 || Math.abs(seccion.clientHeight - H) > 60) medir(); });
-  ro.observe(seccion);
-
-  // ---------- Secuencia
-  requestAnimationFrame(() => seccion.classList.add('is-creciendo'));
-  let espera = null;
-  if (reducido) { st.abre = 1; terminar(); }
-  else if (esperarToque) espera = setTimeout(() => { if (st.fase === 'creciendo') { st.fase = 'esperando'; seccion.classList.add('is-esperando'); tocar.hidden = false; tocar.focus({ preventScroll: true }); } }, 2300);
-  else espera = setTimeout(() => abrir(), 2500);
-
-  function abrir(rapido = false) {
-    if (st.fase === 'abriendo' || st.fase === 'abierta') return;
-    clearTimeout(espera);
-    st.fase = 'abriendo';
-    st.desde = Math.max(st.abre, 0.35);
-    st.abrirDesde = performance.now();
-    st.abrirDur = rapido ? 600 : 1900;
-    tocar.hidden = true;
-    seccion.classList.remove('is-esperando');
-    seccion.classList.add('is-creciendo', 'is-abriendo');
+  const ro = new ResizeObserver(medir); ro.observe(canvas);
+  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; bucle(); }); io.observe(canvas);
+  const mover = (e) => { const r = canvas.getBoundingClientRect(); puntero.x = e.clientX - r.left; puntero.y = e.clientY - r.top; puntero.activo = true; };
+  const salir = () => { puntero.activo = false; };
+  canvas.parentElement.addEventListener('pointermove', mover);
+  canvas.parentElement.addEventListener('pointerleave', salir);
+  function cuadro(t0) {
+    raf = 0;
+    if (!vivo || !visible || document.hidden) return;
+    const t = t0 / 1000;
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = motas.length - 1; i >= 0; i--) {
+      const m = motas[i];
+      const efimera = m.vida !== Infinity;
+      if (efimera) { m.vida -= m.decae; m.vx *= 0.955; m.vy = m.vy * 0.955 + 0.012; if (m.vida <= 0) { motas.splice(i, 1); continue; } }
+      else { m.vx *= 0.94; m.vy *= 0.94; }
+      // Remolino alrededor del cursor
+      if (puntero.activo) {
+        const dx = puntero.x - m.x, dy = puntero.y - m.y, d = Math.hypot(dx, dy);
+        if (d < 190 && d > 1) { const f = (1 - d / 190) * (efimera ? 0.04 : 0.11); m.vx += (dx / d) * f - (dy / d) * f * 0.9; m.vy += (dy / d) * f + (dx / d) * f * 0.9; }
+      }
+      // Imán: las luciérnagas se juntan (entrada)
+      if (imán.activo) {
+        const dx = imán.x - m.x, dy = imán.y - m.y, d = Math.hypot(dx, dy) || 1;
+        m.vx += (dx / d) * imán.fuerza - (dy / d) * imán.fuerza * 0.6;
+        m.vy += (dy / d) * imán.fuerza + (dx / d) * imán.fuerza * 0.6;
+      }
+      m.x += m.vx + Math.sin(t * 0.6 + m.fase) * 0.25;
+      m.y += m.vy - (efimera ? 0 : m.sube);
+      m.rot += m.giro;
+      if (!efimera) {
+        if (m.y < -20) { m.y = H + 20; m.x = Math.random() * W; }
+        if (m.x < -20) m.x = W + 20;
+        if (m.x > W + 20) m.x = -20;
+      }
+      const brillo = 0.55 + 0.45 * Math.sin(t * m.tit + m.fase);
+      const a = m.alfa * brillo * (efimera ? m.vida : 1);
+      const halo = m.r * (m.estrella ? 5 : 7);
+      ctx.globalAlpha = a;
+      ctx.drawImage(SPRITES[m.c], m.x - halo, m.y - halo, halo * 2, halo * 2);
+      if (m.estrella) {
+        const [r, g, b] = PALETA[m.c];
+        const s = m.r * (1.6 + brillo * 1.4);
+        ctx.save(); ctx.translate(m.x, m.y); ctx.rotate(m.rot);
+        ctx.beginPath(); ctx.moveTo(0, -s); ctx.quadraticCurveTo(0, 0, s, 0); ctx.quadraticCurveTo(0, 0, 0, s); ctx.quadraticCurveTo(0, 0, -s, 0); ctx.quadraticCurveTo(0, 0, 0, -s);
+        ctx.fillStyle = `rgb(${Math.round(r + (255 - r) * 0.6)},${Math.round(g + (255 - g) * 0.6)},${Math.round(b + (255 - b) * 0.6)})`; ctx.fill();
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    bucle();
   }
-  function terminar() {
-    st.fase = 'abierta';
-    seccion.classList.add('is-creciendo', 'is-abierta');
-    seccion.classList.remove('is-abriendo');
-    alAbrir?.();
+  function bucle() { if (!raf && vivo && visible && !document.hidden && !reducido) raf = requestAnimationFrame(cuadro); }
+  if (reducido) requestAnimationFrame(cuadro); else bucle();
+  document.addEventListener('visibilitychange', bucle);
+  return {
+    estallido(x, y, n = 34) { for (let i = 0; i < n; i++) motas.push(mota(x, y, 'estallido')); bucle(); },
+    juntar(x, y, fuerza) { Object.assign(imán, { activo: fuerza > 0, x, y, fuerza }); },
+    dispersar(x, y) {
+      imán.activo = false;
+      for (const m of motas) { const dx = m.x - x, dy = m.y - y, d = Math.hypot(dx, dy) || 1; m.vx += (dx / d) * (6 + Math.random() * 6); m.vy += (dy / d) * (6 + Math.random() * 6); }
+    },
+    get W() { return W; }, get H() { return H; },
+    destruir() { vivo = false; cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', bucle); canvas.parentElement?.removeEventListener('pointermove', mover); },
+  };
+}
+
+/** Raíces de la entrada: desde los cuatro bordes hacia el centro. */
+function raicesEntrada(svg, w, h) {
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  const chico = w < 750;
+  const alcance = Math.min(w, h) * (chico ? 0.62 : 0.5);
+  const seeds = chico ? [
+    [0, h * 0.2, 0.3, alcance, 1], [w, h * 0.12, Math.PI - 0.3, alcance * 0.9, -1],
+    [0, h * 0.78, -0.3, alcance * 0.95, -1], [w, h * 0.88, Math.PI + 0.3, alcance, 1],
+    [w * 0.5, 0, Math.PI / 2, alcance * 0.7, 1], [w * 0.45, h, -Math.PI / 2, alcance * 0.7, -1],
+  ] : [
+    [0, h * 0.14, 0.35, alcance, 1], [0, h * 0.62, -0.1, alcance * 0.85, -1],
+    [w, h * 0.1, Math.PI - 0.35, alcance * 0.95, -1], [w, h * 0.7, Math.PI + 0.1, alcance * 0.9, 1],
+    [w * 0.3, h, -1.3, alcance * 0.8, 1], [w * 0.72, h, -Math.PI + 1.3, alcance * 0.8, -1],
+    [w * 0.34, 0, 1.25, alcance * 0.7, -1], [w * 0.66, 0, Math.PI - 1.25, alcance * 0.72, 1],
+  ];
+  growBranches(svg, { w, h, seeds, delay: 0.15, gap: chico ? 16 : 36 });
+}
+
+/** Raíces del hero (las mismas semillas que en Shopify). */
+function raicesHero(svg, w, h, rapido = false) {
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  const chico = w < 750;
+  const alcance = Math.min(w, h) * (chico ? 0.5 : 0.46);
+  const seeds = chico
+    ? [[w * 0.04, h, -1.25, alcance * 0.9, 1], [w, h * 0.16, Math.PI - 0.35, alcance * 0.75, -1], [w * 0.97, h, -Math.PI + 1.3, alcance * 0.7, -1]]
+    : [[w * 0.03, h, -1.3, alcance, 1], [w, h * 0.12, Math.PI - 0.3, alcance * 0.95, -1], [w, h * 0.92, Math.PI + 0.45, alcance * 0.8, 1], [0, h * 0.34, -0.12, alcance * 0.62, -1]];
+  growBranches(svg, { w, h, seeds, instant: rapido, gap: chico ? 24 : 56 });
+}
+
+export function crearPortada(seccion, { esperarToque = false, alAbrir } = {}) {
+  const velo = seccion.querySelector('.wk-velo');
+  const lienzoVelo = velo.querySelector('canvas');
+  const svgVelo = velo.querySelector('.wk-velo__raices');
+  const tocar = velo.querySelector('.wk-velo__tocar');
+  const saltar = velo.querySelector('.wk-velo__saltar');
+  const hero = seccion.querySelector('.wk-hero');
+  const svgHero = hero.querySelector('.wk-hero__raices');
+  const polvoHero = crearPolvo(hero.querySelector('.wk-hero__polvo'), { cantidad: 72 });
+  const polvoVelo = crearPolvo(lienzoVelo, { cantidad: 110 });
+  let fase = 'creciendo', espera = 0;
+
+  // Fotos del hero: se alternan solas
+  const fotos = [...hero.querySelectorAll('.wk-hero__foto')];
+  let actual = 0;
+  const rotar = fotos.length > 1 ? setInterval(() => {
+    fotos[actual].classList.remove('is-activa');
+    actual = (actual + 1) % fotos.length;
+    fotos[actual].classList.add('is-activa');
+  }, 6000) : 0;
+
+  const medirVelo = () => raicesEntrada(svgVelo, velo.clientWidth, velo.clientHeight);
+  let anchoHero = 0;
+  const medirHero = (rapido) => { const w = hero.clientWidth; if (Math.abs(w - anchoHero) < 40) return; anchoHero = w; raicesHero(svgHero, w, hero.clientHeight, rapido); };
+  medirVelo();
+  medirHero(false);
+  const ro = new ResizeObserver(() => medirHero(true)); ro.observe(hero);
+
+  // Parallax suave del hero con el mouse
+  const mover = (e) => {
+    if (tactil || reducido) return;
+    const r = hero.getBoundingClientRect();
+    hero.style.setProperty('--px', (((e.clientX - r.left) / r.width - 0.5) * 2).toFixed(3));
+    hero.style.setProperty('--py', (((e.clientY - r.top) / r.height - 0.5) * 2).toFixed(3));
+  };
+  hero.addEventListener('pointermove', mover);
+  hero.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('a, button')) return;
+    const r = hero.getBoundingClientRect();
+    polvoHero.estallido(e.clientX - r.left, e.clientY - r.top);
+  });
+
+  // ---------- Secuencia de la entrada
+  const listo = () => { fase = 'abierta'; velo.hidden = true; seccion.classList.add('is-abierta'); polvoVelo.destruir(); alAbrir?.(); };
+  if (reducido) { listo(); hero.classList.add('is-lista'); }
+  else {
+    requestAnimationFrame(() => velo.classList.add('is-creciendo'));
+    // Las luciérnagas se juntan en el centro mientras crecen las raíces
+    setTimeout(() => polvoVelo.juntar(polvoVelo.W / 2, polvoVelo.H / 2, 0.05), 700);
+    setTimeout(() => velo.classList.add('is-nombre'), 1500);
+    if (esperarToque) espera = setTimeout(() => { fase = 'esperando'; velo.classList.add('is-esperando'); tocar.hidden = false; tocar.focus({ preventScroll: true }); }, 2600);
+    else espera = setTimeout(() => abrir(), 2900);
+  }
+
+  async function abrir(rapido = false) {
+    if (fase === 'abriendo' || fase === 'abierta') return;
+    clearTimeout(espera);
+    fase = 'abriendo';
+    tocar.hidden = true;
+    velo.classList.remove('is-esperando');
+    velo.classList.add('is-creciendo', 'is-nombre', 'is-abriendo');
+    if (rapido) velo.classList.add('is-rapido');
+    polvoVelo.dispersar(polvoVelo.W / 2, polvoVelo.H / 2);
+    hero.classList.add('is-lista');
+    await new Promise((r) => setTimeout(r, rapido ? 500 : 1500));
+    listo();
   }
   tocar.addEventListener('click', () => abrir());
   saltar.addEventListener('click', () => abrir(true));
-  lienzo.addEventListener('click', () => { if (st.fase === 'esperando') abrir(); });
-  const apurar = () => { if (st.fase === 'creciendo' || st.fase === 'esperando') abrir(true); };
+  velo.addEventListener('click', (e) => { if (fase === 'esperando' && !e.target.closest('button')) abrir(); });
+  const apurar = () => { if (fase === 'creciendo' || fase === 'esperando') abrir(true); };
   addEventListener('wheel', apurar, { passive: true });
   addEventListener('touchmove', apurar, { passive: true });
-  const tecla = (e) => { if (['Escape', 'ArrowDown', 'PageDown', ' '].includes(e.key) && st.fase !== 'abierta' && !e.target.closest?.('button')) abrir(true); };
+  const tecla = (e) => { if (['Escape', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(e.key) && fase !== 'abierta' && !e.target.closest?.('a')) { e.preventDefault(); abrir(e.key !== 'Enter'); } };
   addEventListener('keydown', tecla);
 
-  // Mouse y ondas (con el portal abierto)
-  const mover = (e) => { st.mx = (e.clientX / innerWidth - 0.5) * 2; st.my = (e.clientY / innerHeight - 0.5) * 2; };
-  addEventListener('pointermove', mover, { passive: true });
-  seccion.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('a, button')) return;
-    const r = seccion.getBoundingClientRect();
-    st.ox = e.clientX - r.left; st.oy = e.clientY - r.top; st.onda = 0;
-  });
-
-  const io = new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible && vivo) { cancelAnimationFrame(raf); raf = requestAnimationFrame(cuadro); } });
-  io.observe(seccion);
-  const oculto = () => { if (!document.hidden && visible && vivo) { cancelAnimationFrame(raf); raf = requestAnimationFrame(cuadro); } };
-  document.addEventListener('visibilitychange', oculto);
-
-  let ultimo = performance.now();
-  function cuadro(ahora) {
-    if (!vivo || !visible || document.hidden) return;
-    const dt = Math.min(0.05, (ahora - ultimo) / 1000); ultimo = ahora;
-    const t = (ahora - st.t0) / 1000;
-    if (st.fase === 'creciendo' || st.fase === 'esperando') {
-      // Se enciende el vórtice adentro del anillo, y late mientras espera
-      st.abre = Math.min(0.35, Math.max(0, (t - 1.1) / 1.2) * 0.35) + (st.fase === 'esperando' ? Math.sin(t * 2.4) * 0.015 : 0);
-    } else if (st.fase === 'abriendo') {
-      const k = Math.min(1, (ahora - st.abrirDesde) / st.abrirDur);
-      st.abre = st.desde + (1 - st.desde) * suave(k);
-      st.flash = Math.max(0, 1 - Math.abs(k - 0.45) * 4.5) * 0.55;
-      if (k >= 1) { st.flash = 0; terminar(); }
-    }
-    st.onda += dt;
-    // Con el portal abierto, el centro del remolino sigue un poco al mouse
-    const objX = W / 2 + (st.fase === 'abierta' ? st.mx * W * 0.06 : 0);
-    const objY = H / 2 + (st.fase === 'abierta' ? st.my * H * 0.06 : 0);
-    st.cx += (objX - st.cx) * 0.04; st.cy += (objY - st.cy) * 0.04;
-    if (gl) {
-      gl.uniform2f(u.uRes, lienzo.width, lienzo.height);
-      gl.uniform1f(u.uT, t);
-      gl.uniform1f(u.uAbre, st.abre);
-      gl.uniform2f(u.uCentro, st.cx * px, (H - st.cy) * px);
-      gl.uniform1f(u.uFlash, st.flash);
-      gl.uniform2f(u.uOndaPos, st.ox * px, (H - st.oy) * px);
-      gl.uniform1f(u.uOnda, st.onda);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-    } else if (st.fase === 'abriendo' && st.abre >= 1) terminar();
-    raf = requestAnimationFrame(cuadro);
-  }
-  raf = requestAnimationFrame(cuadro);
-
   return {
-    abrir,
     destruir() {
-      vivo = false;
-      cancelAnimationFrame(raf);
-      clearTimeout(espera);
-      ro.disconnect(); io.disconnect();
-      removeEventListener('wheel', apurar); removeEventListener('touchmove', apurar);
-      removeEventListener('keydown', tecla); removeEventListener('pointermove', mover);
-      document.removeEventListener('visibilitychange', oculto);
-      gl?.getExtension('WEBGL_lose_context')?.loseContext();
+      clearTimeout(espera); clearInterval(rotar);
+      ro.disconnect();
+      polvoHero.destruir(); polvoVelo.destruir();
+      removeEventListener('wheel', apurar); removeEventListener('touchmove', apurar); removeEventListener('keydown', tecla);
     },
   };
 }
+
+/** Marcado de la portada (lo usa paginas/inicio.js). */
+export const marcadoPortada = ({ esc, T, info, imagenes }) => `
+  <section class="wk-portada" id="entrada" aria-label="${esc(info.name)}">
+    <div class="wk-hero">
+      <div class="wk-hero__fondo" aria-hidden="true">
+        ${imagenes.map((src, i) => `<img class="wk-hero__foto${i === 0 ? ' is-activa' : ''}" src="${esc(src)}" alt="" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>`).join('')}
+        <span class="wk-hero__aura"></span>
+        <span class="wk-hero__sombra"></span>
+      </div>
+      <svg class="wk-hero__raices" aria-hidden="true" focusable="false"></svg>
+      <canvas class="wk-hero__polvo" aria-hidden="true"></canvas>
+      <div class="wk-hero__contenido">
+        <p class="wk-hero__ante"><span aria-hidden="true"></span>${esc(T.hero.antetitulo)}</p>
+        <h1 class="wk-hero__titulo2" aria-label="${esc(T.hero.titulo)}">${(() => { let n = 0; return T.hero.titulo.split(' ').map((w) => `<span class="wk-hero__palabra" aria-hidden="true">${[...w].map((c) => `<span class="wk-hero__letra" style="--i:${n++}">${esc(c)}</span>`).join('')}</span>`).join(' '); })()}</h1>
+        <p class="wk-hero__texto">${esc(T.hero.bajada)}</p>
+        <div class="wk-hero__acciones">
+          <a class="wk-btn wk-btn--luz wk-btn--grande-hero" href="/tienda" data-link><span>${esc(T.hero.boton)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></a>
+          <a class="wk-enlace" href="/walkurio" data-link>${esc(T.hero.boton2)}</a>
+        </div>
+      </div>
+      <a class="wk-hero__bajar" href="#recorrer"><span>${esc(T.entrada.bajar)}</span><i aria-hidden="true"></i></a>
+    </div>
+
+    <div class="wk-velo" aria-hidden="false">
+      <span class="wk-velo__niebla" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="wk-velo__luna" aria-hidden="true"></span>
+      <svg class="wk-velo__raices" aria-hidden="true" focusable="false"></svg>
+      <canvas class="wk-velo__luces" aria-hidden="true"></canvas>
+      <p class="wk-velo__nombre" aria-hidden="true">${[...info.name].map((c, i) => `<span style="--i:${i}">${esc(c)}</span>`).join('')}</p>
+      <p class="wk-velo__lema" aria-hidden="true">${esc(T.entrada.lema)}</p>
+      <button type="button" class="wk-velo__tocar" hidden><span class="wk-velo__luciernaga" aria-hidden="true"></span>${esc(T.entrada.tocar)}</button>
+      <button type="button" class="wk-velo__saltar">${esc(T.entrada.saltar)}</button>
+    </div>
+  </section>`;

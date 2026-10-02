@@ -11,6 +11,7 @@ import { walkurio, mostrarRegion, cerrarRegion } from './paginas/walkurio.js';
 import { cursos } from './paginas/cursos.js';
 import { iniciarCuenta, favoritosPagina, cuentaPagina, repintarFavoritos } from './cuenta.js';
 import { cubrir, descubrir } from './transicion.js';
+import { ramasDeFondo } from './ramas.js';
 import { contacto } from './paginas/contacto.js';
 
 let rutaActual = '';
@@ -303,6 +304,7 @@ async function ruta() {
     noEncontrado();
   }
   repintarFavoritos();
+  ramasDeFondo(app);
   revelar();
   app.focus({ preventScroll: true });
 }
@@ -401,6 +403,15 @@ document.addEventListener('keydown', (e) => {
   const escribiendo = e.target.closest?.('input, textarea, select, [contenteditable]');
   if (!escribiendo && (e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'))) { e.preventDefault(); abrirBusqueda(); }
 });
+
+// ---------------------------------------------------------------- botones: la luz sigue al mouse (como en Shopify)
+document.addEventListener('pointermove', (e) => {
+  const b = e.target.closest?.('.wk-btn');
+  if (!b) return;
+  const r = b.getBoundingClientRect();
+  b.style.setProperty('--bx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
+  b.style.setProperty('--by', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+}, { passive: true });
 
 // ---------------------------------------------------------------- tarjetas con relieve (solo mouse)
 if (!tactil && !reducido) {

@@ -50,3 +50,19 @@ export const preguntas = [
   ['¿Cómo cuido a mi criatura?', 'Lejos de la humedad y del sol directo. Para limpiarla alcanza con un pincel seco y suave. No la mojes.'],
   ['¿Qué medios de pago aceptan?', 'Mercado Pago, tarjetas, Abitab o RedPagos, y en cuotas. Desde el exterior, PayPal (para cursos y e-books).'],
 ];
+
+// ---------------------------------------------------------------- fotos de la portada
+// PROVISORIAS: hoy apuntan a las fotos publicadas en la tienda de Shopify (no se descargaron).
+// Cuando se cierre Shopify, subir los archivos a img/ y cambiar estas rutas (ej.: 'img/hero-1.webp').
+const SHOPIFY = 'https://walkiverso-u8kifld3.myshopify.com/cdn/shop/files/';
+// Fondo del hero (se alternan solas). 2400 × 1350 px, motivo a la derecha.
+export const heroImagenes = [
+  `${SHOPIFY}criaturas-portada-mandragora-mandrake-harrypotter-halloween.webp?width=2400`,
+  `${SHOPIFY}objetos-portada-bitacora-diario-journal-halloween.webp?width=2400`,
+  `${SHOPIFY}criaturas-portada-minidragora-mandrake-harrypotter-halloween.webp?width=2400`,
+];
+// "Habitantes del Walkiverso": las dos puertas. Imagen de compu (2400 × 1000) y de celular (1000 × 1250).
+export const puertas = [
+  { handle: 'criaturas', titulo: 'Criaturas', imagen: `${SHOPIFY}criaturas-categoriapc-mandragora-mandrake-harrypotter-halloween.webp?width=1800`, imagenMovil: `${SHOPIFY}criaturas-categoria-mandragora-mandrake-harrypotter-halloween.webp?width=1000` },
+  { handle: 'bitacoras', titulo: 'Objetos', imagen: `${SHOPIFY}objetos-categoriapc-bitacora-diario-journal-halloween.webp?width=1800`, imagenMovil: `${SHOPIFY}objetos-categoria-bitacora-diario-journal-halloween.webp?width=1000` },
+];

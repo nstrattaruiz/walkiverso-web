@@ -87,6 +87,7 @@ export const fantasmas = (n = 4) => '<span class="tarjeta tarjeta--fantasma"></s
 export const cabecera = ({ ante = '', titulo, bajada = '', escena = 'cielo', extra = '' }) => `
   <section class="wk-cabecera" data-escena="${escena}">
     <div class="wk-cabecera__cielo" aria-hidden="true"></div>
+    <span class="wk-ramas-fondo wk-ramas-fondo--luz" data-esquinas="tr,bl" data-semilla="${hash(titulo) % 97}"></span>
     <div class="wk-cabecera__escena" aria-hidden="true">${'<i></i>'.repeat(12)}</div>
     <div class="contenedor">
       ${ante ? `<p class="wk-antetitulo">${ante}</p>` : ''}

@@ -33,7 +33,7 @@ export async function catalogo(handle, buscarInicial = '') {
       escena: escenaDe(c),
       extra: region ? `<a class="wk-btn wk-btn--vidrio wk-cabecera__boton" href="/walkurio#${esc(c.handle)}" data-link><svg aria-hidden="true"><use href="#i-planeta"/></svg>${esc(T.walkurio.verEnMapa)}</a>` : '',
     })}
-    <section class="wk-seccion wk-seccion--catalogo"><div class="contenedor wk-tienda">
+    <section class="wk-seccion wk-seccion--catalogo"><span class="wk-ramas-fondo" data-esquinas="tl,br" data-semilla="21"></span><div class="contenedor wk-tienda">
       <aside class="wk-tienda__lado" data-rev>
         <nav class="wk-cats" aria-label="${esc(T.tienda.colecciones)}">
           <p class="wk-cats__titulo"><span aria-hidden="true"><svg><use href="#i-caja"/></svg></span>${esc(T.tienda.categorias)}</p>

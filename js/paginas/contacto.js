@@ -16,6 +16,7 @@ export function contacto() {
 
   app.innerHTML = `
     <section class="wk-contacto-pag">
+      <span class="wk-ramas-fondo wk-ramas-fondo--luz" data-esquinas="bl,tr" data-semilla="31"></span>
       <div class="wk-contacto-pag__cielo" aria-hidden="true">${'<i></i>'.repeat(8)}</div>
       <div class="contenedor wk-contacto">
         <div class="wk-contacto__intro">

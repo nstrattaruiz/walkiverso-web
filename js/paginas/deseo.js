@@ -5,7 +5,8 @@ import { rafaga } from '../polvo.js';
 
 export const seccionDeseo = ({ pagina = false } = {}) => `
   <section class="wk-deseo${pagina ? ' wk-deseo--pagina' : ''}" id="deseo" aria-labelledby="deseo-titulo">
-    <div class="wk-deseo__cielo" aria-hidden="true"><span class="wk-ramas wk-ramas--izq"></span><span class="wk-ramas wk-ramas--der"></span></div>
+    <div class="wk-deseo__cielo" aria-hidden="true"></div>
+    <span class="wk-ramas-fondo wk-ramas-fondo--luz" data-esquinas="tl,br" data-semilla="41"></span>
     <div class="contenedor wk-deseo__grilla">
       <div class="wk-deseo__orbe-col" data-rev>
         <div class="wk-orbe" aria-hidden="true">
