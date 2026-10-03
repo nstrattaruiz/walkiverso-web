@@ -41,10 +41,10 @@ export function crearBosque(raiz) {
   Q.active = Q.max;
   let vw = innerWidth, vh = innerHeight;
   // Estado: drift (viento), depth (profundidad), open (telón abierto), cam (cámara adentro), world (luces y criaturas)
-  const S = { drift: 1, depth: 1, open: 0, cam: 0, world: 1 };
+  const S = { drift: 1, depth: 1, open: 1, cam: 0, world: 1 };
   let T = 0, camZ = 0, scrollS = 0, vivo = true, activo = true, raf = 0, ultimo = performance.now();
-  const curtain = { o: 0, v: 0, r: 0, rv: 0 };
-  let objetivoAbrir = 0;
+  const curtain = { o: 1, v: 0, r: 0, rv: 0 };
+  let objetivoAbrir = 1;
 
   // ---------------------------------------------------------------- dibujo procedural (una sola vez)
   function prep(cv, res) {
@@ -88,22 +88,22 @@ export function crearBosque(raiz) {
   function drawSky() {
     const { ctx, w, h } = prep($('[data-c=sky]'), 0.5), r = rng(1);
     let g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, '#030807'); g.addColorStop(0.45, '#0a1916'); g.addColorStop(0.6, '#11261f'); g.addColorStop(1, '#040908');
+    g.addColorStop(0, '#02040c'); g.addColorStop(0.45, '#071230'); g.addColorStop(0.6, '#0c1c44'); g.addColorStop(1, '#03060f');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     const cx = w * 0.5, cy = h * 0.53;
     g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.55);
-    g.addColorStop(0, 'rgba(200,232,218,.36)'); g.addColorStop(0.12, 'rgba(150,200,185,.16)'); g.addColorStop(0.4, 'rgba(70,120,110,.06)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    g.addColorStop(0, 'rgba(190,212,255,.36)'); g.addColorStop(0.12, 'rgba(140,175,240,.16)'); g.addColorStop(0.4, 'rgba(60,90,170,.06)'); g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     ctx.save(); ctx.translate(cx, -h * 0.15); ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 7; i++) {
       const a = 1.5708 - 0.36 + i * 0.12 + (r() - 0.5) * 0.05, e = 0.012 + r() * 0.02, L = h * 1.3;
       const rg = ctx.createLinearGradient(0, 0, 0, L);
-      rg.addColorStop(0, 'rgba(170,215,200,.05)'); rg.addColorStop(1, 'rgba(170,215,200,0)');
+      rg.addColorStop(0, 'rgba(170,200,250,.05)'); rg.addColorStop(1, 'rgba(170,200,250,0)');
       ctx.fillStyle = rg; ctx.beginPath(); ctx.moveTo(0, 0);
       ctx.lineTo(Math.cos(a - e) * L, Math.sin(a - e) * L); ctx.lineTo(Math.cos(a + e) * L, Math.sin(a + e) * L); ctx.fill();
     }
     ctx.restore();
-    ctx.fillStyle = '#dfeee6';
+    ctx.fillStyle = '#e6eeff';
     for (let i = 0, n = Math.round((80 * w) / 1600); i < n; i++) {
       ctx.globalAlpha = 0.15 + r() * 0.35;
       ctx.beginPath(); ctx.arc(r() * w, r() * h * 0.42, 0.4 + r() * 0.8, 0, 6.2832); ctx.fill();
@@ -112,40 +112,40 @@ export function crearBosque(raiz) {
   }
   function drawFar() {
     const { ctx, w, h } = prep($('[data-c=far]'), 0.75), r = rng(3), k = w / 1600;
-    const o = { bark: 'rgba(30,58,55,.5)', leaves: 6, leafColors: ['rgba(34,64,58,.4)', 'rgba(40,72,66,.35)'], leafSpread: 14 * k, leafSize: 10 * k, leafDepth: 1, min: 6, bend: 0.3, spread: 0.5, jitter: 0.3, gravity: 0, decay: 0.7, thin: 0.65, fork3: 0.2 };
+    const o = { bark: 'rgba(26,40,82,.5)', leaves: 6, leafColors: ['rgba(30,46,92,.4)', 'rgba(36,54,104,.35)'], leafSpread: 14 * k, leafSize: 10 * k, leafDepth: 1, min: 6, bend: 0.3, spread: 0.5, jitter: 0.3, gravity: 0, decay: 0.7, thin: 0.65, fork3: 0.2 };
     for (let i = 0; i < 26; i++) {
       const x = r() * w, tw = (4 + r() * 12) * k, al = 0.3 + r() * 0.35;
-      ctx.fillStyle = `rgba(${(22 + r() * 10) | 0},${(46 + r() * 14) | 0},${(44 + r() * 12) | 0},${al})`;
+      ctx.fillStyle = `rgba(${(16 + r() * 8) | 0},${(26 + r() * 12) | 0},${(58 + r() * 18) | 0},${al})`;
       ctx.beginPath(); ctx.moveTo(x - tw / 2, h); ctx.lineTo(x - tw * 0.22, -10); ctx.lineTo(x + tw * 0.22, -10); ctx.lineTo(x + tw / 2, h); ctx.fill();
       o.bark = ctx.fillStyle;
       for (let j = 0; j < 3; j++) drawBranch(ctx, r, x, h * (0.08 + r() * 0.38), -1.5708 + (r() < 0.5 ? -1 : 1) * (0.5 + r() * 0.6), (30 + r() * 50) * k, tw * 0.3, 3, o);
     }
     const g = ctx.createLinearGradient(0, h * 0.45, 0, h);
-    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.35, 'rgba(90,130,120,.16)'); g.addColorStop(1, 'rgba(8,18,15,.92)');
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.35, 'rgba(80,105,170,.16)'); g.addColorStop(1, 'rgba(4,9,24,.92)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
   }
   function drawMid() {
     const { ctx, w, h } = prep($('[data-c=mid]'), 1), r = rng(7), k = w / 1600, hz = h * 0.585;
-    ctx.fillStyle = '#050b09';
+    ctx.fillStyle = '#04081a';
     ctx.beginPath(); ctx.moveTo(0, hz + 30 * k);
     ctx.bezierCurveTo(w * 0.25, hz - 10 * k, w * 0.4, hz + 12 * k, w * 0.5, hz + 4 * k);
     ctx.bezierCurveTo(w * 0.62, hz - 4 * k, w * 0.78, hz - 14 * k, w, hz + 26 * k);
     ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill();
     const vx = w * 0.5, vy = hz + 5 * k;
     const g = ctx.createLinearGradient(0, vy, 0, h);
-    g.addColorStop(0, 'rgba(195,228,212,.24)'); g.addColorStop(1, 'rgba(110,150,140,.04)');
+    g.addColorStop(0, 'rgba(190,210,250,.24)'); g.addColorStop(1, 'rgba(105,130,195,.04)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(vx - 3 * k, vy);
     ctx.quadraticCurveTo(vx - 50 * k, hz + (h - hz) * 0.5, w * 0.3, h); ctx.lineTo(w * 0.7, h);
     ctx.quadraticCurveTo(vx + 60 * k, hz + (h - hz) * 0.5, vx + 3 * k, vy); ctx.fill();
-    ctx.strokeStyle = '#07120e'; ctx.lineWidth = 1.2 * k + 0.4;
+    ctx.strokeStyle = '#060c22'; ctx.lineWidth = 1.2 * k + 0.4;
     for (let i = 0; i < 260; i++) {
       const x = r() * w, y = hz + 20 * k + r() * (h - hz), s = (4 + r() * 10) * k * (y / h);
       ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + (r() - 0.5) * s, y - s * 0.6, x + (r() - 0.5) * s * 0.8, y - s); ctx.stroke();
     }
-    const o = { bark: '#06100d', leaves: 16, leafColors: ['#08140f', '#0a1913', '#0d1f18', '#11271e'], leafSpread: 26 * k, leafSize: 18 * k, leafDepth: 3, min: 8 * k, bend: 0.3, spread: 0.55, jitter: 0.35, gravity: -0.04, decay: 0.72, thin: 0.66, fork3: 0.3 };
+    const o = { bark: '#050b1d', leaves: 16, leafColors: ['#070e24', '#09122c', '#0c1734', '#101d3e'], leafSpread: 26 * k, leafSize: 18 * k, leafDepth: 3, min: 8 * k, bend: 0.3, spread: 0.55, jitter: 0.35, gravity: -0.04, decay: 0.72, thin: 0.66, fork3: 0.3 };
     [0.12, 0.2, 0.8, 0.9].forEach((px) => {
       const x = px * w, tw = (34 + r() * 30) * k;
-      ctx.fillStyle = '#06100d';
+      ctx.fillStyle = '#050b1d';
       ctx.beginPath(); ctx.moveTo(x - tw / 2, h); ctx.quadraticCurveTo(x - tw * 0.3, h * 0.5, x - tw * 0.18, h * 0.08);
       ctx.lineTo(x + tw * 0.18, h * 0.08); ctx.quadraticCurveTo(x + tw * 0.3, h * 0.5, x + tw / 2, h); ctx.fill();
       for (let j = 0; j < 4; j++) drawBranch(ctx, r, x, h * (0.1 + j * 0.1 + r() * 0.05), -1.5708 + (px < 0.5 ? 1 : -1) * (0.5 + r() * 0.5), (90 + r() * 70) * k, tw * 0.28, 4, o);
@@ -154,7 +154,7 @@ export function crearBosque(raiz) {
   function drawCurtain(cv, seed, mirror) {
     const { ctx, w, h } = prep(cv, 1), r = rng(seed), k = clamp(w / 1100, 0.55, 1.3);
     if (mirror) { ctx.translate(w, 0); ctx.scale(-1, 1); }
-    const o = { bark: '#030605', leafColors: ['#040907', '#06100c', '#081410', '#0a1914', '#0d1f18', '#102519'], min: 10 * k, bend: 0.35, spread: 0.55, jitter: 0.35, gravity: 0, decay: 0.72, thin: 0.66, fork3: 0.3, leaves: 22, leafSpread: 30 * k, leafSize: 22 * k, leafDepth: 3 };
+    const o = { bark: '#02040c', leafColors: ['#03060f', '#050a1a', '#070e24', '#09122c', '#0c1734', '#0f1a3c'], min: 10 * k, bend: 0.35, spread: 0.55, jitter: 0.35, gravity: 0, decay: 0.72, thin: 0.66, fork3: 0.3, leaves: 22, leafSpread: 30 * k, leafSize: 22 * k, leafDepth: 3 };
     const mass = { ...o, leaves: 30, leafSpread: 60 * k, leafSize: 30 * k };
     for (let i = 0; i < 40; i++) leafCluster(ctx, r, r() * w * 0.12, r() * h, r() * 6.28, mass);
     for (let i = 0; i < 8; i++) {
@@ -163,7 +163,7 @@ export function crearBosque(raiz) {
     }
     ctx.globalCompositeOperation = 'source-atop';
     const g = ctx.createLinearGradient(0, 0, w, 0);
-    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.7, 'rgba(110,160,145,.05)'); g.addColorStop(1, 'rgba(150,200,185,.16)');
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.7, 'rgba(100,130,200,.05)'); g.addColorStop(1, 'rgba(140,175,240,.16)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     ctx.globalCompositeOperation = 'source-over';
   }
@@ -172,13 +172,12 @@ export function crearBosque(raiz) {
     const { ctx, w, h } = prep(cv, 0.35), r = rng(seed), k = clamp(w / 900, 0.5, 1.4);
     if (flip) { ctx.translate(w, h); ctx.scale(-1, -1); }
     if ('filter' in ctx) ctx.filter = 'blur(1.5px)';
-    const o = { bark: '#020403', leafColors: ['#020403', '#030705', '#040906', '#050b08'], min: 14 * k, bend: 0.3, spread: 0.6, jitter: 0.3, gravity: 0.05, decay: 0.7, thin: 0.64, fork3: 0.25, leaves: 14, leafSpread: 70 * k, leafSize: 60 * k, leafDepth: 2 };
+    const o = { bark: '#02030a', leafColors: ['#02030a', '#03050f', '#040714', '#050918'], min: 14 * k, bend: 0.3, spread: 0.6, jitter: 0.3, gravity: 0.05, decay: 0.7, thin: 0.64, fork3: 0.25, leaves: 14, leafSpread: 70 * k, leafSize: 60 * k, leafDepth: 2 };
     drawBranch(ctx, r, -20, h * 0.15, 0.35, w * 0.45, 34 * k, 4, o);
     drawBranch(ctx, r, w * 0.1, -20, 1.1, h * 0.5, 26 * k, 3, o);
   }
   function drawAll() {
     drawSky(); drawFar(); drawMid();
-    drawCurtain($('[data-c=izq]'), 11, false); drawCurtain($('[data-c=der]'), 23, true);
     drawFront($('[data-c=fl]'), 5, false); drawFront($('[data-c=fr]'), 9, true);
     sizeParticles();
   }
@@ -243,7 +242,7 @@ export function crearBosque(raiz) {
     gr.addColorStop(0, `rgba(${r},${g},${b},1)`); gr.addColorStop(core, `rgba(${r},${g},${b},.45)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
     x.fillStyle = gr; x.fillRect(0, 0, size, size); return c;
   }
-  const SPR_DUST = sprite(210, 232, 222, 32, 0.25), SPR_FLY = sprite(240, 200, 120, 64, 0.12);
+  const SPR_DUST = sprite(210, 225, 255, 32, 0.25), SPR_FLY = sprite(240, 200, 120, 64, 0.12);
   const P = [];
   const spawn = (p) => {
     p.x = Math.random() * pw; p.y = Math.random() * ph; p.z = 0.25 + Math.random() * 0.75;
@@ -376,7 +375,7 @@ export function crearBosque(raiz) {
     /** Abre las ramas (telón). */
     abrir(rapido = false) { objetivoAbrir = 1; if (rapido) { S.open = 1; curtain.o = 1; } },
     /** Cierra las ramas (para la entrada del inicio). */
-    cerrar() { objetivoAbrir = 0; S.open = 0; curtain.o = 0; curtain.v = 0; },
+    cerrar() {},
     /** Prende o apaga el bosque (en las páginas claras no se dibuja). */
     activo(si) { activo = si; raiz.classList.toggle('is-apagado', !si); if (si) seguir(); },
     destruir() { vivo = false; cancelAnimationFrame(raf); removeEventListener('pointermove', alMover); removeEventListener('resize', alRedimensionar); document.removeEventListener('visibilitychange', seguir); },

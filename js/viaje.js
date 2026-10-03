@@ -69,7 +69,7 @@ function arbol(n) {
       const sx = (azar() - 0.5) * gr, sz = (azar() - 0.5) * gr;
       pos.set([x1 + (x2 - x1) * t + sx, y1 + (y2 - y1) * t + sx * 0.3, sz], i * 3);
       const raiz = y1 < -0.2;
-      col.set(raiz ? [0.78, 0.92, 0.84] : azar() < 0.3 ? [0.98, 0.82, 0.52] : [0.62, 0.86, 0.72], i * 3);
+      col.set(raiz ? [0.8, 0.88, 1] : azar() < 0.3 ? [0.98, 0.82, 0.52] : [0.62, 0.76, 1], i * 3);
     }
   }
   for (; i < n; i++) { // luciérnagas alrededor
@@ -96,7 +96,7 @@ function planeta(n) {
     const x = s * Math.cos(t), y = u, z = s * Math.sin(t);
     pos.set([x * R, y * R, z * R], i * 3);
     const tierra = Math.sin(x * 4.1 + y * 2.3) + Math.sin(z * 5.2 - x * 1.7) + Math.sin(y * 6.1 + z * 2.2) > 0.6;
-    col.set(tierra ? [0.6, 0.86, 0.62] : [0.3, 0.6, 0.72], i * 3);
+    col.set(tierra ? [0.72, 0.84, 1] : [0.25, 0.42, 0.95], i * 3);
   }
   return { pos, col };
 }
@@ -106,7 +106,7 @@ function cielo(n) {
   const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     pos.set([(azar() - 0.5) * 16, (azar() - 0.5) * 10, -2 - azar() * 6], i * 3);
-    col.set(azar() < 0.3 ? [0.98, 0.84, 0.58] : [0.84, 0.94, 0.88], i * 3);
+    col.set(azar() < 0.3 ? [0.98, 0.84, 0.58] : [0.85, 0.9, 1], i * 3);
   }
   return { pos, col };
 }
@@ -131,9 +131,6 @@ const VERT = /* glsl */`
     // Respiración: cada mota flota un poco en su lugar
     p += 0.018 * vec3(sin(uT * 1.3 + rnd.x * 30.0), cos(uT * 1.1 + rnd.y * 30.0), sin(uT * 0.9 + rnd.z * 30.0));
     vec4 mundo = modelMatrix * vec4(p, 1.0);
-    // El mouse aparta el polvo como una mano en el agua
-    vec3 d = mundo.xyz - uMouse; float dist = length(d.xy);
-    mundo.xy += normalize(d.xy + 0.0001) * smoothstep(0.9, 0.0, dist) * 0.35;
     vec4 mv = viewMatrix * mundo;
     gl_Position = projectionMatrix * mv;
     float tit = 0.65 + 0.35 * sin(uT * (1.5 + rnd.y * 3.0) + rnd.x * 40.0);
@@ -173,7 +170,7 @@ export async function crearViaje(canvas, { logo, criaturas }) {
   const estrellas = cielo(N);
   const formas = [desdeImagen(imgLogo, N, 1.1, 0.2), duo, arbol(N), planeta(N), estrellas, estrellas];
   // El nombre arranca con un brillo celeste parejo
-  for (let i = 0; i < N; i++) formas[0].col.set(azar() < 0.25 ? [0.98, 0.84, 0.56] : [0.86, 0.95, 0.9], i * 3);
+  for (let i = 0; i < N; i++) formas[0].col.set(azar() < 0.25 ? [0.98, 0.84, 0.56] : [0.85, 0.9, 1], i * 3);
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(formas[0].pos, 3));

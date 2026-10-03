@@ -31,8 +31,8 @@ Fotos del hero y de las puertas: en `js/config.js`. **Hoy son PROVISORIAS** y ap
 | Archivo | Qué es |
 |---|---|
 | `index.html` | Estructura: barra de anuncios, firma NS + menú grande, planeta, buscador, carrito, avisos |
-| `css/bosque.css` | **Manda sobre todo**: paleta del bosque, fondo vivo, cursor, tienda clara (papel), pie con preguntas, ritual, espejos, voces y cursos |
-| `js/bosque.js` · `js/fluidez.js` | El bosque vivo de fondo (adaptado de "Walkiverso fondo") · scroll suave (Lenis), cursor con masa y botones magnéticos |
+| `css/bosque.css` | **Manda sobre todo**: paleta azul de noche, fondo vivo, tienda clara (papel), pie con preguntas compactas, cuenta en ventana emergente, ritual, espejos, voces y cursos |
+| `js/bosque.js` · `js/fluidez.js` | El bosque vivo de fondo en azul (adaptado de "Walkiverso fondo") · scroll suave (Lenis) y botones magnéticos; el mouse deja un polvo de hadas sutil (`js/polvo.js`) |
 | `css/noche.css` | **El mundo de noche** (manda sobre todo): tema oscuro, barra liviana, vidrio, transición y el viaje del inicio |
 | `js/viaje.js` · `js/paisaje.js` | Polvo de hadas en WebGL que forma las criaturas · paisaje en capas del inicio |
 | `css/wv.css` | **Sistema de diseño** (estructura de PULSO con la magia de Walkiverso). Carga último y manda |

@@ -147,15 +147,7 @@ export async function inicio() {
       </div>
     </section>`;
 
-  // Entrada: el telón de ramas se cierra y se abre mientras el polvo escribe el nombre
-  const primera = (() => { try { return sessionStorage.getItem('wk-entrada') !== '1'; } catch { return true; } })();
-  if (ui.bosque && !reducido) {
-    ui.bosque.cerrar();
-    document.body.classList.add('en-entrada');
-    setTimeout(() => ui.bosque.abrir(), primera ? 900 : 300);
-    setTimeout(() => document.body.classList.remove('en-entrada'), primera ? 2600 : 1400);
-    try { sessionStorage.setItem('wk-entrada', '1'); } catch { /* sin almacenamiento */ }
-  } else ui.bosque?.abrir(true);
+  ui.bosque?.abrir(true);
 
   // El viaje (WebGL). Sin WebGL quedan el logo y las fotos de respaldo.
   let viaje = null;

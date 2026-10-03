@@ -2,7 +2,7 @@
 // - Favoritos: funcionan siempre. Sin cuenta se guardan en este dispositivo; con cuenta, en la cuenta.
 // - Cuentas: usan tienda.cuenta (ingresar / registrar / salir / favoritos). La plataforma todavía no la tiene:
 //   mientras tanto la página muestra "muy pronto" (en la tienda de ejemplo se simula para poder probarla).
-import { tienda, T, $, $$, esc, app, estado, cabecera, tarjeta, fantasmas, revelar, aviso } from './base.js';
+import { tienda, T, $, $$, esc, app, estado, ui, cabecera, tarjeta, fantasmas, revelar, aviso, modal } from './base.js';
 import { rafaga } from './polvo.js';
 
 const KEY = 'wk-favoritos';
@@ -74,7 +74,7 @@ export async function favoritosPagina() {
   app.innerHTML = `
     ${cabecera({ ante: esc(T.cuenta.favAnte), titulo: T.cuenta.favoritos, bajada: T.cuenta.favBajada, escena: 'cielo' })}
     <section class="wv-section wv-section--tight"><div class="wv-container">
-      ${!cliente && hayCuentas() ? `<p class="wk-nota-cuenta"><svg aria-hidden="true"><use href="#i-usuario"/></svg>${esc(T.cuenta.favNota)} <a href="/cuenta" data-link>${esc(T.cuenta.ingresar)} →</a></p>` : ''}
+      ${!cliente && hayCuentas() ? `<p class="wk-nota-cuenta"><svg aria-hidden="true"><use href="#i-usuario"/></svg>${esc(T.cuenta.favNota)} <button type="button" class="wk-nota-cuenta__ir" data-acceso="ingresar">${esc(T.cuenta.ingresar)} →</button></p>` : ''}
       <div class="wv-grid" id="lista-fav">${lista.length ? fantasmas(Math.min(lista.length, 4)) : ''}</div>
       ${lista.length ? '' : `<div class="wk-vacio-fav"><i class="wv-orbe-luz wv-orbe-luz--grande" aria-hidden="true"></i><h2>${esc(T.cuenta.favVacio)}</h2><p>${esc(T.cuenta.favVacioTexto)}</p><a class="wv-btn wv-btn--primary" href="/tienda" data-link>${esc(T.cuenta.explorar)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a></div>`}
     </div></section>`;
@@ -91,43 +91,52 @@ export async function cuentaPagina() {
   document.title = `${T.cuenta.titulo} · ${estado.info.name}`;
   if (cliente) {
     app.innerHTML = `
-      ${cabecera({ ante: esc(T.cuenta.titulo), titulo: `${T.cuenta.hola}, ${cliente.name}`, bajada: cliente.email, escena: 'cielo' })}
+      ${cabecera({ ante: esc(T.cuenta.titulo), titulo: `${T.cuenta.hola}, ${cliente.name}`, bajada: cliente.email })}
       <section class="wv-section wv-section--tight"><div class="wv-container wk-panel-cuenta">
         <a class="wk-panel-cuenta__item" href="/favoritos" data-link><svg aria-hidden="true"><use href="#i-corazon"/></svg><strong>${esc(T.cuenta.favoritos)}</strong><span>${favs.size} ${favs.size === 1 ? 'pieza' : 'piezas'}</span></a>
         <div class="wk-panel-cuenta__item is-pronto"><svg aria-hidden="true"><use href="#i-bag"/></svg><strong>${esc(T.cuenta.pedidos)}</strong><span>${esc(T.cuenta.pedidosPronto)}</span></div>
         <button type="button" class="wk-panel-cuenta__item" id="salir"><svg aria-hidden="true"><use href="#i-girar"/></svg><strong>${esc(T.cuenta.salir)}</strong><span>${esc(T.cuenta.salirTexto)}</span></button>
       </div></section>`;
-    $('#salir').addEventListener('click', async () => { await tienda.cuenta.salir(); cliente = null; repintarFavoritos(); cuentaPagina(); });
+    $('#salir').addEventListener('click', async () => { await tienda.cuenta.salir(); cliente = null; repintarFavoritos(); ui.navegar('/'); });
     revelar();
     return;
   }
+  // Sin sesión, /cuenta muestra la tienda y abre el acceso encima
+  history.replaceState(null, '', `${window.WK_BASE || ''}/tienda`);
+  await ui.catalogo?.(null);
+  abrirAcceso();
+}
+
+/** Ingresar / crear cuenta en una ventana emergente (sin salir de la página). */
+export function abrirAcceso(modo = 'ingresar') {
+  if (cliente) { ui.navegar('/cuenta'); return; }
   const activa = hayCuentas();
-  app.innerHTML = `
-    ${cabecera({ ante: esc(T.cuenta.titulo), titulo: T.cuenta.bienvenida, bajada: T.cuenta.bajada, escena: 'cielo' })}
-    <section class="wv-section wv-section--tight"><div class="wv-container">
-      <div class="wk-acceso" data-rev>
-        <div class="wk-acceso__pestanas" role="tablist">
-          <button type="button" role="tab" aria-selected="true" data-modo="ingresar">${esc(T.cuenta.ingresar)}</button>
-          <button type="button" role="tab" aria-selected="false" data-modo="registrar">${esc(T.cuenta.crear)}</button>
-        </div>
-        ${activa ? '' : `<p class="wk-acceso__pronto"><svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(T.cuenta.pronto)}</p>`}
-        <form class="wk-acceso__form" id="acceso">
-          <label class="wk-campo wk-campo--nombre" hidden><span>Nombre</span><input name="name" autocomplete="name"></label>
-          <label class="wk-campo"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
-          <label class="wk-campo"><span>Contraseña</span><input name="password" type="password" required minlength="6" autocomplete="current-password"></label>
-          <button class="wv-btn wv-btn--primary wv-btn--lg"${activa ? '' : ' disabled'}><span>${esc(T.cuenta.ingresar)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
-          <p class="error" id="error-cuenta" role="alert"></p>
-        </form>
-        <ul class="wk-acceso__beneficios">${T.cuenta.beneficios.map((b) => `<li><svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(b)}</li>`).join('')}</ul>
+  const m = modal(`
+    <div class="wv-acceso">
+      <span class="wv-acceso__luz" aria-hidden="true"></span>
+      <p class="wv-eyebrow">${esc(T.cuenta.titulo)}</p>
+      <h2 class="wv-acceso__titulo">${esc(T.cuenta.bienvenida)}</h2>
+      <p class="wv-acceso__bajada">${esc(T.cuenta.bajada)}</p>
+      <div class="wk-acceso__pestanas" role="tablist">
+        <button type="button" role="tab" aria-selected="${modo === 'ingresar'}" data-modo="ingresar">${esc(T.cuenta.ingresar)}</button>
+        <button type="button" role="tab" aria-selected="${modo === 'registrar'}" data-modo="registrar">${esc(T.cuenta.crear)}</button>
       </div>
-    </div></section>`;
-  let modo = 'ingresar';
-  const form = $('#acceso');
-  app.querySelector('.wk-acceso__pestanas').addEventListener('click', (e) => {
+      ${activa ? '' : `<p class="wk-acceso__pronto"><svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(T.cuenta.pronto)}</p>`}
+      <form class="wk-acceso__form" id="acceso">
+        <label class="wk-campo wk-campo--nombre"${modo === 'registrar' ? '' : ' hidden'}><span>Nombre</span><input name="name" autocomplete="name"${modo === 'registrar' ? ' required' : ''}></label>
+        <label class="wk-campo"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
+        <label class="wk-campo"><span>Contraseña</span><input name="password" type="password" required minlength="6" autocomplete="${modo === 'registrar' ? 'new-password' : 'current-password'}"></label>
+        <button class="wv-btn wv-btn--primary wv-btn--lg wv-btn--block"${activa ? '' : ' disabled'}><span>${esc(modo === 'registrar' ? T.cuenta.crear : T.cuenta.ingresar)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
+        <p class="error" id="error-cuenta" role="alert"></p>
+      </form>
+      <ul class="wk-acceso__beneficios">${T.cuenta.beneficios.map((b) => `<li><svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(b)}</li>`).join('')}</ul>
+    </div>`, 'wv-modal-acceso');
+  const form = m.querySelector('#acceso');
+  m.querySelector('.wk-acceso__pestanas').addEventListener('click', (e) => {
     const b = e.target.closest('[data-modo]');
     if (!b) return;
     modo = b.dataset.modo;
-    $$('[data-modo]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    m.querySelectorAll('[data-modo]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
     form.querySelector('.wk-campo--nombre').hidden = modo !== 'registrar';
     form.name.required = modo === 'registrar';
     form.password.autocomplete = modo === 'registrar' ? 'new-password' : 'current-password';
@@ -138,15 +147,24 @@ export async function cuentaPagina() {
     if (!activa) return;
     const b = form.querySelector('button');
     b.disabled = true;
-    $('#error-cuenta').textContent = '';
+    m.querySelector('#error-cuenta').textContent = '';
     try {
       const d = Object.fromEntries(new FormData(form));
       cliente = await (modo === 'registrar' ? tienda.cuenta.registrar(d) : tienda.cuenta.ingresar(d));
       await fusionar();
       repintarFavoritos();
       rafaga(b, 30);
-      cuentaPagina();
-    } catch (err) { $('#error-cuenta').textContent = err.message; b.disabled = false; }
+      aviso(`${T.cuenta.hola}, ${cliente.name.split(' ')[0]}`);
+      setTimeout(() => m.cerrar(), 500);
+    } catch (err) { m.querySelector('#error-cuenta').textContent = err.message; b.disabled = false; }
   });
-  revelar();
 }
+
+// Botón "Ingresar" de la barra y enlaces [data-acceso]: abren la ventana en lugar de ir a otra página
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('#abrir-cuenta, [data-acceso]');
+  if (!a || cliente) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  abrirAcceso(a.dataset.acceso || 'ingresar');
+}, true);

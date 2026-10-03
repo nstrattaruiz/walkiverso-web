@@ -178,7 +178,7 @@ function pintarPie() {
       </div>
       <div class="wv-faq" id="faq">
         ${preguntas.map(([q, a], i) => `
-          <details class="wv-faq__item" data-texto="${esc(`${q} ${a}`.toLowerCase())}"${i === 0 ? ' open' : ''}>
+          <details class="wv-faq__item" data-texto="${esc(`${q} ${a}`.toLowerCase())}">
             <summary>${esc(q)}<span class="wv-faq__icon" aria-hidden="true">${icono('i-mas')}</span></summary>
             <p>${esc(a)}</p>
           </details>`).join('')}
@@ -278,6 +278,7 @@ async function navegar(href, x = innerWidth / 2, y = innerHeight / 2) {
   navegando = false;
 }
 ui.navegar = (href) => navegar(href);
+ui.catalogo = (h, q) => catalogo(h, q);
 
 document.addEventListener('click', (e) => {
   const a = e.target.closest('a[data-link]');
