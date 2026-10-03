@@ -549,8 +549,16 @@ $('#carrito-lineas').addEventListener('click', async (e) => {
   if (b) await tienda.carrito.cambiar(Number(b.dataset.linea), Number(b.dataset.cant)).catch((err) => aviso(err.message));
 });
 $('#carrito-pie').addEventListener('click', (e) => {
-  // El pago se conecta cuando la plataforma tenga checkout (tienda.checkout)
-  if (e.target.closest('#finalizar')) aviso('El pago se habilita en la próxima etapa de la plataforma.');
+  const b = e.target.closest('#finalizar');
+  if (b) finalizarCompra(b);
 });
+
+/** Finalizar compra: la plataforma arma el pedido y el pago (pagos, envíos, cupones del panel). Mientras no tenga checkout, se avisa. */
+async function finalizarCompra(boton) {
+  if (typeof tienda.checkout !== 'function') { aviso('El pago se habilita en la próxima etapa de la plataforma.'); return; }
+  boton.classList.add('is-loading');
+  try { const r = await tienda.checkout(); if (r?.url) location.href = r.url; } catch (err) { aviso(err.message); }
+  boton.classList.remove('is-loading');
+}
 
 arrancar();
