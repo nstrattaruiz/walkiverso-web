@@ -242,7 +242,7 @@ export function crearBosque(raiz) {
     gr.addColorStop(0, `rgba(${r},${g},${b},1)`); gr.addColorStop(core, `rgba(${r},${g},${b},.45)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
     x.fillStyle = gr; x.fillRect(0, 0, size, size); return c;
   }
-  const SPR_DUST = sprite(210, 225, 255, 32, 0.25), SPR_FLY = sprite(240, 200, 120, 64, 0.12);
+  const SPR_DUST = sprite(210, 225, 255, 32, 0.25), SPR_FLY = sprite(150, 215, 255, 64, 0.12);
   const P = [];
   const spawn = (p) => {
     p.x = Math.random() * pw; p.y = Math.random() * ph; p.z = 0.25 + Math.random() * 0.75;

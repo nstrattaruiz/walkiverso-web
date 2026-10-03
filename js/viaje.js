@@ -69,7 +69,7 @@ function arbol(n) {
       const sx = (azar() - 0.5) * gr, sz = (azar() - 0.5) * gr;
       pos.set([x1 + (x2 - x1) * t + sx, y1 + (y2 - y1) * t + sx * 0.3, sz], i * 3);
       const raiz = y1 < -0.2;
-      col.set(raiz ? [0.8, 0.88, 1] : azar() < 0.3 ? [0.98, 0.82, 0.52] : [0.62, 0.76, 1], i * 3);
+      col.set(raiz ? [0.8, 0.88, 1] : azar() < 0.3 ? [0.62, 0.86, 1] : [0.62, 0.76, 1], i * 3);
     }
   }
   for (; i < n; i++) { // luciérnagas alrededor
@@ -89,7 +89,7 @@ function planeta(n) {
       const a = azar() * Math.PI * 2, r = R * (1.45 + azar() * 0.45);
       const x = Math.cos(a) * r, z = Math.sin(a) * r;
       pos.set([x, z * 0.18 + x * 0.12, z], i * 3);
-      col.set([0.92, 0.82, 0.6], i * 3);
+      col.set([0.7, 0.88, 1], i * 3);
       continue;
     }
     const u = azar() * 2 - 1, t = azar() * Math.PI * 2, s = Math.sqrt(1 - u * u);
@@ -106,7 +106,7 @@ function cielo(n) {
   const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     pos.set([(azar() - 0.5) * 16, (azar() - 0.5) * 10, -2 - azar() * 6], i * 3);
-    col.set(azar() < 0.3 ? [0.98, 0.84, 0.58] : [0.85, 0.9, 1], i * 3);
+    col.set(azar() < 0.3 ? [0.6, 0.86, 1] : [0.85, 0.9, 1], i * 3);
   }
   return { pos, col };
 }
@@ -170,7 +170,7 @@ export async function crearViaje(canvas, { logo, criaturas }) {
   const estrellas = cielo(N);
   const formas = [desdeImagen(imgLogo, N, 1.1, 0.2), duo, arbol(N), planeta(N), estrellas, estrellas];
   // El nombre arranca con un brillo celeste parejo
-  for (let i = 0; i < N; i++) formas[0].col.set(azar() < 0.25 ? [0.98, 0.84, 0.56] : [0.85, 0.9, 1], i * 3);
+  for (let i = 0; i < N; i++) formas[0].col.set(azar() < 0.25 ? [0.6, 0.86, 1] : [0.85, 0.9, 1], i * 3);
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(formas[0].pos, 3));

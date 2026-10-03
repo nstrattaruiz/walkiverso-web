@@ -13,7 +13,7 @@
   --line-2: rgb(200 218 250 / .24);
   --surface: rgb(255 255 255 / .035);
   --bg: #04081a;
-  --oro: #f4d9a0;
+  --oro: #8ad8ff;
   --shadow: 0 30px 60px -30px rgb(0 0 0 / .8);
 }
 html { background: var(--cielo-1); }

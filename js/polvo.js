@@ -2,8 +2,8 @@
 // Sin movimiento reducido. Todo en un solo canvas fijo que solo dibuja cuando hay chispas.
 const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // En la noche: luz de luna y algo de oro. Sobre papel claro: oro y azul tinta, para que se vea.
-const coloresNoche = ['196,214,255', '232,238,255', '255,255,255', '150,180,250', '246,226,180', '246,226,180'];
-const coloresPapel = ['214,160,60', '196,140,40', '38,62,140', '60,90,170', '232,180,80'];
+const coloresNoche = ['196,214,255', '232,238,255', '255,255,255', '150,180,250', '138,216,255', '138,216,255'];
+const coloresPapel = ['38,62,140', '60,90,170', '74,140,220', '30,50,110', '90,170,235'];
 const paleta = () => (document.body.classList.contains('tema-claro') ? coloresPapel : coloresNoche);
 let ctx, lienzo, px = 1, chispas = [], anillos = [], activo = false;
 
@@ -48,7 +48,7 @@ function cuadro() {
   for (const s of chispas) {
     s.x += s.vx; s.y += s.vy; s.vx *= 0.97; s.vy = s.vy * 0.97 + 0.01;
     ctx.fillStyle = `rgba(${s.c},${s.v.toFixed(3)})`;
-    ctx.shadowColor = s.papel ? `rgba(214,160,60,${(s.v * 0.5).toFixed(3)})` : `rgba(190,210,255,${(s.v * 0.9).toFixed(3)})`;
+    ctx.shadowColor = s.papel ? `rgba(60,110,210,${(s.v * 0.5).toFixed(3)})` : `rgba(190,210,255,${(s.v * 0.9).toFixed(3)})`;
     if (s.estrella) estrella(s.x * px, s.y * px, s.r * px * s.v);
     else { ctx.beginPath(); ctx.arc(s.x * px, s.y * px, s.r * px * s.v, 0, Math.PI * 2); ctx.fill(); }
   }
