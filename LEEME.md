@@ -8,7 +8,7 @@ mosaico de colecciones, catálogo con filtros, ficha con caja de precio, carrito
 ## Recorrido
 | Página | Experiencia |
 |---|---|
-| **Inicio** `/` | **Entrada "El bosque despierta"** (cada vez que se vuelve al inicio; la primera vez espera que toques) → **hero** oscuro (título "Arte, Magia y Reciclaje.", botones, cifras, mosaico de piezas con la mandrágora, la bitácora, la pieza más nueva y el sello) → banda inclinada → **Habitantes del Walkiverso** (mosaico de colecciones) → **Tres piezas, una sola vez** → **Duendes Milarko** (cartas + ritual) → **Recién salidos** (pestañas) → **Cómo nace una criatura** → **reseñas** → **pedile un deseo** (bola de cristal) → **espejos** (videos) → **preguntas** (con el oráculo) → **Walkiver**. |
+| **Inicio** `/` | **El viaje**: paisaje nocturno en capas (parallax) donde el polvo de hadas dibuja el nombre; al bajar, el polvo forma la mandrágora y la bitácora (que se materializan), el árbol de raíces de Milarko (ritual de duendes) y Walkurio, y se deshace en el cielo de la tienda → recién salidos → deseo → espejos → voces → preguntas → Walkiver. |
 | **Walkurio** `/walkurio` | El planeta 3D (viaje entre estrellas cada vez que se entra) con sus regiones y la guía. |
 | **Tienda** `/tienda`, `/categoria/:handle` | Filtros fijos a la izquierda (colecciones con cantidad, regiones, acceso al planeta), buscador + orden, grilla de 3. En celular, colecciones en chips. |
 | **Ficha** `/producto/:handle` | Miniaturas a la izquierda, insignias, caja de precio con "Pieza Nº", región y disponibilidad, Adoptar + favorito, beneficios, bloques (descripción, certificado de origen, región) y vecinos. Barra de compra fija en celular. |
@@ -31,6 +31,8 @@ Fotos del hero y de las puertas: en `js/config.js`. **Hoy son PROVISORIAS** y ap
 | Archivo | Qué es |
 |---|---|
 | `index.html` | Estructura: barra de anuncios, firma NS + menú grande, planeta, buscador, carrito, avisos |
+| `css/noche.css` | **El mundo de noche** (manda sobre todo): tema oscuro, barra liviana, vidrio, transición y el viaje del inicio |
+| `js/viaje.js` · `js/paisaje.js` | Polvo de hadas en WebGL que forma las criaturas · paisaje en capas del inicio |
 | `css/wv.css` | **Sistema de diseño** (estructura de PULSO con la magia de Walkiverso). Carga último y manda |
 | `css/walkiverso.css` | Base, botones, planeta, tarjetas, ficha, carrito, pie |
 | `css/secciones.css` | Menú desplegable, búsqueda, modales, cartas, deseo, reseñas, oráculo, cursos, contacto… |
