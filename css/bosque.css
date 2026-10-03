@@ -434,21 +434,21 @@ body.tema-claro .wv-footer { background: linear-gradient(180deg, #f4f0e6 0, #0b1
 /* ---------- Cuenta en ventana emergente ---------- */
 .wv-modal-acceso .wk-modal__caja { width: min(460px, calc(100vw - 32px)); padding: clamp(26px, 4vw, 40px); border-radius: 28px; overflow: hidden; isolation: isolate;
   background: radial-gradient(circle at 100% 0, rgb(150 175 225 / .22), transparent 50%), rgb(6 12 30 / .96); color: var(--ink); box-shadow: 0 50px 100px -40px #000, inset 0 0 0 1px var(--line); }
-.wv-acceso { display: grid; gap: 14px; }
-.wv-acceso__luz { position: absolute; z-index: -1; width: 240px; height: 240px; right: -80px; top: -90px; border-radius: 50%; background: radial-gradient(circle, rgb(170 225 255 / .28), transparent 65%); animation: wv-luna 8s ease-in-out infinite; }
-.wv-acceso .wv-eyebrow { margin: 0; }
-.wv-acceso__titulo { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(2.1rem, 4vw, 2.8rem); line-height: 1; color: #fff; }
-.wv-acceso__bajada { margin: 0 0 6px; color: var(--ink-2); font-size: .95rem; }
-.wv-acceso .wk-acceso__pestanas { background: rgb(232 238 250 / .06); }
-.wv-acceso .wk-acceso__pestanas [aria-selected="true"] { background: var(--ink); color: #050a1c; }
-.wv-acceso .wk-acceso__pestanas button { color: rgb(232 238 250 / .78); }
-.wv-acceso .wk-acceso__form { display: grid; gap: 12px; }
-.wv-acceso .wk-campo span { color: var(--ink-2); }
-.wv-acceso input { width: 100%; background: rgb(232 238 250 / .05); border: 1px solid var(--line); color: #fff; }
-.wv-acceso input:focus { border-color: var(--oro); box-shadow: 0 0 0 4px rgb(170 225 255 / .12); outline: none; }
-.wv-acceso .wk-acceso__beneficios { border-top: 1px solid var(--line); padding-top: 14px; margin: 4px 0 0; }
-.wv-acceso .wk-acceso__beneficios li { color: var(--ink-2); font-size: .88rem; }
-.wv-acceso .wk-acceso__pronto { color: var(--ink-2); font-size: .85rem; }
+.wv-ingreso { display: grid; gap: 14px; }
+.wv-ingreso__luz { position: absolute; z-index: -1; width: 240px; height: 240px; right: -80px; top: -90px; border-radius: 50%; background: radial-gradient(circle, rgb(170 225 255 / .28), transparent 65%); animation: wv-luna 8s ease-in-out infinite; }
+.wv-ingreso .wv-eyebrow { margin: 0; }
+.wv-ingreso__titulo { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(2.1rem, 4vw, 2.8rem); line-height: 1; color: #fff; }
+.wv-ingreso__bajada { margin: 0 0 6px; color: var(--ink-2); font-size: .95rem; }
+.wv-ingreso .wk-acceso__pestanas { background: rgb(232 238 250 / .06); }
+.wv-ingreso .wk-acceso__pestanas [aria-selected="true"] { background: var(--ink); color: #050a1c; }
+.wv-ingreso .wk-acceso__pestanas button { color: rgb(232 238 250 / .78); }
+.wv-ingreso .wk-acceso__form { display: grid; gap: 12px; }
+.wv-ingreso .wk-campo span { color: var(--ink-2); }
+.wv-ingreso input { width: 100%; background: rgb(232 238 250 / .05); border: 1px solid var(--line); color: #fff; }
+.wv-ingreso input:focus { border-color: var(--oro); box-shadow: 0 0 0 4px rgb(170 225 255 / .12); outline: none; }
+.wv-ingreso .wk-acceso__beneficios { border-top: 1px solid var(--line); padding-top: 14px; margin: 4px 0 0; }
+.wv-ingreso .wk-acceso__beneficios li { color: var(--ink-2); font-size: .88rem; }
+.wv-ingreso .wk-acceso__pronto { color: var(--ink-2); font-size: .85rem; }
 .wk-nota-cuenta__ir { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: inherit; text-decoration: underline; cursor: pointer; }
 
 /* El pie y la ventana de cuenta siempre son de noche, aunque la página sea clara */
@@ -523,7 +523,7 @@ body .wv-modal--search .wv-chip { background: rgb(232 238 250 / .05); color: #ff
 body .wv-toast { color: #fff; }
 
 /* ---------- Títulos con más peso ---------- */
-.wv-h1, .wv-h2, .wv-display, .wv-cap__titulo, .wv-pdp__title, .wv-card__title, .wv-duo__pie strong, .wv-pie__titulo, .wv-acceso__titulo,
+.wv-h1, .wv-h2, .wv-display, .wv-cap__titulo, .wv-pdp__title, .wv-card__title, .wv-duo__pie strong, .wv-pie__titulo, .wv-ingreso__titulo,
 .wv-libro__titulo, .wv-libro__tapa-titulo, .wv-drawer__head h2, .wv-spin__body h3, .wv-step h3, .wv-line__name, .wv-result__text strong,
 .wv-menu .ns-panel__nav a, .wv-menu__cat strong, .wv-empty h3, .wk-vacio-fav h2, .wv-review blockquote, .wk-carta__cara--dorso h3,
 .wv-escuela__cab .wv-cap__titulo, .wk-mundo h1, .wk-deseo h2, .wk-contacto-pag h1, .wk-misiva__cab h2 { font-weight: 700; }
@@ -665,3 +665,20 @@ body.sin-viaje .wv-portal__frase { display: block; }
 .wv-portal__texto { align-content: end; padding-bottom: clamp(120px, 20svh, 210px); }
 .wv-portal__bajada { margin-top: 0; }
 @media (max-width: 749px) { .wv-portal__texto { padding-bottom: clamp(100px, 16svh, 150px); } }
+
+/* Ventana de ingreso: una sola columna prolija */
+.wv-ingreso { position: relative; display: grid; gap: 12px; text-align: left; }
+.wv-ingreso .wv-eyebrow { margin: 0; font-family: var(--font-ui); }
+.wv-ingreso__titulo { padding-right: 40px; }
+.wv-ingreso__bajada { font-family: var(--font-body); }
+.wv-ingreso .wk-acceso__pestanas { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; margin: 6px 0 4px; }
+.wv-ingreso .wk-acceso__pestanas button { min-height: 42px; border: 0; border-radius: 999px; background: transparent; font-family: var(--font-ui); font-weight: 600; font-size: .9rem; cursor: pointer; transition: background-color .5s, color .5s; }
+.wv-ingreso .wk-acceso__form { display: grid; gap: 14px; }
+.wv-ingreso .wk-campo { display: grid; gap: 6px; }
+.wv-ingreso .wk-campo span { font-family: var(--font-ui); font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgb(232 238 250 / .6); }
+.wv-ingreso input { min-height: 50px; padding: 0 16px; border-radius: 14px; font-family: var(--font-ui); font-size: 1rem; }
+.wv-ingreso .wk-acceso__beneficios { display: grid; gap: 8px; list-style: none; padding: 14px 0 0; }
+.wv-ingreso .wk-acceso__beneficios li { display: flex; gap: 10px; align-items: center; font-family: var(--font-body); }
+.wv-ingreso .wk-acceso__beneficios svg { width: 14px; height: 14px; flex: none; color: var(--oro); }
+.wv-ingreso .error:empty { display: none; }
+.wv-modal-acceso .wk-modal__caja > .wk-modal__cerrar { position: absolute; top: 16px; right: 16px; z-index: 2; }

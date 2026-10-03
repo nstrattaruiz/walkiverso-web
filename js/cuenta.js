@@ -112,11 +112,11 @@ export function abrirAcceso(modo = 'ingresar') {
   if (cliente) { ui.navegar('/cuenta'); return; }
   const activa = hayCuentas();
   const m = modal(`
-    <div class="wv-acceso">
-      <span class="wv-acceso__luz" aria-hidden="true"></span>
+    <div class="wv-ingreso">
+      <span class="wv-ingreso__luz" aria-hidden="true"></span>
       <p class="wv-eyebrow">${esc(T.cuenta.titulo)}</p>
-      <h2 class="wv-acceso__titulo">${esc(T.cuenta.bienvenida)}</h2>
-      <p class="wv-acceso__bajada">${esc(T.cuenta.bajada)}</p>
+      <h2 class="wv-ingreso__titulo">${esc(T.cuenta.bienvenida)}</h2>
+      <p class="wv-ingreso__bajada">${esc(T.cuenta.bajada)}</p>
       <div class="wk-acceso__pestanas" role="tablist">
         <button type="button" role="tab" aria-selected="${modo === 'ingresar'}" data-modo="ingresar">${esc(T.cuenta.ingresar)}</button>
         <button type="button" role="tab" aria-selected="${modo === 'registrar'}" data-modo="registrar">${esc(T.cuenta.crear)}</button>
