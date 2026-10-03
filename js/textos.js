@@ -53,11 +53,14 @@ export const textos = {
     lema: 'Arte, magia y reciclaje',
     bajar: 'Bajá al bosque',
     capitulos: [
-      { ante: 'Capítulo I · Criaturas', titulo: 'Nacen de lo que otros tiran', texto: 'Cartón, frascos y telas rescatadas se transforman, a mano y sin moldes, en criaturas con nombre propio.', boton: 'Conocer a las criaturas' },
-      { ante: 'Capítulo II · Objetos', titulo: 'Bitácoras que guardan secretos', texto: 'Tapas esculpidas a mano y páginas que esperan tus crónicas. Cada objeto existe una sola vez.', boton: 'Ver las bitácoras' },
-      { ante: 'Capítulo III · El bosque de Milarko', titulo: 'Los duendes buscan hogar', texto: 'Cada duende nace único, con nombre propio y un don. Cuando uno encuentra hogar, no vuelve a aparecer otro igual.', boton: 'Que un duende te elija' },
-      { ante: 'Capítulo IV · Walkurio', titulo: 'Un planeta pequeño y extraño', texto: 'Ahí viven todas las criaturas. Recorré sus regiones y descubrí quién vive en cada rincón.', boton: 'Viajar a Walkurio' },
+      { ante: 'Capítulo I · Los habitantes', titulo: 'Criaturas y objetos', texto: 'Todo nace en el taller, de materiales rescatados y a mano. Elegí por dónde entrar.' },
+      { ante: 'Capítulo II · El bosque de Milarko', titulo: 'Los duendes buscan hogar', texto: 'Cada duende nace único, con nombre propio y un don. Cuando uno encuentra hogar, no vuelve a aparecer otro igual.', boton: 'Que un duende te elija' },
+      { ante: 'Capítulo III · Walkurio', titulo: 'Un planeta pequeño y extraño', texto: 'Ahí viven todas las criaturas. Recorré sus regiones y descubrí quién vive en cada rincón.', boton: 'Viajar a Walkurio' },
     ],
+    lados: {
+      criaturas: { titulo: 'Criaturas', texto: 'Seres con nombre propio, esculpidos a mano.', boton: 'Entrar a las criaturas' },
+      objetos: { titulo: 'Objetos', texto: 'Bitácoras y objetos con alma, tallados uno por uno.', boton: 'Entrar a los objetos' },
+    },
     tambien: 'También viven acá',
   },
   prueba: { piezas: 'piezas únicas', mano: 'hecho a mano', regiones: 'regiones de Walkurio' },
@@ -146,7 +149,8 @@ export const textos = {
   cursos: {
     antetitulo: 'Aprendé en el taller de Walkiver', titulo: 'Cursos',
     bajada: 'Criaturas, objetos y secretos del taller, paso a paso y a tu ritmo.',
-    ver: 'Ver el curso', pronto: 'Pronto, más cursos',
+    titulo2: 'La escuela del taller', // (P)
+    ver: 'Ver el curso', pronto: 'Pronto, más libros se abren', // (P)
   },
   contacto: {
     antetitulo: 'Correo de raíces', titulo: 'Escribinos',

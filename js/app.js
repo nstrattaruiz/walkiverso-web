@@ -14,6 +14,9 @@ import { iniciarCuenta, favoritosPagina, cuentaPagina, repintarFavoritos } from 
 import { cubrir, descubrir } from './transicion.js';
 import { ramasDeFondo } from './ramas.js';
 import { contacto } from './paginas/contacto.js';
+import { crearBosque } from './bosque.js';
+import { preguntas } from './config.js';
+import { iniciarFluidez } from './fluidez.js';
 
 let rutaActual = '';
 let mundo = null;
@@ -48,6 +51,8 @@ async function arrancar() {
   pintarCarrito(await tienda.carrito.ver(), false);
   window.addEventListener('popstate', () => { if (location.pathname !== rutaActual) ruta(); });
   polvoDeHadas();
+  ui.bosque = crearBosque($('#bosque'));
+  ui.fluidez = await iniciarFluidez();
   await iniciarCuenta();
   await ruta();
   if (new URLSearchParams(location.search).has('carrito')) abrirCarrito();
@@ -156,21 +161,36 @@ function pintarHablemos() {
   ].filter(Boolean).join(''));
 }
 
-// ---------------------------------------------------------------- pie (como PULSO)
+// ---------------------------------------------------------------- pie: el claro del bosque (con las preguntas)
 function pintarPie() {
   const info = estado.info;
   const c = info.contact;
-  const frase = `${T.cinta[0]} · ${info.name} · `;
   const redes = [['instagram', 'i-ig', 'Instagram'], ['facebook', 'i-fb', 'Facebook']].filter(([k]) => c[k]);
   $('#pie').innerHTML = `
-    <div class="wv-footer__big" aria-hidden="true"><div class="wv-footer__marquee"><span>${esc(frase.repeat(2))}</span><span>${esc(frase.repeat(2))}</span></div></div>
-    <div class="wv-container wv-footer__grid">
-      <div class="wv-footer__brand">
-        <a href="/" data-link aria-label="${esc(info.name)}, ir al inicio"><img class="wv-footer__logo" src="img/logo.svg" alt="${esc(info.name)}" width="220" height="60"></a>
-        <p class="wv-footer__slogan">${esc(T.hero.titulo)}.</p>
-        <p class="wv-footer__small">${esc(info.seo.description || T.hero.bajada)}</p>
-        <a class="wv-btn wv-btn--luz" href="/tienda" data-link>${esc(T.hero.boton)}${flecha()}</a>
+    <span class="wk-ramas-fondo wk-ramas-fondo--luz wv-pie__raices" data-esquinas="bl,br" data-semilla="77"></span>
+    <div class="wv-pie__luciernagas" aria-hidden="true">${Array.from({ length: 16 }, (_, i) => `<i style="--x:${(i * 61) % 100}%;--y:${20 + ((i * 37) % 70)}%;--d:${(i % 7) * -1.3}s;--t:${7 + (i % 5) * 1.6}s"></i>`).join('')}</div>
+    <div class="wv-container wv-pie__preguntas">
+      <div class="wv-pie__cab">
+        <p class="wv-eyebrow wv-eyebrow--luz">${esc(T.preguntas.antetitulo)}</p>
+        <h2 class="wv-pie__titulo">${esc(T.preguntas.titulo)}</h2>
+        <label class="wv-toolbar__search wv-oraculo"><span class="wk-oraculo__orbe" aria-hidden="true"></span><input type="search" id="oraculo" placeholder="${esc(T.preguntas.oraculo)}" aria-label="${esc(T.preguntas.oraculo)}" autocomplete="off"></label>
+        <p class="wv-pie__otra">${esc(T.preguntas.otra)} <a href="/contacto" data-link>${esc(T.preguntas.escribinos)} →</a></p>
       </div>
+      <div class="wv-faq" id="faq">
+        ${preguntas.map(([q, a], i) => `
+          <details class="wv-faq__item" data-texto="${esc(`${q} ${a}`.toLowerCase())}"${i === 0 ? ' open' : ''}>
+            <summary>${esc(q)}<span class="wv-faq__icon" aria-hidden="true">${icono('i-mas')}</span></summary>
+            <p>${esc(a)}</p>
+          </details>`).join('')}
+        <p class="wv-search__none" id="faq-nada" hidden><strong>${esc(T.preguntas.nada)}</strong></p>
+      </div>
+    </div>
+    <div class="wv-pie__luna">
+      <span class="wv-pie__halo" aria-hidden="true"></span>
+      <a href="/" data-link aria-label="${esc(info.name)}, ir al inicio"><img class="wv-pie__logo" src="img/logo.svg" alt="${esc(info.name)}" width="520" height="140" loading="lazy"></a>
+      <p class="wv-pie__lema">${esc(T.viaje.lema)}</p>
+    </div>
+    <div class="wv-container wv-pie__grid">
       ${info.menus.footer.map((l) => `
         <nav class="wv-footer__col" aria-label="${esc(l.label)}">
           <h2>${esc(l.label)}</h2>
@@ -187,6 +207,19 @@ function pintarPie() {
       <p>© ${new Date().getFullYear()} ${esc(info.name)} · Hecho a mano en Uruguay</p>
       <div>${info.legal.map((l) => `<a href="/legal/${l.kind}" data-link>${esc(l.title)}</a>`).join('')}</div>
     </div>`;
+  ramasDeFondo($('#pie'));
+  // El oráculo filtra las preguntas; si queda una sola, la abre
+  const lista = $('#faq');
+  const normal = (t) => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  $('#oraculo').addEventListener('input', (e) => {
+    const q = normal(e.target.value.trim());
+    let hay = 0;
+    $$('.wv-faq__item', lista).forEach((p) => { const ok = !q || q.split(/\s+/).every((w) => normal(p.dataset.texto).includes(w)); p.hidden = !ok; if (ok) hay++; });
+    $('#faq-nada').hidden = hay > 0;
+    $('.wv-oraculo', $('#pie')).classList.toggle('is-pensando', !!q);
+    const visibles = $$('.wv-faq__item:not([hidden])', lista);
+    if (q && visibles.length === 1) visibles[0].open = true;
+  });
 }
 
 // ---------------------------------------------------------------- cookies y medición
@@ -235,7 +268,7 @@ async function navegar(href, x = innerWidth / 2, y = innerHeight / 2) {
   const destino = href.startsWith('/') ? BASE + href : href;
   const url = new URL(destino, location.href);
   const misma = url.pathname === location.pathname;
-  if (misma && url.hash) { history.pushState(null, '', destino); document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView({ behavior: reducido ? 'auto' : 'smooth' }); return; }
+  if (misma && url.hash) { history.pushState(null, '', destino); const el = document.getElementById(decodeURIComponent(url.hash.slice(1))); if (el) ui.fluidez?.ir(el); return; }
   if (misma && url.search === location.search) { window.scrollTo({ top: 0, behavior: reducido ? 'auto' : 'smooth' }); return; }
   navegando = true;
   await cubrir(x, y);
@@ -270,7 +303,7 @@ document.addEventListener('click', (e) => {
   const destino = document.getElementById(a.getAttribute('href').slice(1));
   if (!destino) return;
   e.preventDefault();
-  destino.scrollIntoView({ behavior: reducido ? 'auto' : 'smooth' });
+  ui.fluidez ? ui.fluidez.ir(destino) : destino.scrollIntoView({ behavior: reducido ? 'auto' : 'smooth' });
 });
 // Agregar al carrito desde cualquier tarjeta o carta
 document.addEventListener('click', (e) => {
@@ -291,6 +324,11 @@ async function ruta() {
   cuerpo.toggle('con-mundo', conMundo(seccion));
   cuerpo.toggle('es-inicio', ['', 'index.html'].includes(seccion));
   cuerpo.toggle('es-walkurio', seccion === 'walkurio');
+  // Tienda, ficha y cuenta: claras como papel. El resto vive en el bosque de noche.
+  const clara = ['tienda', 'categoria', 'producto', 'favoritos', 'cuenta', 'legal', 'carrito'].includes(seccion);
+  cuerpo.toggle('tema-claro', clara);
+  ui.bosque?.activo(!clara && seccion !== 'walkurio');
+  if (!['', 'index.html'].includes(seccion)) ui.bosque?.abrir(true);
   document.documentElement.dataset.pagina = seccion || 'inicio';
   document.documentElement.classList.remove('arranca-con-mundo');
   cerrarRegion();
@@ -303,7 +341,7 @@ async function ruta() {
     a.classList.toggle('is-active', activo);
     if (activo) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
-  window.scrollTo(0, 0);
+  ui.fluidez ? ui.fluidez.arriba() : window.scrollTo(0, 0);
   try {
     if (seccion === 'producto' && valor) await ficha(valor);
     else if (seccion === 'categoria' && valor) await catalogo(valor);

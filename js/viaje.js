@@ -69,7 +69,7 @@ function arbol(n) {
       const sx = (azar() - 0.5) * gr, sz = (azar() - 0.5) * gr;
       pos.set([x1 + (x2 - x1) * t + sx, y1 + (y2 - y1) * t + sx * 0.3, sz], i * 3);
       const raiz = y1 < -0.2;
-      col.set(raiz ? [0.55, 0.8, 1] : azar() < 0.25 ? [0.95, 0.85, 0.6] : [0.7, 0.92, 0.85], i * 3);
+      col.set(raiz ? [0.78, 0.92, 0.84] : azar() < 0.3 ? [0.98, 0.82, 0.52] : [0.62, 0.86, 0.72], i * 3);
     }
   }
   for (; i < n; i++) { // luciérnagas alrededor
@@ -89,14 +89,14 @@ function planeta(n) {
       const a = azar() * Math.PI * 2, r = R * (1.45 + azar() * 0.45);
       const x = Math.cos(a) * r, z = Math.sin(a) * r;
       pos.set([x, z * 0.18 + x * 0.12, z], i * 3);
-      col.set([0.6, 0.85, 1], i * 3);
+      col.set([0.92, 0.82, 0.6], i * 3);
       continue;
     }
     const u = azar() * 2 - 1, t = azar() * Math.PI * 2, s = Math.sqrt(1 - u * u);
     const x = s * Math.cos(t), y = u, z = s * Math.sin(t);
     pos.set([x * R, y * R, z * R], i * 3);
     const tierra = Math.sin(x * 4.1 + y * 2.3) + Math.sin(z * 5.2 - x * 1.7) + Math.sin(y * 6.1 + z * 2.2) > 0.6;
-    col.set(tierra ? [0.55, 0.85, 0.65] : [0.25, 0.5, 1], i * 3);
+    col.set(tierra ? [0.6, 0.86, 0.62] : [0.3, 0.6, 0.72], i * 3);
   }
   return { pos, col };
 }
@@ -106,7 +106,7 @@ function cielo(n) {
   const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     pos.set([(azar() - 0.5) * 16, (azar() - 0.5) * 10, -2 - azar() * 6], i * 3);
-    col.set(azar() < 0.2 ? [1, 0.88, 0.65] : [0.7, 0.88, 1], i * 3);
+    col.set(azar() < 0.3 ? [0.98, 0.84, 0.58] : [0.84, 0.94, 0.88], i * 3);
   }
   return { pos, col };
 }
@@ -161,16 +161,19 @@ export async function crearViaje(canvas, { logo, criaturas }) {
 
   const N = chico() ? 9000 : 18000;
   const [imgLogo, ...imgs] = await Promise.all([pixeles(logo, 520), ...criaturas.map((c) => pixeles(c, 340))]);
-  const formas = [
-    desdeImagen(imgLogo, N, 1.1, 0.2),
-    desdeImagen(imgs[0], N, 3.4, 0.35),
-    desdeImagen(imgs[1] ?? imgs[0], N, 3.1, 0.3),
-    arbol(N),
-    planeta(N),
-    cielo(N),
-  ];
+  // Capítulo I: la mitad del polvo forma la criatura (izquierda) y la otra mitad el objeto (derecha)
+  const SEP = chico() ? 0.62 : 2.1, ALTO_DUO = chico() ? 1.45 : 2.5;
+  const izq = desdeImagen(imgs[0], N / 2, ALTO_DUO, 0.3), der = desdeImagen(imgs[1] ?? imgs[0], N / 2, ALTO_DUO * 0.9, 0.25);
+  const duo = { pos: new Float32Array(N * 3), col: new Float32Array(N * 3) };
+  for (let i = 0; i < N / 2; i++) {
+    duo.pos.set([izq.pos[i * 3] - SEP, izq.pos[i * 3 + 1], izq.pos[i * 3 + 2]], i * 3); duo.col.set(izq.col.subarray(i * 3, i * 3 + 3), i * 3);
+    const j = i + N / 2;
+    duo.pos.set([der.pos[i * 3] + SEP, der.pos[i * 3 + 1], der.pos[i * 3 + 2]], j * 3); duo.col.set(der.col.subarray(i * 3, i * 3 + 3), j * 3);
+  }
+  const estrellas = cielo(N);
+  const formas = [desdeImagen(imgLogo, N, 1.1, 0.2), duo, arbol(N), planeta(N), estrellas, estrellas];
   // El nombre arranca con un brillo celeste parejo
-  for (let i = 0; i < N; i++) formas[0].col.set(azar() < 0.18 ? [1, 0.9, 0.65] : [0.75, 0.92, 1], i * 3);
+  for (let i = 0; i < N; i++) formas[0].col.set(azar() < 0.25 ? [0.98, 0.84, 0.56] : [0.86, 0.95, 0.9], i * 3);
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(formas[0].pos, 3));
@@ -189,22 +192,22 @@ export async function crearViaje(canvas, { logo, criaturas }) {
   escena.add(nube);
 
   // Cuando el polvo se acomoda, la criatura real se materializa en su lugar
-  const apariciones = [[1, imgs[0], 3.4], [2, imgs[1] ?? imgs[0], 3.1]].map(([etapa, im, alto]) => {
+  const apariciones = [[1, imgs[0], ALTO_DUO, -SEP], [1, imgs[1] ?? imgs[0], ALTO_DUO * 0.9, SEP]].map(([etapa, im, alto, x]) => {
     const tex = new THREE.Texture(im.img);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.needsUpdate = true;
     const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false });
     const plano = new THREE.Mesh(new THREE.PlaneGeometry((alto * im.w) / im.h, alto), mat);
-    plano.position.z = -0.05;
+    plano.position.set(x, 0, -0.05);
     plano.renderOrder = -1;
     nube.add(plano);
-    return { etapa, plano, mat, tex };
+    return { etapa, plano, mat, tex, lado: Math.sign(x), foco: 0 };
   });
 
   // Dónde se ubica la forma en cada capítulo (deja lugar al texto)
   const lugares = () => chico()
-    ? [[0, 0.75, 0.42], [0, 0.95, 0.7], [0, 0.95, 0.7], [0, 0.95, 0.48], [0, 1, 0.6], [0, 0, 1]]
-    : [[0, 0.62, 1.35], [1.75, 0, 1], [-1.75, 0, 1], [1.6, -0.35, 0.78], [1.55, 0, 1], [0, 0, 1]];
+    ? [[0, 0.75, 0.42], [0, -0.32, 1], [0, 0.55, 0.4], [0, 1, 0.6], [0, 0, 1], [0, 0, 1]]
+    : [[0, 0.5, 1.35], [0, -0.2, 1], [1.6, -0.35, 0.78], [1.55, 0, 1], [0, 0, 1], [0, 0, 1]];
 
   const medir = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -217,7 +220,7 @@ export async function crearViaje(canvas, { logo, criaturas }) {
 
   // Etapa según el scroll: interpolada entre los centros de los capítulos
   const capitulos = [...document.querySelectorAll('[data-capitulo]')];
-  let objetivo = 0, s = 0, vivo = true, raf = 0, luz = 1;
+  let objetivo = 0, s = 0, vivo = true, raf = 0, luz = 1, foco = 0;
   const leer = () => {
     const centro = innerHeight / 2;
     const centros = capitulos.map((c) => { const r = c.getBoundingClientRect(); return r.top + r.height / 2; });
@@ -233,13 +236,13 @@ export async function crearViaje(canvas, { logo, criaturas }) {
   addEventListener('scroll', leer, { passive: true });
   leer();
 
-  const mouse = new THREE.Vector2(0, 0);
+  const mouse = new THREE.Vector2(0, 0), mouseSuave = new THREE.Vector2(0, 0), mouseMundo = new THREE.Vector3(99, 99, 0);
   const mover = (e) => {
     mouse.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
     // Proyección del mouse al plano z = 0
     const v = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camara).sub(camara.position).normalize();
     const t = -camara.position.z / v.z;
-    uniforms.uMouse.value.copy(camara.position).addScaledVector(v, t);
+    mouseMundo.copy(camara.position).addScaledVector(v, t);
   };
   addEventListener('pointermove', mover, { passive: true });
 
@@ -252,9 +255,11 @@ export async function crearViaje(canvas, { logo, criaturas }) {
     const dt = Math.min(reloj.getDelta(), 0.05);
     uniforms.uT.value += dt;
     entrada = Math.min(1, entrada + dt / 2.6);
-    s += (objetivo - s) * Math.min(1, dt * 3.2);
+    s += (objetivo - s) * (1 - Math.pow(0.0015, dt));
     // Mientras entra, finge venir desde el cielo (etapa "negativa" = dispersión)
     uniforms.uS.value = s;
+    mouseSuave.lerp(mouse, Math.min(1, dt * 2.2));
+    uniforms.uMouse.value.lerp(mouseMundo, Math.min(1, dt * 6));
     const L = lugares();
     const i = Math.min(Math.floor(s), L.length - 2), f = s - i, k = f * f * (3 - 2 * f);
     const [x, y, e] = L[i].map((v, j) => v + (L[i + 1][j] - v) * k);
@@ -263,14 +268,16 @@ export async function crearViaje(canvas, { logo, criaturas }) {
     nube.scale.setScalar(e * (0.6 + 0.4 * llegada));
     uniforms.uLuz.value += ((luz * llegada) - uniforms.uLuz.value) * Math.min(1, dt * 4);
     uniforms.uTam.value = (chico() ? 30 : 34) * (0.3 + 0.7 * llegada);
-    nube.rotation.y = Math.sin(uniforms.uT.value * 0.25) * 0.16 + mouse.x * 0.18 + (s > 3.5 ? uniforms.uT.value * 0.15 : 0);
-    nube.rotation.x = -mouse.y * 0.12;
+    nube.rotation.y = Math.sin(uniforms.uT.value * 0.25) * 0.16 + mouseSuave.x * 0.16 + (s > 2.5 && s < 3.6 ? uniforms.uT.value * 0.15 : 0);
+    nube.rotation.x = -mouseSuave.y * 0.1;
     let visible = 0;
     for (const a of apariciones) {
       const o = Math.max(0, 1 - Math.abs(s - a.etapa) * 6) * llegada;
       a.mat.opacity += (o - a.mat.opacity) * Math.min(1, dt * 5);
       a.plano.visible = a.mat.opacity > 0.01;
-      a.plano.scale.setScalar(0.985 + Math.sin(uniforms.uT.value * 0.8) * 0.012);
+      a.foco += ((foco === a.lado ? 1 : 0) - a.foco) * Math.min(1, dt * 4);
+      a.plano.scale.setScalar(0.985 + Math.sin(uniforms.uT.value * 0.8 + a.lado) * 0.012 + a.foco * 0.07);
+      a.plano.position.z = -0.05 + a.foco * 0.3;
       visible = Math.max(visible, a.mat.opacity);
     }
     // Con la criatura presente, el polvo queda como un aura de chispas
@@ -284,6 +291,8 @@ export async function crearViaje(canvas, { logo, criaturas }) {
   canvas.classList.add('is-listo');
 
   return {
+    /** -1 criatura, 1 objeto, 0 ninguno: el lado que se acerca. */
+    enfocar(lado) { foco = lado; },
     destruir() {
       vivo = false; cancelAnimationFrame(raf);
       removeEventListener('scroll', leer); removeEventListener('resize', medir); removeEventListener('pointermove', mover);

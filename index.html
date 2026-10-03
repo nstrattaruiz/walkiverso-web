@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Walkiverso</title>
   <meta name="description" content="">
-  <meta name="theme-color" content="#021a62">
+  <meta name="theme-color" content="#030605">
   <!-- Base de la web: "/" en la plataforma. Al publicar en GitHub Pages se cambia por "/<repo>/" (.github/workflows/pages.yml) -->
   <base href="/">
   <script>window.WK_BASE = new URL(document.baseURI).pathname.replace(/\/$/, '');</script>
   <link rel="icon" type="image/png" href="walkiver/assets/wk-favicon-64.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <link rel="modulepreload" href="js/vendor/three.module.min.js">
   <link rel="stylesheet" href="css/ns-firma.css">
   <!-- Piezas mágicas (planeta, cartas, ritual, deseo, sobre, grimorios, entrada) -->
@@ -24,6 +24,8 @@
   <!-- Sistema de diseño (estructura de PULSO con la magia de Walkiverso): manda sobre todo lo anterior -->
   <link rel="stylesheet" href="css/wv.css">
   <link rel="stylesheet" href="css/noche.css">
+  <!-- El bosque vivo, tienda clara, cursor y fluidez: manda sobre todo -->
+  <link rel="stylesheet" href="css/bosque.css">
   <script>
     (function () {
       var s = location.pathname.slice(window.WK_BASE.length).split('/').filter(Boolean)[0] || '';
@@ -35,6 +37,9 @@
 </head>
 <body>
   <div class="wk-previo" aria-hidden="true"></div>
+  <!-- El bosque vivo: fondo de las páginas de noche (js/bosque.js) -->
+  <div class="wb-bosque" id="bosque" aria-hidden="true"></div>
+  <div class="wv-cursor" id="cursor" aria-hidden="true"><i class="wv-cursor__aro"></i><i class="wv-cursor__punto"></i></div>
   <a class="wv-skip" href="#app">Saltar al contenido</a>
   <!-- Walkiverso · web para la plataforma (Kit NS). Los datos salen de la tienda con el SDK: ver js/app.js. -->
 

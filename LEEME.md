@@ -8,12 +8,12 @@ mosaico de colecciones, catálogo con filtros, ficha con caja de precio, carrito
 ## Recorrido
 | Página | Experiencia |
 |---|---|
-| **Inicio** `/` | **El viaje**: paisaje nocturno en capas (parallax) donde el polvo de hadas dibuja el nombre; al bajar, el polvo forma la mandrágora y la bitácora (que se materializan), el árbol de raíces de Milarko (ritual de duendes) y Walkurio, y se deshace en el cielo de la tienda → recién salidos → deseo → espejos → voces → preguntas → Walkiver. |
+| **Inicio** `/` | **El viaje en el bosque vivo**: las ramas se abren como telón y el polvo de hadas escribe el nombre; al bajar el polvo se divide en **criaturas** (mandrágora) y **objetos** (bitácora), cada lado es la puerta a su colección; después el árbol de Milarko (ritual "el bosque elige") y Walkurio, y se deshace en el cielo de la tienda → recién salidos → deseo → espejos (grandes) → voces (carrusel automático) → Walkiver. Las preguntas viven en el pie. |
 | **Walkurio** `/walkurio` | El planeta 3D (viaje entre estrellas cada vez que se entra) con sus regiones y la guía. |
 | **Tienda** `/tienda`, `/categoria/:handle` | Filtros fijos a la izquierda (colecciones con cantidad, regiones, acceso al planeta), buscador + orden, grilla de 3. En celular, colecciones en chips. |
 | **Ficha** `/producto/:handle` | Miniaturas a la izquierda, insignias, caja de precio con "Pieza Nº", región y disponibilidad, Adoptar + favorito, beneficios, bloques (descripción, certificado de origen, región) y vecinos. Barra de compra fija en celular. |
 | **Favoritos** `/favoritos` · **Cuenta** `/cuenta` | Corazón en cada pieza. Sin cuenta se guardan en el dispositivo; con cuenta, en la cuenta. |
-| **Cursos** `/cursos` · **Contacto** `/contacto` | Libros que se abren · formulario que se pliega en un sobre sellado y sale volando. |
+| **Cursos** `/cursos` · **Contacto** `/contacto` | La escuela del taller: cada curso es un libro antiguo que se abre (presentación · índice, precio e inscripción) · formulario que se pliega en un sobre sellado y sale volando. |
 | **Walkiver** `/walkiver/` | Copia exacta de la web de Walkiver, con linterna que sigue al mouse. |
 
 Letra: Cormorant Garamond 700 en títulos; Plus Jakarta Sans en el resto (precios en 800). Walkiver mantiene sus fuentes.
@@ -31,6 +31,8 @@ Fotos del hero y de las puertas: en `js/config.js`. **Hoy son PROVISORIAS** y ap
 | Archivo | Qué es |
 |---|---|
 | `index.html` | Estructura: barra de anuncios, firma NS + menú grande, planeta, buscador, carrito, avisos |
+| `css/bosque.css` | **Manda sobre todo**: paleta del bosque, fondo vivo, cursor, tienda clara (papel), pie con preguntas, ritual, espejos, voces y cursos |
+| `js/bosque.js` · `js/fluidez.js` | El bosque vivo de fondo (adaptado de "Walkiverso fondo") · scroll suave (Lenis), cursor con masa y botones magnéticos |
 | `css/noche.css` | **El mundo de noche** (manda sobre todo): tema oscuro, barra liviana, vidrio, transición y el viaje del inicio |
 | `js/viaje.js` · `js/paisaje.js` | Polvo de hadas en WebGL que forma las criaturas · paisaje en capas del inicio |
 | `css/wv.css` | **Sistema de diseño** (estructura de PULSO con la magia de Walkiverso). Carga último y manda |
