@@ -45,19 +45,17 @@ export async function inicio() {
 
     <section class="wv-portal" data-capitulo="0" aria-label="${esc(info.name)}">
       <div class="wv-portal__texto">
-        <p class="wv-portal__ante">${esc(T.portal2.ante)}</p>
         <h1 class="wv-portal__frase">${esc(T.hero.titulo)}</h1>
         <p class="wv-portal__bajada">${esc(T.portal2.bajada)}</p>
         <div class="wv-portal__ctas">
           <a class="wv-btn wv-btn--luz wv-btn--lg" href="/tienda" data-link>${esc(T.portal2.tienda)}${flecha()}</a>
           ${criaturas ? `<a class="wv-btn wv-btn--outline-light wv-btn--lg" href="/categoria/${esc(criaturas.handle)}" data-link>${esc(T.portal2.criaturas)}</a>` : ''}
         </div>
-        <ul class="wv-portal__confianza">${T.portal2.confianza.map((c) => `<li>${icono('i-chispa')}${esc(c)}</li>`).join('')}</ul>
       </div>
       <a class="wv-portal__bajar" href="#accesos"><span>${esc(T.viaje.bajar)}</span><i aria-hidden="true"></i></a>
     </section>
 
-    <section class="wv-accesos" id="accesos" aria-labelledby="accesos-titulo">
+    <section class="wv-accesos" id="accesos" data-polvo-tenue aria-labelledby="accesos-titulo">
       <div class="wv-container">
         <div class="wv-head wv-head--center" data-rev>
           <p class="wv-eyebrow wv-eyebrow--luz">${esc(T.accesos.ante)}</p>

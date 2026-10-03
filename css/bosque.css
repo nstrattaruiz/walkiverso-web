@@ -627,3 +627,21 @@ body:not(.con-viaje) .wv-portal__texto { align-content: center; gap: 18px; }
   .wv-portal__ctas .wv-btn { flex: 1 1 100%; }
   .wv-portal__confianza { gap: 6px 16px; font-size: .72rem; }
 }
+
+/* ---------- Letra del texto: Spectral (serif de libro, acompaña a la Cormorant de los títulos) ---------- */
+:root { --font-body: 'Spectral', 'Cormorant Garamond', Georgia, serif; --font-ui: 'Plus Jakarta Sans', 'Helvetica Neue', Arial, sans-serif; --f-texto: var(--font-body); }
+body { font-family: var(--font-body); font-weight: 300; font-size: 17px; letter-spacing: .005em; }
+.wv-lead, .wv-cap__bajada, .wv-portal__bajada, .wv-duo__texto, .wv-pdp__short, .wv-faq__item p, .wv-review figcaption, .wv-acceso__texto small { font-family: var(--font-body); font-weight: 300; }
+.wv-lead, .wv-cap__bajada, .wv-portal__bajada { font-size: clamp(1.08rem, 1.45vw, 1.28rem); }
+/* Las etiquetas chiquitas, precios y botones siguen en una sans nítida */
+.wv-eyebrow, .wv-cap__ante, .wv-duo__cuenta, .wv-duo__ir, .ns-nav a, .wv-badge, .wv-chip, .wv-btn, .wv-card__cat, .wv-card__foot, .wv-price, .wv-price__value,
+.wv-filter__title, .wv-pdp__facts dt, .wv-pdp__block h2, .wv-totals, .wv-line__end strong, .wv-result__price, .wv-count, .wv-login, .wv-cartbtn,
+.wv-footer__col h2, .wv-footer__bottom, .wv-search__hint, .wk-carta__num, .wk-carta__cara--dorso small, .wk-carta__cara--dorso .precio, .wv-libro__precio, .wv-libro__ante,
+.wv-menu .ns-panel__nav a small, .wv-menu__cat > span:last-child, .ns-panel__label, .wv-faq__item summary, .wv-portal__bajar, .wv-spin__tag, .wv-drawer__count, .wk-flotante > span, input, select, textarea, kbd {
+  font-family: var(--font-ui);
+}
+.wv-faq__item summary { font-weight: 600; }
+.wv-btn { font-weight: 600; letter-spacing: .03em; }
+:root { --ns-font-body: var(--font-ui); }
+body.tema-claro { font-weight: 400; }
+.wv-filter__cats a, .wv-filter__cats button, .wv-crumbs { font-family: var(--font-ui); }

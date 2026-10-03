@@ -244,6 +244,12 @@ export async function crearViaje(canvas, { logo, texto, criaturas }) {
     // Pasado el último capítulo, el cielo queda de fondo, tenue
     const ultimo = capitulos[capitulos.length - 1].getBoundingClientRect();
     luz = 1 - 0.68 * Math.min(1, Math.max(0, (innerHeight * 0.5 - ultimo.top) / innerHeight));
+    // Detrás de secciones con mucho para leer, el polvo se vuelve tenue
+    for (const el of document.querySelectorAll('[data-polvo-tenue]')) {
+      const r = el.getBoundingClientRect();
+      const dentro = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);
+      if (dentro > 0) luz *= 1 - 0.75 * Math.min(1, dentro / (innerHeight * 0.6));
+    }
   };
   addEventListener('scroll', leer, { passive: true });
   leer();
