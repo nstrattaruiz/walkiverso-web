@@ -1,6 +1,6 @@
 // Núcleo compartido de Walkiverso: datos de la tienda, ayudantes y piezas que usan todas las páginas.
 import { textos as T } from './textos.js';
-import { categoriasClave, categoriasOcultas, categoriasObjeto, prefijoRegion } from './config.js';
+import { categoriasClave, categoriasOcultas, categoriasObjeto, prefijoRegion, imagenesColeccion } from './config.js';
 import { rafaga } from './polvo.js';
 
 // SDK de la plataforma. Sin plataforma (carpeta suelta o servidor de demo) se usa la tienda de ejemplo.
@@ -57,44 +57,82 @@ export const textoPlano = (html, max = 140) => {
   return t.length > max ? `${t.slice(0, max).replace(/\s\S*$/, '')}…` : t;
 };
 
+/** Colección de la tienda a la que pertenece una pieza (Bitácoras, Criaturas…), sin contar regiones ni ocultas. */
+export const coleccionDe = (p) => {
+  const lista = colecciones();
+  for (const c of p.categories ?? []) {
+    const x = lista.find((y) => y.handle === handleDe(c));
+    if (x && x.handle !== 'criaturas') return x;
+  }
+  return lista.find((y) => (p.categories ?? []).some((c) => handleDe(c) === y.handle)) ?? null;
+};
+/** Imagen de una colección: la del panel, la de config (recortes sin fondo) o el sello de la mano. */
+export const imagenColeccion = (c) => (c.image ? foto(c.image, c.name, 640) : imagenesColeccion[c.handle] ? `<img src="${esc(imagenesColeccion[c.handle])}" alt="" loading="lazy">` : '<i class="wk-mano"></i>');
+const tonos = ['noche', 'luz', 'pantano', 'azul', 'niebla', 'abismo'];
+export const tonoColeccion = (i) => tonos[i % tonos.length];
+export const esUnica = (p) => p.variants?.length === 1 && p.variants[0].stock === 1;
+export const icono = (id, cls = 'i') => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+export const flecha = () => `<span class="wv-btn__arrow">${icono('i-flecha')}</span>`;
+const descuento = (p) => (p.compareAtPrice > p.price ? Math.round((1 - p.price / p.compareAtPrice) * 100) : 0);
+
+/** Insignias de una pieza (adoptada, oferta, pieza única, nueva). */
+export const insignias = (p, extra = []) => {
+  const l = [...extra];
+  if (!p.available) l.push([T.recientes.adoptada, 'light']);
+  else {
+    if (descuento(p)) l.push([`-${descuento(p)}%`, 'luz']);
+    if (esUnica(p)) l.push([T.ficha.unica, 'noche']);
+  }
+  return l.map(([t, tono]) => `<span class="wv-badge wv-badge--${tono}">${esc(t)}</span>`).join('');
+};
+
+/** Precio con presencia: etiqueta, valor y tachado. */
+export const precioBloque = (p, etiqueta = '') => `
+  <div class="wv-price">
+    ${etiqueta ? `<span class="wv-price__label">${esc(etiqueta)}</span>` : ''}
+    <strong class="wv-price__value">${tienda.formatear(p.price, p.currency)}${p.compareAtPrice > p.price ? `<s>${tienda.formatear(p.compareAtPrice, p.currency)}</s>` : ''}</strong>
+  </div>`;
+
+/** Tarjeta de pieza (estructura de PULSO): foto, insignias, favorito, colección, nombre, precio y compra. */
 export const tarjeta = (p, i = 0) => {
   const r = regionDe(p);
+  const col = coleccionDe(p);
   const segunda = p.images?.[1];
-  const descuento = p.compareAtPrice > p.price ? Math.round((1 - p.price / p.compareAtPrice) * 100) : 0;
+  const objeto = esObjeto(p);
   return `
-  <article class="tarjeta" data-rev style="--d:${(i % 4) * 70}ms">
-    <a class="tarjeta__enlace" href="/producto/${esc(p.handle)}" data-link>
-      <span class="tarjeta__foto">
-        ${foto(p.image, p.title) || sinFoto(p.title)}${segunda ? foto(segunda, p.title, 640, 'tarjeta__segunda') : ''}
-        ${!p.available ? `<span class="tarjeta__etiqueta tarjeta__etiqueta--hogar">${esc(T.recientes.adoptada)}</span>` : descuento ? `<span class="tarjeta__etiqueta">-${descuento}%</span>` : ''}
-        <span class="tarjeta__brillo" aria-hidden="true"></span>
-      </span>
-      <span class="tarjeta__info">
-        ${r ? `<small>${esc(r.name)}</small>` : ''}
-        <strong>${esc(p.title)}</strong>${precio(p)}
-      </span>
+  <article class="wv-card" data-rev style="--d:${(i % 4) * 70}ms">
+    <a class="wv-card__media" href="/producto/${esc(p.handle)}" data-link tabindex="-1" aria-hidden="true">
+      ${foto(p.image, p.title) || sinFoto(p.title)}${segunda ? foto(segunda, p.title, 640, 'wv-card__alt') : ''}
+      <span class="wv-card__luz" aria-hidden="true"></span>
     </a>
+    <div class="wv-card__badges">${insignias(p)}</div>
     ${botonFavorito(p)}
-    ${p.available ? `<button type="button" class="tarjeta__agregar" data-agregar="${esc(p.handle)}" aria-label="Agregar ${esc(p.title)} al carrito"><svg aria-hidden="true"><use href="#i-mas"/></svg></button>` : ''}
+    <div class="wv-card__body">
+      <p class="wv-card__cat">${[col?.name, r?.name].filter(Boolean).map(esc).join(' · ') || 'Walkiverso'}</p>
+      <h3 class="wv-card__title"><a href="/producto/${esc(p.handle)}" data-link>${esc(p.title)}</a></h3>
+      ${precioBloque(p)}
+      ${p.available
+        ? `<button type="button" class="wv-btn wv-btn--primary wv-btn--sm wv-btn--block" data-agregar="${esc(p.handle)}">${esc(objeto ? T.ficha.agregarObjeto : T.ficha.agregar)}${flecha()}</button>`
+        : `<a class="wv-btn wv-btn--ghost wv-btn--sm wv-btn--block" href="/producto/${esc(p.handle)}" data-link>${esc(T.ficha.agotado)}</a>`}
+      <p class="wv-card__foot"><span>${icono('i-hoja')} Hecho a mano</span><span>${esUnica(p) ? '1 de 1' : p.available ? 'Disponible' : 'Adoptada'}</span></p>
+    </div>
   </article>`;
 };
 /** Corazón para guardar en favoritos (lo maneja cuenta.js). */
-export const botonFavorito = (p, clase = 'tarjeta__fav') => `<button type="button" class="wk-fav ${clase}" data-fav="${esc(p.handle)}" aria-pressed="false" aria-label="Guardar ${esc(p.title)} en favoritos"><svg aria-hidden="true"><use href="#i-corazon"/></svg></button>`;
-export const fantasmas = (n = 4) => '<span class="tarjeta tarjeta--fantasma"></span>'.repeat(n);
+export const botonFavorito = (p, clase = '') => `<button type="button" class="wv-fav ${clase}" data-fav="${esc(p.handle)}" aria-pressed="false" aria-label="Guardar ${esc(p.title)} en favoritos">${icono('i-corazon')}</button>`;
+export const fantasmas = (n = 4) => '<span class="wv-card wv-card--fantasma" aria-hidden="true"></span>'.repeat(n);
 
 /**
- * Cabecera de las páginas internas. Cada página tiene su escena (cielo, bosque, taller, niebla, carta…).
- * @param {{ante?: string, titulo: string, bajada?: string, escena?: string, extra?: string}} o
+ * Cabecera de las páginas internas (como PULSO): antetítulo, título grande y bajada,
+ * con tus raíces asomando en la esquina y polvo de luz.
  */
-export const cabecera = ({ ante = '', titulo, bajada = '', escena = 'cielo', extra = '' }) => `
-  <section class="wk-cabecera" data-escena="${escena}">
-    <div class="wk-cabecera__cielo" aria-hidden="true"></div>
-    <span class="wk-ramas-fondo wk-ramas-fondo--luz" data-esquinas="tr,bl" data-semilla="${hash(titulo) % 97}"></span>
-    <div class="wk-cabecera__escena" aria-hidden="true">${'<i></i>'.repeat(12)}</div>
-    <div class="contenedor">
-      ${ante ? `<p class="wk-antetitulo">${ante}</p>` : ''}
-      <h1>${titulo.split(' ').map((w, i) => `<span class="wk-palabra" style="--i:${i}">${esc(w)}</span>`).join(' ')}</h1>
-      ${bajada ? `<p class="wk-cabecera__bajada">${esc(bajada)}</p>` : ''}
+export const cabecera = ({ ante = '', titulo, bajada = '', extra = '', oscura = false }) => `
+  <section class="wv-page-head${oscura ? ' wv-page-head--noche' : ''}">
+    <span class="wk-ramas-fondo${oscura ? ' wk-ramas-fondo--luz' : ''}" data-esquinas="tr" data-semilla="${hash(titulo) % 97}"></span>
+    <div class="wv-container">
+      ${ante ? `<p class="wv-eyebrow">${icono('i-chispa')}${ante}</p>` : ''}
+      <h1 class="wv-h1">${titulo.split(' ').map((w, i) => `<span class="wk-palabra" style="--i:${i}">${esc(w)}</span>`).join(' ')}</h1>
+      ${bajada ? `<p class="wv-lead">${esc(bajada)}</p>` : ''}
       ${extra}
     </div>
   </section>`;
@@ -137,7 +175,9 @@ export async function agregarRapido(handle, boton) {
     const p = await tienda.productos.uno(handle);
     const disponibles = p.variants.filter((v) => v.available);
     if (p.variants.length > 1 || !disponibles.length) { ui.navegar(`/producto/${handle}`); return; }
-    await agregar(disponibles[0].id, boton, boton.closest('.tarjeta, .wk-carta')?.querySelector('.tarjeta__foto, .wk-carta__foto'));
+    await agregar(disponibles[0].id, boton, boton.closest('.wv-card, .wk-carta, .wv-spin__card')?.querySelector('.wv-card__media, .wk-carta__foto, .wv-spin__img'));
+    boton.classList.add('is-done');
+    setTimeout(() => boton.classList.remove('is-done'), 1800);
   } catch (e) {
     aviso(e.message);
   } finally {
@@ -146,14 +186,16 @@ export async function agregarRapido(handle, boton) {
 }
 
 // ---------------------------------------------------------------- avisos y modales
-export function aviso(texto) {
-  const el = document.createElement('p');
-  el.className = 'wk-toast';
+export function aviso(texto, { accion = '', href = '' } = {}) {
+  const caja = document.getElementById('avisos') ?? document.body;
+  const el = document.createElement('div');
+  el.className = 'wv-toast';
   el.setAttribute('role', 'status');
-  el.innerHTML = `<svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(texto)}`;
-  document.body.append(el);
-  setTimeout(() => el.classList.add('is-sale'), 3200);
-  setTimeout(() => el.remove(), 3800);
+  el.innerHTML = `<span class="wv-toast__icon"><i class="wk-mano"></i></span><span class="wv-toast__text">${esc(texto)}</span>${accion ? `<a class="wv-toast__action" href="${esc(href)}" data-link>${esc(accion)}</a>` : ''}`;
+  caja.append(el);
+  requestAnimationFrame(() => el.classList.add('is-in'));
+  setTimeout(() => el.classList.add('is-out'), 3400);
+  setTimeout(() => el.remove(), 3900);
 }
 
 /** Modal con fondo de vidrio. Devuelve el contenedor; se cierra con Esc, la X o tocando el fondo. */

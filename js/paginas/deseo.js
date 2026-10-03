@@ -71,7 +71,7 @@ export const seccionDeseo = ({ pagina = false } = {}) => `
             <label class="wk-campo wk-campo--vidrio"><span>${esc(T.deseo.referencia)}</span><input name="referencia" type="url" inputmode="url" placeholder="https://"></label>
             <div class="wk-deseo__nav">
               <button type="button" class="wk-deseo__volver" data-ir="1">← Volver</button>
-              <button type="button" class="wk-btn wk-btn--luz" data-ir="3">Seguir<svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
+              <button type="button" class="wv-btn wv-btn--luz" data-ir="3">Seguir<svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
             </div>
           </fieldset>
 
@@ -94,7 +94,7 @@ export const seccionDeseo = ({ pagina = false } = {}) => `
           <i class="wk-mano wk-mano--vacio" aria-hidden="true"></i>
           <h3>${esc(T.deseo.exito)}</h3>
           <p>${esc(T.deseo.exitoTexto)}</p>
-          <button type="button" class="wk-btn wk-btn--vidrio" data-ir="1">${esc(T.deseo.otro)}</button>
+          <button type="button" class="wv-btn wv-btn--outline-light" data-ir="1">${esc(T.deseo.otro)}</button>
         </div>
       </div>
     </div>

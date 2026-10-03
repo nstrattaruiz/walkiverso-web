@@ -32,7 +32,7 @@ export async function cursos() {
         <strong>${esc(p.title)}</strong>
         ${texto ? `<span class="wk-grimorio__texto">${esc(texto)}</span>` : ''}
         ${meta ? `<span class="wk-grimorio__meta">${meta.split('·').map((m) => `<em>${esc(m.trim())}</em>`).join('')}</span>` : ''}
-        <span class="wk-grimorio__pie">${precio(p)}<span class="wk-btn wk-btn--luz">${esc(T.cursos.ver)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></span></span>
+        <span class="wk-grimorio__pie">${precio(p)}<span class="wv-btn wv-btn--luz">${esc(T.cursos.ver)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></span></span>
       </span>
     </a>`;
   }).join('')}

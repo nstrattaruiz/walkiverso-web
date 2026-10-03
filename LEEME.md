@@ -1,21 +1,22 @@
 # Walkiverso · web nueva (plataforma)
 
 Tienda de Walkiverso en HTML, CSS y JS para la plataforma, con la firma NS.
-Cada página es una experiencia propia, conectada por una transición mágica.
+**Estructura y experiencia de PULSO** (barra de anuncios, menú grande con colecciones en tarjetas, tarjetas de producto,
+mosaico de colecciones, catálogo con filtros, ficha con caja de precio, carrito lateral, buscador, pie con marquesina)
+**con la magia de Walkiverso**: noche azul, celeste mágico, raíces, polvo de hadas, el sello de la mano y las experiencias propias.
 
 ## Recorrido
 | Página | Experiencia |
 |---|---|
-| **Inicio** `/` | **Entrada "El bosque despierta"** (cada vez que se vuelve al inicio): noche con niebla y luna, tus raíces crecen desde los bordes, las luciérnagas se juntan y aparece "Walkiverso". La primera vez espera que toques; después se abre sola, y las raíces se abren como un telón. Luego el **hero** (como el de Shopify: fotos que se alternan, raíces a la izquierda, polvo que gira con el mouse) → **Habitantes** (puertas Criaturas / Objetos) → **Duendes Milarko** (cartas + ritual "Que un duende te elija") → **recién salidos** → **pedile un deseo** → **reels** (carrusel en arco) → **reseñas** → **preguntas**. |
+| **Inicio** `/` | **Entrada "El bosque despierta"** (cada vez que se vuelve al inicio; la primera vez espera que toques) → **hero** oscuro (título "Arte, Magia y Reciclaje.", botones, cifras, mosaico de piezas con la mandrágora, la bitácora, la pieza más nueva y el sello) → banda inclinada → **Habitantes del Walkiverso** (mosaico de colecciones) → **Tres piezas, una sola vez** → **Duendes Milarko** (cartas + ritual) → **Recién salidos** (pestañas) → **Cómo nace una criatura** → **reseñas** → **pedile un deseo** (bola de cristal) → **espejos** (videos) → **preguntas** (con el oráculo) → **Walkiver**. |
 | **Walkurio** `/walkurio` | El planeta 3D (viaje entre estrellas cada vez que se entra) con sus regiones y la guía. |
-| **Tienda** `/tienda`, `/categoria/:handle` | Tarjeta de **Categorías** al costado (fila deslizable en celular) + regiones, búsqueda y orden. |
-| **Ficha** `/producto/:handle` | Galería en relieve, certificado de origen, "Adoptar" (criaturas) o "Agregar al carrito" (bitácoras), favorito. |
+| **Tienda** `/tienda`, `/categoria/:handle` | Filtros fijos a la izquierda (colecciones con cantidad, regiones, acceso al planeta), buscador + orden, grilla de 3. En celular, colecciones en chips. |
+| **Ficha** `/producto/:handle` | Miniaturas a la izquierda, insignias, caja de precio con "Pieza Nº", región y disponibilidad, Adoptar + favorito, beneficios, bloques (descripción, certificado de origen, región) y vecinos. Barra de compra fija en celular. |
 | **Favoritos** `/favoritos` · **Cuenta** `/cuenta` | Corazón en cada pieza. Sin cuenta se guardan en el dispositivo; con cuenta, en la cuenta. |
 | **Cursos** `/cursos` · **Contacto** `/contacto` | Libros que se abren · formulario que se pliega en un sobre sellado y sale volando. |
 | **Walkiver** `/walkiver/` | Copia exacta de la web de Walkiver, con linterna que sigue al mouse. |
 
-Entre páginas: tinta de noche que se derrama desde donde tocaste, un sigilo que se dibuja y la luz que se abre.
-Letra: Cormorant Garamond solo en el hero y los títulos grandes; el resto en Jost (sin cursivas). Walkiver mantiene sus fuentes.
+Letra: Cormorant Garamond 700 en títulos; Plus Jakarta Sans en el resto (precios en 800). Walkiver mantiene sus fuentes.
 Tus raíces (`ramas_vector.svg`, `js/ramas.js`) crecen en las secciones claras y oscuras, como en Shopify.
 Fotos del hero y de las puertas: en `js/config.js`. **Hoy son PROVISORIAS** y apuntan a las fotos publicadas en Shopify; al cerrarlo, subir los archivos a `img/` y cambiar las rutas.
 
@@ -29,7 +30,8 @@ Fotos del hero y de las puertas: en `js/config.js`. **Hoy son PROVISORIAS** y ap
 ## Archivos
 | Archivo | Qué es |
 |---|---|
-| `index.html` | Estructura: firma NS, planeta de Walkurio, búsqueda, carrito, pie |
+| `index.html` | Estructura: barra de anuncios, firma NS + menú grande, planeta, buscador, carrito, avisos |
+| `css/wv.css` | **Sistema de diseño** (estructura de PULSO con la magia de Walkiverso). Carga último y manda |
 | `css/walkiverso.css` | Base, botones, planeta, tarjetas, ficha, carrito, pie |
 | `css/secciones.css` | Menú desplegable, búsqueda, modales, cartas, deseo, reseñas, oráculo, cursos, contacto… |
 | `css/experiencias.css` | Portal, colecciones, ritual, espejos, bola de cristal, contacto, tienda, favoritos, cuenta, transición |

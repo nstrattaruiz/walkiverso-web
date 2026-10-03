@@ -50,6 +50,7 @@ export function repintarFavoritos() {
   if (c) { c.textContent = favs.size; c.hidden = !favs.size; }
   $('#abrir-cuenta')?.classList.toggle('is-dentro', !!cliente);
   $('#abrir-cuenta')?.setAttribute('aria-label', cliente ? `Mi cuenta (${cliente.name})` : 'Ingresar a mi cuenta');
+  const etiqueta = $('#abrir-cuenta span'); if (etiqueta) etiqueta.textContent = cliente ? cliente.name.split(' ')[0] : T.cuenta.ingresar;
 }
 
 document.addEventListener('click', async (e) => {
@@ -57,11 +58,11 @@ document.addEventListener('click', async (e) => {
   if (!b) return;
   e.preventDefault();
   const ahora = await favoritos.alternar(b.dataset.fav);
-  b.classList.remove('is-latido'); void b.offsetWidth; b.classList.add('is-latido');
+  b.classList.remove('is-pop'); void b.offsetWidth; b.classList.add('is-pop');
   if (ahora) { rafaga(b, 18); aviso(T.cuenta.guardado); }
   // En la página de favoritos, quitar uno lo saca de la lista
   if (!ahora && document.documentElement.dataset.pagina === 'favoritos') {
-    const t = b.closest('.tarjeta');
+    const t = b.closest('.wv-card');
     t?.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(0.9)' }], { duration: 350 }).finished.then(() => { t.remove(); if (!favs.size) favoritosPagina(); });
   }
 });
@@ -72,10 +73,10 @@ export async function favoritosPagina() {
   const lista = [...favs];
   app.innerHTML = `
     ${cabecera({ ante: esc(T.cuenta.favAnte), titulo: T.cuenta.favoritos, bajada: T.cuenta.favBajada, escena: 'cielo' })}
-    <section class="wk-seccion"><div class="contenedor">
+    <section class="wv-section wv-section--tight"><div class="wv-container">
       ${!cliente && hayCuentas() ? `<p class="wk-nota-cuenta"><svg aria-hidden="true"><use href="#i-usuario"/></svg>${esc(T.cuenta.favNota)} <a href="/cuenta" data-link>${esc(T.cuenta.ingresar)} →</a></p>` : ''}
-      <div class="grilla" id="lista-fav">${lista.length ? fantasmas(Math.min(lista.length, 4)) : ''}</div>
-      ${lista.length ? '' : `<div class="wk-vacio-fav"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><h2>${esc(T.cuenta.favVacio)}</h2><p>${esc(T.cuenta.favVacioTexto)}</p><a class="wk-btn wk-btn--noche" href="/tienda" data-link>${esc(T.cuenta.explorar)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a></div>`}
+      <div class="wv-grid" id="lista-fav">${lista.length ? fantasmas(Math.min(lista.length, 4)) : ''}</div>
+      ${lista.length ? '' : `<div class="wk-vacio-fav"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><h2>${esc(T.cuenta.favVacio)}</h2><p>${esc(T.cuenta.favVacioTexto)}</p><a class="wv-btn wv-btn--primary" href="/tienda" data-link>${esc(T.cuenta.explorar)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a></div>`}
     </div></section>`;
   if (!lista.length) return;
   const items = (await Promise.all(lista.map((h) => tienda.productos.uno(h).catch(() => null)))).filter(Boolean);
@@ -91,7 +92,7 @@ export async function cuentaPagina() {
   if (cliente) {
     app.innerHTML = `
       ${cabecera({ ante: esc(T.cuenta.titulo), titulo: `${T.cuenta.hola}, ${cliente.name}`, bajada: cliente.email, escena: 'cielo' })}
-      <section class="wk-seccion"><div class="contenedor wk-panel-cuenta">
+      <section class="wv-section wv-section--tight"><div class="wv-container wk-panel-cuenta">
         <a class="wk-panel-cuenta__item" href="/favoritos" data-link><svg aria-hidden="true"><use href="#i-corazon"/></svg><strong>${esc(T.cuenta.favoritos)}</strong><span>${favs.size} ${favs.size === 1 ? 'pieza' : 'piezas'}</span></a>
         <div class="wk-panel-cuenta__item is-pronto"><svg aria-hidden="true"><use href="#i-bag"/></svg><strong>${esc(T.cuenta.pedidos)}</strong><span>${esc(T.cuenta.pedidosPronto)}</span></div>
         <button type="button" class="wk-panel-cuenta__item" id="salir"><svg aria-hidden="true"><use href="#i-girar"/></svg><strong>${esc(T.cuenta.salir)}</strong><span>${esc(T.cuenta.salirTexto)}</span></button>
@@ -103,7 +104,7 @@ export async function cuentaPagina() {
   const activa = hayCuentas();
   app.innerHTML = `
     ${cabecera({ ante: esc(T.cuenta.titulo), titulo: T.cuenta.bienvenida, bajada: T.cuenta.bajada, escena: 'cielo' })}
-    <section class="wk-seccion"><div class="contenedor">
+    <section class="wv-section wv-section--tight"><div class="wv-container">
       <div class="wk-acceso" data-rev>
         <div class="wk-acceso__pestanas" role="tablist">
           <button type="button" role="tab" aria-selected="true" data-modo="ingresar">${esc(T.cuenta.ingresar)}</button>
@@ -114,7 +115,7 @@ export async function cuentaPagina() {
           <label class="wk-campo wk-campo--nombre" hidden><span>Nombre</span><input name="name" autocomplete="name"></label>
           <label class="wk-campo"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
           <label class="wk-campo"><span>Contraseña</span><input name="password" type="password" required minlength="6" autocomplete="current-password"></label>
-          <button class="wk-btn wk-btn--noche wk-btn--grande"${activa ? '' : ' disabled'}><span>${esc(T.cuenta.ingresar)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
+          <button class="wv-btn wv-btn--primary wv-btn--lg"${activa ? '' : ' disabled'}><span>${esc(T.cuenta.ingresar)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
           <p class="error" id="error-cuenta" role="alert"></p>
         </form>
         <ul class="wk-acceso__beneficios">${T.cuenta.beneficios.map((b) => `<li><svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(b)}</li>`).join('')}</ul>

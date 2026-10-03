@@ -49,6 +49,28 @@ export const textos = {
     conocer: 'Conocerlo',
     todos: 'Conocer a todos los duendes',
   },
+  prueba: { piezas: 'piezas únicas', mano: 'hecho a mano', regiones: 'regiones de Walkurio' },
+  chips: { unicas: 'Piezas únicas', envios: 'Envíos a todo Uruguay', reciclado: 'Materiales reciclados', uno: '1 de 1' }, // (P)
+  destacadas: {
+    antetitulo: 'Recién nacidas', titulo: 'Tres piezas, una sola vez', // (P)
+    bajada: 'Lo último que salió del taller. Cuando se van, no vuelven.', // (P)
+    nueva: 'Nueva', oferta: 'En oferta', duende: 'Duende Milarko', unica: 'Pieza única',
+  },
+  pasos: {
+    antetitulo: 'Del taller a tu casa', titulo: 'Cómo nace una criatura', // (P)
+    bajada: 'Nada se hace en serie: cada pieza pasa por las mismas manos, de principio a fin.', // (P)
+    lista: [ // (P)
+      ['Se rescata el material', 'Cartón, frascos y telas que iban a la basura vuelven a tener un destino.'],
+      ['Se esculpe a mano', 'Sin moldes: cada criatura encuentra su forma, su gesto y su mirada.'],
+      ['Recibe nombre y región', 'Llega con historia propia, su región de Walkurio y su certificado firmado.'],
+      ['Viaja a su hogar', 'Empacada con cuidado, sale del taller hacia cualquier rincón de Uruguay.'],
+    ],
+  },
+  walkiverBanda: {
+    antetitulo: 'Walkiver', titulo: 'Detrás de cada criatura hay un taller', // (P)
+    bajada: 'Conocé a Walkiver, su e-book de técnicas y los vídeos donde muestra cómo nacen las piezas del Walkiverso.', // (P)
+    boton: 'Conocer a Walkiver', boton2: 'Ver los cursos',
+  },
   cinta: ['Arte, magia y reciclaje', 'Piezas únicas', 'Hecho a mano', 'Con nombre propio', 'Desde Walkurio'],
   recientes: {
     antetitulo: 'Novedades', titulo: 'Recién salidos del taller',

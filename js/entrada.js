@@ -153,9 +153,9 @@ export function crearPortada(seccion, { esperarToque = false, alAbrir } = {}) {
   const svgVelo = velo.querySelector('.wk-velo__raices');
   const tocar = velo.querySelector('.wk-velo__tocar');
   const saltar = velo.querySelector('.wk-velo__saltar');
-  const hero = seccion.querySelector('.wk-hero');
-  const svgHero = hero.querySelector('.wk-hero__raices');
-  const polvoHero = crearPolvo(hero.querySelector('.wk-hero__polvo'), { cantidad: 72 });
+  const hero = seccion.querySelector('.wv-hero, .wk-hero');
+  const svgHero = hero.querySelector('.wv-hero__raices, .wk-hero__raices');
+  const polvoHero = crearPolvo(hero.querySelector('.wv-hero__polvo, .wk-hero__polvo'), { cantidad: 72 });
   const polvoVelo = crearPolvo(lienzoVelo, { cantidad: 110 });
   let fase = 'creciendo', espera = 0;
 
@@ -172,7 +172,7 @@ export function crearPortada(seccion, { esperarToque = false, alAbrir } = {}) {
 
   const medirVelo = () => raicesEntrada(svgVelo, velo.clientWidth, velo.clientHeight);
   let anchoHero = 0;
-  const medirHero = (rapido) => { const w = hero.clientWidth; if (Math.abs(w - anchoHero) < 40) return; anchoHero = w; raicesHero(svgHero, w, hero.clientHeight, rapido); };
+  const medirHero = (rapido) => { if (!svgHero) return; const w = hero.clientWidth; if (Math.abs(w - anchoHero) < 40) return; anchoHero = w; raicesHero(svgHero, w, hero.clientHeight, rapido); };
   medirVelo();
   medirHero(false);
   const ro = new ResizeObserver(() => medirHero(true)); ro.observe(hero);
@@ -256,7 +256,7 @@ export const marcadoPortada = ({ esc, T, info, imagenes }) => `
         <h1 class="wk-hero__titulo2" aria-label="${esc(T.hero.titulo)}">${(() => { let n = 0; return T.hero.titulo.split(' ').map((w) => `<span class="wk-hero__palabra" aria-hidden="true">${[...w].map((c) => `<span class="wk-hero__letra" style="--i:${n++}">${esc(c)}</span>`).join('')}</span>`).join(' '); })()}</h1>
         <p class="wk-hero__texto">${esc(T.hero.bajada)}</p>
         <div class="wk-hero__acciones">
-          <a class="wk-btn wk-btn--luz wk-btn--grande-hero" href="/tienda" data-link><span>${esc(T.hero.boton)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></a>
+          <a class="wv-btn wv-btn--luz wv-btn--lg" href="/tienda" data-link><span>${esc(T.hero.boton)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></a>
           <a class="wk-enlace" href="/walkurio" data-link>${esc(T.hero.boton2)}</a>
         </div>
       </div>
@@ -274,3 +274,16 @@ export const marcadoPortada = ({ esc, T, info, imagenes }) => `
       <button type="button" class="wk-velo__saltar">${esc(T.entrada.saltar)}</button>
     </div>
   </section>`;
+
+/** Solo el velo de la entrada (el hero lo arma cada página). */
+export const marcadoVelo = ({ esc, T, info }) => `
+    <div class="wk-velo" aria-hidden="false">
+      <span class="wk-velo__niebla" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="wk-velo__luna" aria-hidden="true"></span>
+      <svg class="wk-velo__raices" aria-hidden="true" focusable="false"></svg>
+      <canvas class="wk-velo__luces" aria-hidden="true"></canvas>
+      <p class="wk-velo__nombre"><img src="img/logo.svg" alt="${esc(info.name)}" width="600" height="160"></p>
+      <p class="wk-velo__lema" aria-hidden="true">${esc(T.entrada.lema)}</p>
+      <button type="button" class="wk-velo__tocar" hidden><span class="wk-velo__luciernaga" aria-hidden="true"></span>${esc(T.entrada.tocar)}</button>
+      <button type="button" class="wk-velo__saltar">${esc(T.entrada.saltar)}</button>
+    </div>`;

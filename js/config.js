@@ -62,3 +62,10 @@ export const puertas = [
   { handle: 'criaturas', titulo: 'Criaturas', imagen: `${SHOPIFY}criaturas-categoriapc-mandragora-mandrake-harrypotter-halloween.webp?width=1800`, imagenMovil: `${SHOPIFY}criaturas-categoria-mandragora-mandrake-harrypotter-halloween.webp?width=1000` },
   { handle: 'bitacoras', titulo: 'Objetos', imagen: `${SHOPIFY}objetos-categoriapc-bitacora-diario-journal-halloween.webp?width=1800`, imagenMovil: `${SHOPIFY}objetos-categoria-bitacora-diario-journal-halloween.webp?width=1000` },
 ];
+
+// Imagen de cada colección cuando el panel no tiene una (recortes sin fondo, quedan flotando en la tarjeta)
+export const imagenesColeccion = {
+  criaturas: 'img/mandragora.webp',
+  mandragoras: 'img/mandragora.webp',
+  bitacoras: 'img/bitacora.webp',
+};

@@ -60,14 +60,14 @@ export function contacto() {
             </div>
             <div class="wk-misiva__pie">
               <small>${esc(T.contacto.nota)}</small>
-              <button class="wk-btn wk-btn--luz wk-btn--grande-hero"><span>${esc(T.contacto.enviar)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
+              <button class="wv-btn wv-btn--luz wv-btn--lg"><span>${esc(T.contacto.enviar)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
             </div>
           </form>
           <div class="wk-carta-enviada" id="enviada" tabindex="-1" hidden>
             <i class="wk-mano wk-mano--vacio" aria-hidden="true"></i>
             <h2>${esc(T.contacto.exito)}</h2>
             <p>${esc(T.contacto.exitoTexto)}</p>
-            <button type="button" class="wk-btn wk-btn--linea" id="otra-carta">${esc(T.contacto.otro)}</button>
+            <button type="button" class="wv-btn wv-btn--ghost" id="otra-carta">${esc(T.contacto.otro)}</button>
           </div>
         </div>
       </div>

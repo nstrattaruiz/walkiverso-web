@@ -11,7 +11,7 @@ export async function mostrarRegion(r, alCerrar) {
     <h2>${esc(r.name)}</h2>
     ${r.description ? `<p class="wk-region__texto">${esc(r.description)}</p>` : ''}
     <div class="wk-region__habitantes" id="region-habitantes"><span class="wk-cargando"></span></div>
-    <a class="wk-btn wk-btn--luz" href="/categoria/${esc(r.handle)}" data-link>${esc(T.region.explorar)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a>`;
+    <a class="wv-btn wv-btn--luz" href="/categoria/${esc(r.handle)}" data-link>${esc(T.region.explorar)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a>`;
   requestAnimationFrame(() => el.classList.add('is-abierta'));
   $('#mundo').classList.add('con-region');
   el.querySelector('.wk-region__cerrar').addEventListener('click', () => { cerrarRegion(); alCerrar?.(); });

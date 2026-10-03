@@ -1,8 +1,9 @@
 // Walkiverso · web para la plataforma (Kit NS).
 // Todos los datos salen de la tienda con el SDK: el cliente los cambia desde su panel.
+// Estructura y experiencia de PULSO (barra de anuncios, menú grande, carrito, buscador, pie) con la magia de Walkiverso.
 // Rutas: /  ·  /walkurio  ·  /tienda  ·  /categoria/:handle  ·  /producto/:handle  ·  /cursos  ·  /contacto  ·  /favoritos  ·  /cuenta  ·  /legal/:tipo
 // (Walkiver vive aparte en /walkiver/ y /walkiver/somos-mitos/)
-import { tienda, T, $, $$, esc, app, estado, ui, reducido, tactil, espera, regiones, categoria, colecciones, foto, sinFoto, precio, cabecera, revelar, agregarRapido, aviso } from './base.js';
+import { tienda, T, $, $$, esc, app, estado, ui, reducido, tactil, espera, regiones, colecciones, coleccionDe, foto, sinFoto, cabecera, revelar, agregarRapido, aviso, icono, flecha, imagenColeccion, tonoColeccion } from './base.js';
 import { polvoDeHadas } from './polvo.js';
 import { inicio } from './paginas/inicio.js';
 import { catalogo } from './paginas/tienda.js';
@@ -30,29 +31,45 @@ async function arrancar() {
   document.title = info.seo.title || info.name;
   $('#marca').alt = info.name;
   if (info.logo) $('#marca').outerHTML = `<img src="${esc(info.logo.url ?? info.logo)}" alt="${esc(info.name)}" height="36">`;
-  $('#pie-marca').alt = info.name;
-  $('#pie-bajada').textContent = info.seo.description || '';
-  $('#pie-nombre').textContent = `© ${new Date().getFullYear()} ${info.name}`;
   if (info.colors?.primary) document.documentElement.style.setProperty('--celeste', info.colors.primary);
   if (info.colors?.dark) document.documentElement.style.setProperty('--noche', info.colors.dark);
   if (info.favicon) document.head.insertAdjacentHTML('beforeend', `<link rel="icon" href="${esc(info.favicon)}">`);
   if (info.seo.description) $('meta[name=description]').content = info.seo.description;
   if (tienda.demo) $('#demo').hidden = false;
 
+  pintarBarraAnuncios();
   pintarMenus();
-  pintarCinta();
   pintarHablemos();
+  pintarPie();
   pintarCookies();
   pintarMundo();
-  $('#pie-legales').innerHTML = info.legal.map((l) => `<a href="/legal/${l.kind}" data-link>${esc(l.title)}</a>`).join('');
 
   tienda.carrito.alCambiar(pintarCarrito);
-  pintarCarrito(await tienda.carrito.ver());
+  pintarCarrito(await tienda.carrito.ver(), false);
   window.addEventListener('popstate', () => { if (location.pathname !== rutaActual) ruta(); });
   polvoDeHadas();
   await iniciarCuenta();
   await ruta();
   if (new URLSearchParams(location.search).has('carrito')) abrirCarrito();
+}
+
+// ---------------------------------------------------------------- barra de anuncios (se va con el scroll)
+function pintarBarraAnuncios() {
+  const a = estado.info.announcement;
+  const frases = a?.text ? [a.text, ...T.cinta.slice(1, 3)] : T.cinta;
+  $('#topbar-texto').textContent = frases.join('. ');
+  const vuelta = frases.map((f) => `<span>${esc(f)}</span><i class="wk-mano"></i>`).join('');
+  $('#topbar').innerHTML = vuelta.repeat(4);
+  const barra = $('.wv-topbar');
+  const raiz = document.documentElement;
+  let raf = 0;
+  const sync = () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => raiz.style.setProperty('--wv-top', `${Math.max(0, barra.offsetHeight - scrollY)}px`));
+  };
+  addEventListener('scroll', sync, { passive: true });
+  addEventListener('resize', sync, { passive: true });
+  sync();
 }
 
 // ---------------------------------------------------------------- mundo 3D (Walkurio)
@@ -93,7 +110,7 @@ function pintarMundo() {
   $('#wkr-ante').textContent = T.walkurio.antetitulo;
   $('#wkr-titulo').textContent = T.walkurio.titulo;
   $('#wkr-bajada').textContent = T.walkurio.bajada;
-  $('#wkr-boton').innerHTML = `<svg aria-hidden="true"><use href="#i-chispa"/></svg>${esc(T.walkurio.boton)}`;
+  $('#wkr-boton').innerHTML = `${icono('i-chispa')}${esc(T.walkurio.boton)}`;
   $('#wkr-pista span').textContent = tactil ? T.walkurio.pistaTactil : T.walkurio.pista;
   let siguiente = 0;
   $('#wkr-boton').addEventListener('click', () => {
@@ -104,19 +121,12 @@ function pintarMundo() {
   });
 }
 
-// ---------------------------------------------------------------- cinta del final (texto calado que se desliza)
-function pintarCinta() {
-  const frases = ['Arte', 'Magia', 'Reciclaje', estado.info.name];
-  const vuelta = frases.map((f) => `<span>${esc(f)}</span><i class="wk-mano" aria-hidden="true"></i>`).join('');
-  $('.wk-cinta-final__pista').innerHTML = vuelta.repeat(4);
-}
-
-// ---------------------------------------------------------------- menús (con desplegable de colecciones)
+// ---------------------------------------------------------------- menús
 const hrefDe = (l) => ({ category: `/categoria/${l.handle}`, product: `/producto/${l.handle}`, catalog: '/tienda', home: '/' })[l.kind] ?? l.url ?? '/';
 const esExterno = (u) => /^https?:/i.test(u);
 const esAparte = (u) => /^\/walkiver(\/|$)/.test(u); // páginas propias fuera de esta app
 const enlace = (l, extra = '') => {
-  const href = hrefDe(l);
+  const href = typeof l === 'string' ? l : hrefDe(l);
   return `<a href="${esc(href)}"${esExterno(href) ? ' target="_blank" rel="noopener"' : esAparte(href) ? '' : ' data-link'}${extra}>`;
 };
 
@@ -124,61 +134,58 @@ function pintarMenus() {
   const info = estado.info;
   const main = info.menus.main.length ? info.menus.main
     : [{ label: 'Tienda', kind: 'catalog', children: [] }, { label: 'Walkurio', kind: 'url', url: '/walkurio', children: [] }, { label: 'Contacto', kind: 'url', url: '/contacto', children: [] }];
-  $('#nav').innerHTML = main.map((l, i) => l.children?.length ? `
-    <div class="wk-desplegable" data-desplegable>
-      <button type="button" class="wk-desplegable__boton" aria-expanded="false" aria-controls="mega-${i}">${esc(l.label)}<svg aria-hidden="true"><use href="#i-abajo"/></svg></button>
-      <div class="wk-mega" id="mega-${i}">
-        <div class="wk-mega__items">
-          ${l.children.map((c) => {
-            const cat = c.kind === 'category' ? estado.categorias.find((x) => x.handle === c.handle) : null;
-            return `${enlace(c, ' class="wk-mega__item"')}
-              <span class="wk-mega__foto">${cat?.image ? foto(cat.image, cat.name, 320) : sinFoto(c.label)}</span>
-              <span><strong>${esc(c.label)}</strong>${cat ? `<small>${cat.productCount} piezas</small>` : ''}</span></a>`;
-          }).join('')}
-        </div>
-        <a class="wk-mega__destacado" href="/walkurio" data-link>
-          <span class="wk-mega__planeta" aria-hidden="true"></span>
-          <small>${esc(T.walkurio.antetitulo)}</small><strong>${esc(T.walkurio.titulo)}</strong>
-          <span>${esc(T.walkurio.boton)} →</span>
-        </a>
-      </div>
-    </div>` : `${enlace(l)}${esc(l.label)}</a>`).join('');
-  // El menú grande (☰) muestra también los hijos
-  $('#panel-nav').innerHTML = main.map((l, i) =>
-    `${enlace(l, ` style="--i:${i}"`)}<small>${String(i + 1).padStart(2, '0')}</small>${esc(l.label)}</a>${l.children?.length ? `<div class="wk-panel-hijos" style="--i:${i}">${l.children.map((c) => `${enlace(c)}${esc(c.label)}</a>`).join('')}</div>` : ''}`).join('');
-  $('#panel-nav').insertAdjacentHTML('beforeend', `<div class="wk-panel-extra"><a href="/favoritos" data-link><svg aria-hidden="true"><use href="#i-corazon"/></svg>${esc(T.cuenta.favoritos)}</a><a href="/cuenta" data-link><svg aria-hidden="true"><use href="#i-usuario"/></svg>${esc(T.cuenta.titulo)}</a></div>`);
-  $('#pie-menu').innerHTML = info.menus.footer.map((l) => l.children?.length
-    ? `<div><strong>${esc(l.label)}</strong><ul>${l.children.map((c) => `<li>${enlace(c)}${esc(c.label)}</a></li>`).join('')}</ul></div>`
-    : `<div>${enlace(l)}${esc(l.label)}</a></div>`).join('');
-
-  // Desplegables: con mouse se abren al pasar; con teclado o toque, al apretar
-  $$('[data-desplegable]').forEach((d) => {
-    const b = d.querySelector('button');
-    const abrir = (si) => { b.setAttribute('aria-expanded', String(si)); d.classList.toggle('is-abierto', si); };
-    let t;
-    if (!tactil) {
-      d.addEventListener('pointerenter', () => { clearTimeout(t); abrir(true); });
-      d.addEventListener('pointerleave', () => { t = setTimeout(() => abrir(false), 180); });
-    }
-    b.addEventListener('click', () => abrir(b.getAttribute('aria-expanded') !== 'true'));
-    d.addEventListener('keydown', (e) => { if (e.key === 'Escape') { abrir(false); b.focus(); } });
-    d.addEventListener('focusout', (e) => { if (!d.contains(e.relatedTarget)) abrir(false); });
-    d.addEventListener('click', (e) => { if (e.target.closest('a')) abrir(false); });
-  });
+  $('#nav').innerHTML = main.map((l) => `${enlace(l)}${esc(l.label)}</a>`).join('');
+  $('#panel-nav').innerHTML = [...main, { label: T.cuenta.favoritos, url: '/favoritos' }].map((l, i) =>
+    `${enlace(l, ` style="--i:${i}"`)}<small>${String(i + 1).padStart(2, '0')}</small><span>${esc(l.label)}</span><i class="wv-menu__go" aria-hidden="true"></i></a>`).join('');
+  $('#menu-cats').innerHTML = colecciones().filter((c) => c.productCount).slice(0, 6).map((c, i) => `
+    <a class="wv-menu__cat wv-tono--${tonoColeccion(i)}" href="/categoria/${esc(c.handle)}" data-link style="--i:${i}">
+      <span class="wv-menu__cat-img">${imagenColeccion(c)}</span>
+      <strong>${esc(c.name)}</strong><span>${esc(T.categorias.piezas(c.productCount))}</span>
+    </a>`).join('');
 }
 
 function pintarHablemos() {
   const c = estado.info.contact;
   const wa = (c.whatsapp || '').replace(/\D/g, '').replace(/^0/, '598');
-  const redes = [['instagram', 'i-ig'], ['facebook', 'i-fb']].filter(([k]) => c[k]);
   $('#hablemos').insertAdjacentHTML('beforeend', [
-    c.phone && `<a href="tel:${esc(c.phone.replace(/\s/g, ''))}"><svg aria-hidden="true"><use href="#i-phone"/></svg>${esc(c.phone)}</a>`,
-    wa && `<a href="https://wa.me/${wa}${c.whatsappMessage ? `?text=${encodeURIComponent(c.whatsappMessage)}` : ''}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>WhatsApp</a>`,
-    c.email && `<a href="mailto:${esc(c.email)}"><svg aria-hidden="true"><use href="#i-mail"/></svg>${esc(c.email)}</a>`,
-    c.location && `<p><svg aria-hidden="true"><use href="#i-pin"/></svg>${esc(c.location)}</p>`,
-    redes.length && `<div class="ns-panel__social">${redes.map(([k, i]) => `<a href="${esc(c[k])}" target="_blank" rel="noopener" aria-label="${k}"><svg aria-hidden="true"><use href="#${i}"/></svg></a>`).join('')}</div>`,
+    c.phone && `<a href="tel:${esc(c.phone.replace(/\s/g, ''))}">${icono('i-phone')}${esc(c.phone)}</a>`,
+    wa && `<a href="https://wa.me/${wa}${c.whatsappMessage ? `?text=${encodeURIComponent(c.whatsappMessage)}` : ''}" target="_blank" rel="noopener">${icono('i-wa')}WhatsApp</a>`,
+    c.email && `<a href="mailto:${esc(c.email)}">${icono('i-mail')}${esc(c.email)}</a>`,
+    `<a class="wv-btn wv-btn--luz wv-btn--sm" href="/contacto" data-link>${esc(T.contacto.enviar)}</a>`,
   ].filter(Boolean).join(''));
-  if (!$('#hablemos').querySelector('a, p:not(.ns-panel__label)')) $('#hablemos').hidden = true;
+}
+
+// ---------------------------------------------------------------- pie (como PULSO)
+function pintarPie() {
+  const info = estado.info;
+  const c = info.contact;
+  const frase = `${T.cinta[0]} · ${info.name} · `;
+  const redes = [['instagram', 'i-ig', 'Instagram'], ['facebook', 'i-fb', 'Facebook']].filter(([k]) => c[k]);
+  $('#pie').innerHTML = `
+    <div class="wv-footer__big" aria-hidden="true"><div class="wv-footer__marquee"><span>${esc(frase.repeat(2))}</span><span>${esc(frase.repeat(2))}</span></div></div>
+    <div class="wv-container wv-footer__grid">
+      <div class="wv-footer__brand">
+        <a href="/" data-link aria-label="${esc(info.name)}, ir al inicio"><img class="wv-footer__logo" src="img/logo.svg" alt="${esc(info.name)}" width="220" height="60"></a>
+        <p class="wv-footer__slogan">${esc(T.hero.titulo)}.</p>
+        <p class="wv-footer__small">${esc(info.seo.description || T.hero.bajada)}</p>
+        <a class="wv-btn wv-btn--luz" href="/tienda" data-link>${esc(T.hero.boton)}${flecha()}</a>
+      </div>
+      ${info.menus.footer.map((l) => `
+        <nav class="wv-footer__col" aria-label="${esc(l.label)}">
+          <h2>${esc(l.label)}</h2>
+          ${(l.children?.length ? l.children : [l]).map((x) => `${enlace(x)}${esc(x.label)}</a>`).join('')}
+        </nav>`).join('')}
+      ${redes.length || c.email ? `
+        <div class="wv-footer__col">
+          <h2>Seguinos</h2>
+          ${redes.map(([k, i, n]) => `<a href="${esc(c[k])}" target="_blank" rel="noopener">${icono(i)}${n}</a>`).join('')}
+          ${c.email ? `<a href="mailto:${esc(c.email)}">${icono('i-mail')}${esc(c.email)}</a>` : ''}
+        </div>` : ''}
+    </div>
+    <div class="wv-container wv-footer__bottom">
+      <p>© ${new Date().getFullYear()} ${esc(info.name)} · Hecho a mano en Uruguay</p>
+      <div>${info.legal.map((l) => `<a href="/legal/${l.kind}" data-link>${esc(l.title)}</a>`).join('')}</div>
+    </div>`;
 }
 
 // ---------------------------------------------------------------- cookies y medición
@@ -190,10 +197,10 @@ function pintarCookies() {
   if (!ck || eleccion) return;
   const el = $('#cookies');
   const privacidad = info.legal.find((l) => l.kind === 'privacy');
-  el.innerHTML = `<p>${esc(ck.text || 'Usamos cookies para que la tienda funcione y, si aceptás, para medir las visitas.')}
+  el.innerHTML = `<p><strong>Cookies del Walkiverso.</strong> ${esc(ck.text || 'Usamos cookies para que la tienda funcione y, si aceptás, para medir las visitas.')}
     ${privacidad ? `<a href="/legal/privacy" data-link>${esc(privacidad.title)}</a>` : ''}</p>
-    <div>${ck.mode === 'consent' ? `<button class="wk-btn wk-btn--vidrio" data-cookies="necesarias">${esc(ck.rejectText || 'Solo necesarias')}</button>` : ''}
-    <button class="wk-btn wk-btn--luz" data-cookies="todas">${esc(ck.acceptText || (ck.mode === 'consent' ? 'Aceptar' : 'Entendido'))}</button></div>`;
+    <div>${ck.mode === 'consent' ? `<button class="wv-btn wv-btn--outline-light wv-btn--sm" data-cookies="necesarias">${esc(ck.rejectText || 'Solo necesarias')}</button>` : ''}
+    <button class="wv-btn wv-btn--luz wv-btn--sm" data-cookies="todas">${esc(ck.acceptText || (ck.mode === 'consent' ? 'Aceptar' : 'Entendido'))}</button></div>`;
   el.hidden = false;
   el.addEventListener('click', (e) => {
     const b = e.target.closest('[data-cookies]');
@@ -243,6 +250,7 @@ document.addEventListener('click', (e) => {
   if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
   e.preventDefault();
   cerrarBusqueda();
+  cerrarCarrito();
   navegar(a.getAttribute('href'), e.clientX || innerWidth / 2, e.clientY || innerHeight / 2);
 });
 // Enlaces absolutos fuera de la app (ej.: /walkiver/) cuando la web vive en una subcarpeta
@@ -282,16 +290,17 @@ async function ruta() {
   cuerpo.toggle('con-mundo', conMundo(seccion));
   cuerpo.toggle('es-inicio', ['', 'index.html'].includes(seccion));
   cuerpo.toggle('es-walkurio', seccion === 'walkurio');
-  cuerpo.toggle('tope-claro', seccion === 'producto');
   document.documentElement.dataset.pagina = seccion || 'inicio';
   document.documentElement.classList.remove('arranca-con-mundo');
   cerrarRegion();
   if (conMundo(seccion)) viajarAWalkurio();
   else mundo?.activo(false);
-  $$('#nav a, #nav .wk-desplegable__boton').forEach((a) => {
+  // Enlace activo en la barra y en el menú grande
+  $$('#nav a, #panel-nav a').forEach((a) => {
     const h = a.getAttribute('href');
-    const activo = h ? (h === '/' ? !seccion : camino().startsWith(h.replace(/\/$/, '')) && h !== '/') : seccion === 'tienda' || seccion === 'categoria';
-    a.classList.toggle('is-activo', activo);
+    const activo = h === '/' ? !seccion : h === '/tienda' ? ['tienda', 'categoria', 'producto'].includes(seccion) : camino().startsWith(h.replace(/\/$/, '')) && h !== '/';
+    a.classList.toggle('is-active', activo);
+    if (activo) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
   window.scrollTo(0, 0);
   try {
@@ -311,6 +320,7 @@ async function ruta() {
     if (e.message !== '404') console.warn(e);
     noEncontrado();
   }
+  app.classList.remove('is-entering'); void app.offsetWidth; app.classList.add('is-entering');
   repintarFavoritos();
   ramasDeFondo(app);
   revelar();
@@ -337,22 +347,20 @@ async function carritoRuta(accion) {
 async function legal(tipo) {
   const l = await tienda.legal(tipo);
   document.title = `${l.title} · ${estado.info.name}`;
-  app.innerHTML = `${cabecera({ titulo: l.title, escena: 'niebla' })}<article class="contenedor legal">${l.html}</article>`;
+  app.innerHTML = `${cabecera({ ante: estado.info.name, titulo: l.title })}<article class="wv-container wv-legal">${l.html}</article>`;
 }
 function noEncontrado() {
   document.title = `${T.noEncontrado.titulo} · ${estado.info.name}`;
-  app.innerHTML = `${cabecera({ ante: '404', titulo: T.noEncontrado.titulo, bajada: T.noEncontrado.bajada, escena: 'perdido', extra: `<a class="wk-btn wk-btn--luz wk-cabecera__boton" href="/" data-link>${esc(T.noEncontrado.boton)}</a>` })}`;
+  app.innerHTML = `${cabecera({ ante: '404', titulo: T.noEncontrado.titulo, bajada: T.noEncontrado.bajada, extra: `<div class="wv-page-head__ctas"><a class="wv-btn wv-btn--primary wv-btn--lg" href="/" data-link>${esc(T.noEncontrado.boton)}${flecha()}</a><a class="wv-btn wv-btn--ghost wv-btn--lg" href="/tienda" data-link>${esc(T.recientes.boton)}</a></div>` })}`;
 }
 
-// ---------------------------------------------------------------- búsqueda global
+// ---------------------------------------------------------------- buscador (modal como PULSO)
 const lugares = () => [
-  { titulo: 'Walkurio', texto: T.walkurio.antetitulo, href: '/walkurio', icono: 'i-planeta' },
   { titulo: 'Tienda', texto: T.tienda.bajada, href: '/tienda', icono: 'i-bag' },
-  ...colecciones().map((c) => ({ titulo: c.name, texto: `${c.productCount} piezas`, href: `/categoria/${c.handle}`, icono: 'i-chispa' })),
+  ...colecciones().filter((c) => c.productCount).map((c) => ({ titulo: c.name, texto: T.categorias.piezas(c.productCount), href: `/categoria/${c.handle}`, icono: 'i-chispa' })),
+  { titulo: 'Walkurio', texto: T.walkurio.antetitulo, href: '/walkurio', icono: 'i-planeta' },
   ...regiones().map((c) => ({ titulo: c.name, texto: T.region.antetitulo, href: `/categoria/${c.handle}`, icono: 'i-pin' })),
   { titulo: T.cursos.titulo, texto: T.cursos.antetitulo, href: '/cursos', icono: 'i-bitacora' },
-  { titulo: T.cuenta.favoritos, texto: T.cuenta.favAnte, href: '/favoritos', icono: 'i-corazon' },
-  { titulo: T.cuenta.titulo, texto: T.cuenta.ingresar, href: '/cuenta', icono: 'i-usuario' },
   { titulo: 'Walkiver', texto: 'Sobre mí, e-book y vídeos', href: '/walkiver/', icono: 'i-pluma', aparte: true },
   { titulo: 'Contacto', texto: T.contacto.titulo, href: '/contacto', icono: 'i-mail' },
 ];
@@ -360,22 +368,20 @@ const normal = (t) => String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/
 let previoBusqueda;
 function abrirBusqueda() {
   const b = $('#busqueda');
-  if (b.classList.contains('is-abierta')) return;
+  if (b.classList.contains('is-open')) return;
   previoBusqueda = document.activeElement;
   b.hidden = false;
-  document.body.classList.add('con-busqueda');
-  requestAnimationFrame(() => b.classList.add('is-abierta'));
-  $('#busqueda-titulo').textContent = T.buscar.titulo;
-  $('#q').placeholder = T.buscar.placeholder;
-  buscar('');
+  document.documentElement.classList.add('wv-layer-open');
+  requestAnimationFrame(() => b.classList.add('is-open'));
+  buscar($('#q').value);
   setTimeout(() => $('#q').focus(), 50);
 }
 function cerrarBusqueda() {
   const b = $('#busqueda');
-  if (!b.classList.contains('is-abierta')) return;
-  b.classList.remove('is-abierta');
-  document.body.classList.remove('con-busqueda');
-  setTimeout(() => { b.hidden = true; }, 400);
+  if (!b.classList.contains('is-open')) return;
+  b.classList.remove('is-open');
+  if (!$('#carrito').classList.contains('is-open')) document.documentElement.classList.remove('wv-layer-open');
+  setTimeout(() => { b.hidden = true; }, 350);
   previoBusqueda?.focus?.();
 }
 let turno = 0;
@@ -383,18 +389,23 @@ async function buscar(q) {
   const yo = ++turno;
   const res = $('#busqueda-res');
   const n = normal(q.trim());
-  const pags = lugares().filter((l) => !n || normal(`${l.titulo} ${l.texto}`).includes(n)).slice(0, n ? 6 : 8);
-  const htmlLugares = pags.length ? `<div class="wk-busqueda__grupo"><p class="wk-busqueda__etiqueta">${n ? esc(T.buscar.paginas) : esc(T.buscar.sugerencias)}</p><div class="wk-busqueda__lugares">${pags.map((l) => `<a href="${esc(l.href)}"${l.aparte ? '' : ' data-link'}><svg aria-hidden="true"><use href="#${l.icono}"/></svg><span><strong>${esc(l.titulo)}</strong><small>${esc(l.texto)}</small></span></a>`).join('')}</div></div>` : '';
+  const pags = lugares().filter((l) => !n || normal(`${l.titulo} ${l.texto}`).includes(n)).slice(0, n ? 5 : 8);
+  const htmlLugares = pags.length ? `<p class="wv-search__hint">${n ? esc(T.buscar.paginas) : esc(T.buscar.sugerencias)}</p><div class="wv-chips">${pags.map((l) => `<a class="wv-chip" href="${esc(l.href)}"${l.aparte ? '' : ' data-link'}>${icono(l.icono)}${esc(l.titulo)}</a>`).join('')}</div>` : '';
   if (!n) { res.innerHTML = htmlLugares; return; }
-  res.innerHTML = `${htmlLugares}<div class="wk-busqueda__grupo"><p class="wk-busqueda__etiqueta">${esc(T.buscar.productos)}</p><span class="wk-cargando"></span></div>`;
-  await espera(160);
+  res.innerHTML = `${htmlLugares}<p class="wv-search__hint">${esc(T.buscar.productos)}</p><span class="wk-cargando wk-cargando--oscuro"></span>`;
+  await espera(150);
   if (yo !== turno) return;
   const { items, total } = await tienda.productos.listar({ buscar: q.trim(), porPagina: 6 }).catch(() => ({ items: [], total: 0 }));
   if (yo !== turno) return;
-  res.innerHTML = `${htmlLugares}<div class="wk-busqueda__grupo"><p class="wk-busqueda__etiqueta">${esc(T.buscar.productos)}</p>
-    ${items.length ? `<div class="wk-busqueda__piezas">${items.map((p, i) => `<a href="/producto/${esc(p.handle)}" data-link style="--i:${i}"><span class="wk-busqueda__foto">${foto(p.image, p.title, 320) || sinFoto(p.title)}</span><span><strong>${esc(p.title)}</strong>${precio(p)}</span></a>`).join('')}</div>
-    ${total > items.length ? `<a class="wk-btn wk-btn--vidrio" href="/tienda?buscar=${encodeURIComponent(q.trim())}" data-link>${esc(T.buscar.todo)} (${total})<svg aria-hidden="true"><use href="#i-flecha"/></svg></a>` : ''}`
-    : `<p class="wk-busqueda__nada">${esc(T.buscar.nada)}</p>`}</div>`;
+  res.innerHTML = `${htmlLugares}<p class="wv-search__hint">${esc(T.buscar.productos)}</p>
+    ${items.length ? `<div class="wv-results">${items.map((p, i) => `
+      <a class="wv-result" href="/producto/${esc(p.handle)}" data-link style="animation-delay:${i * 40}ms">
+        <span class="wv-result__img">${foto(p.image, p.title, 320) || sinFoto(p.title)}</span>
+        <span class="wv-result__text"><strong>${esc(p.title)}</strong><small>${esc(coleccionDe(p)?.name ?? '')}</small></span>
+        <span class="wv-result__price">${tienda.formatear(p.price, p.currency)}</span>
+      </a>`).join('')}</div>
+    ${total > items.length ? `<a class="wv-link" href="/tienda?buscar=${encodeURIComponent(q.trim())}" data-link>${esc(T.buscar.todo)} (${total}) ${icono('i-flecha')}</a>` : ''}`
+    : `<div class="wv-search__none"><strong>${esc(T.buscar.nada)}</strong><span>Probá con otra palabra o explorá la tienda.</span></div>`}`;
 }
 $('#abrir-busqueda').addEventListener('click', abrirBusqueda);
 $('#busqueda').addEventListener('click', (e) => { if (e.target.closest('[data-cerrar-busqueda]')) cerrarBusqueda(); });
@@ -407,76 +418,88 @@ $('#busqueda-form').addEventListener('submit', (e) => {
   navegar(`/tienda?buscar=${encodeURIComponent(q)}`);
 });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') cerrarBusqueda();
+  if (e.key === 'Escape') { cerrarBusqueda(); cerrarCarrito(); }
   const escribiendo = e.target.closest?.('input, textarea, select, [contenteditable]');
   if (!escribiendo && (e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'))) { e.preventDefault(); abrirBusqueda(); }
 });
-
-// ---------------------------------------------------------------- botones: la luz sigue al mouse (como en Shopify)
-document.addEventListener('pointermove', (e) => {
-  const b = e.target.closest?.('.wk-btn');
-  if (!b) return;
-  const r = b.getBoundingClientRect();
-  b.style.setProperty('--bx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
-  b.style.setProperty('--by', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
-}, { passive: true });
 
 // ---------------------------------------------------------------- tarjetas con relieve (solo mouse)
 if (!tactil && !reducido) {
   let actual = null;
   document.addEventListener('pointermove', (e) => {
-    const t = e.target.closest?.('.tarjeta:not(.tarjeta--fantasma), .ficha__principal, .wk-carta, .wk-curso, .wk-certificado');
-    if (actual && actual !== t) { actual.style.removeProperty('--rx'); actual.style.removeProperty('--ry'); actual = null; }
+    const t = e.target.closest?.('.wv-card:not(.wv-card--fantasma), .wk-carta, .wv-cat, .wv-spin__card');
+    if (actual && actual !== t) { actual.style.removeProperty('--mx'); actual.style.removeProperty('--my'); actual.style.removeProperty('--rx'); actual.style.removeProperty('--ry'); actual = null; }
     if (!t) return;
     actual = t;
     const r = t.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width; const y = (e.clientY - r.top) / r.height;
-    const fuerza = t.classList.contains('ficha__principal') ? 6 : t.classList.contains('wk-carta') ? 12 : 8;
-    t.style.setProperty('--rx', `${((0.5 - y) * fuerza).toFixed(2)}deg`);
-    t.style.setProperty('--ry', `${((x - 0.5) * fuerza).toFixed(2)}deg`);
     t.style.setProperty('--mx', `${(x * 100).toFixed(1)}%`);
     t.style.setProperty('--my', `${(y * 100).toFixed(1)}%`);
+    if (t.classList.contains('wk-carta')) {
+      t.style.setProperty('--rx', `${((0.5 - y) * 12).toFixed(2)}deg`);
+      t.style.setProperty('--ry', `${((x - 0.5) * 12).toFixed(2)}deg`);
+    }
   }, { passive: true });
 }
 
-// ---------------------------------------------------------------- carrito (firma NS 4)
+// ---------------------------------------------------------------- carrito (firma NS 4, panel de PULSO)
 const carrito = $('#carrito');
 const velo = $('#carrito-velo');
 function abrirCarrito() {
   velo.hidden = false;
   carrito.inert = false;
   carrito.setAttribute('aria-hidden', 'false');
-  requestAnimationFrame(() => carrito.classList.add('is-open'));
+  document.documentElement.classList.add('wv-layer-open');
+  requestAnimationFrame(() => { carrito.classList.add('is-open'); velo.classList.add('is-on'); });
   $('#cerrar-carrito').focus();
 }
 ui.abrirCarrito = abrirCarrito;
 function cerrarCarrito() {
+  if (!carrito.classList.contains('is-open')) return;
   carrito.classList.remove('is-open');
+  velo.classList.remove('is-on');
   carrito.inert = true;
   carrito.setAttribute('aria-hidden', 'true');
-  velo.hidden = true;
+  if (!$('#busqueda').classList.contains('is-open')) document.documentElement.classList.remove('wv-layer-open');
+  setTimeout(() => { velo.hidden = true; }, 350);
 }
 $('#abrir-carrito').addEventListener('click', abrirCarrito);
 $('#cerrar-carrito').addEventListener('click', cerrarCarrito);
 velo.addEventListener('click', cerrarCarrito);
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && carrito.classList.contains('is-open')) cerrarCarrito(); });
-carrito.addEventListener('click', (e) => { if (e.target.closest('a[data-link]')) cerrarCarrito(); });
 
-function pintarCarrito(c) {
+function pintarCarrito(c, saltar = true) {
   const cont = $('#contador');
-  if (cont.textContent !== String(c.itemCount)) { cont.textContent = c.itemCount; cont.classList.remove('is-salta'); void cont.offsetWidth; cont.classList.add('is-salta'); }
-  $('#carrito-lineas').innerHTML = c.lines.length ? c.lines.map((l) => `
-    <div class="linea">
-      <a href="/producto/${esc(l.handle)}" data-link class="linea__foto">${l.image ? `<img src="${esc(l.image.sizes?.['320'] ?? l.image.url)}" alt="">` : sinFoto(l.title)}</a>
-      <div><strong>${esc(l.title)}</strong>${l.variantTitle ? `<small>${esc(l.variantTitle)}</small>` : ''}
-        <span class="cantidad"><button data-linea="${l.line}" data-cant="${l.quantity - 1}" aria-label="Quitar uno">−</button>${l.quantity}<button data-linea="${l.line}" data-cant="${l.quantity + 1}" aria-label="Agregar uno"${l.maxQuantity !== null && l.quantity >= l.maxQuantity ? ' disabled' : ''}>+</button></span>
+  cont.textContent = c.itemCount;
+  cont.hidden = !c.itemCount;
+  if (saltar) { cont.classList.remove('is-bump'); void cont.offsetWidth; cont.classList.add('is-bump'); }
+  $('#carrito-cuenta').textContent = c.itemCount ? `${c.itemCount} ${c.itemCount === 1 ? 'pieza' : 'piezas'}` : '';
+  $('#carrito-lineas').innerHTML = c.lines.length ? `<div class="wv-lines">${c.lines.map((l) => `
+    <div class="wv-line">
+      <a href="/producto/${esc(l.handle)}" data-link class="wv-line__img">${l.image ? `<img src="${esc(l.image.sizes?.['320'] ?? l.image.url)}" alt="">` : sinFoto(l.title)}</a>
+      <div class="wv-line__info">
+        <a class="wv-line__name" href="/producto/${esc(l.handle)}" data-link>${esc(l.title)}</a>
+        ${l.variantTitle ? `<span class="wv-line__sku">${esc(l.variantTitle)}</span>` : ''}
+        <span class="wv-line__calc">${tienda.formatear(l.price, c.currency)} c/u</span>
+        <div class="wv-qty wv-qty--sm">
+          <button type="button" class="wv-qty__btn" data-linea="${l.line}" data-cant="${l.quantity - 1}" aria-label="Quitar uno">${icono('i-menos')}</button>
+          <span class="wv-qty__input">${l.quantity}</span>
+          <button type="button" class="wv-qty__btn" data-linea="${l.line}" data-cant="${l.quantity + 1}" aria-label="Agregar uno"${l.maxQuantity !== null && l.quantity >= l.maxQuantity ? ' disabled' : ''}>${icono('i-mas')}</button>
+        </div>
       </div>
-      <strong>${tienda.formatear(l.total, c.currency)}</strong>
-    </div>`).join('') : `<div class="carrito__vacio"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><p>Tu carrito está vacío… por ahora.</p><a class="wk-btn wk-btn--linea" href="/tienda" data-link>Explorar la tienda</a></div>`;
-  $('#carrito-pie').innerHTML = c.lines.length
-    ? `<div class="carrito__total"><span>Total</span><strong>${tienda.formatear(c.total, c.currency)}</strong></div>
-       <button class="wk-btn wk-btn--noche wk-btn--grande" id="finalizar">Finalizar compra</button>`
-    : '';
+      <div class="wv-line__end">
+        <strong>${tienda.formatear(l.total, c.currency)}</strong>
+        <button type="button" class="wv-line__remove" data-linea="${l.line}" data-cant="0" aria-label="Quitar ${esc(l.title)}">${icono('i-basura')}</button>
+      </div>
+    </div>`).join('')}</div>`
+    : `<div class="wv-empty"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><h3>Tu carrito está vacío… por ahora</h3><p>Las criaturas esperan un hogar. Elegí la tuya.</p><a class="wv-btn wv-btn--primary" href="/tienda" data-link>Explorar la tienda${flecha()}</a></div>`;
+  $('#carrito-pie').innerHTML = c.lines.length ? `
+    <dl class="wv-totals">
+      <div><dt>Total</dt><dd>${tienda.formatear(c.total, c.currency)}</dd></div>
+      <div class="wv-totals__note"><dt>Envío</dt><dd>Se calcula al finalizar</dd></div>
+    </dl>
+    <button class="wv-btn wv-btn--primary wv-btn--lg wv-btn--block" id="finalizar">Finalizar compra${flecha()}</button>
+    <p class="wv-drawer__legal">${icono('i-sello')} Cada pieza viaja con su certificado de autenticidad.</p>` : '';
+  $('#carrito-pie').hidden = !c.lines.length;
 }
 $('#carrito-lineas').addEventListener('click', async (e) => {
   const b = e.target.closest('[data-linea]');
