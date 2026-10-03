@@ -75,7 +75,7 @@ export async function favoritosPagina() {
     <section class="wk-seccion"><div class="contenedor">
       ${!cliente && hayCuentas() ? `<p class="wk-nota-cuenta"><svg aria-hidden="true"><use href="#i-usuario"/></svg>${esc(T.cuenta.favNota)} <a href="/cuenta" data-link>${esc(T.cuenta.ingresar)} →</a></p>` : ''}
       <div class="grilla" id="lista-fav">${lista.length ? fantasmas(Math.min(lista.length, 4)) : ''}</div>
-      ${lista.length ? '' : `<div class="wk-vacio-fav"><span class="wk-vacio__orbe" aria-hidden="true"></span><h2>${esc(T.cuenta.favVacio)}</h2><p>${esc(T.cuenta.favVacioTexto)}</p><a class="wk-btn wk-btn--noche" href="/tienda" data-link>${esc(T.cuenta.explorar)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a></div>`}
+      ${lista.length ? '' : `<div class="wk-vacio-fav"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><h2>${esc(T.cuenta.favVacio)}</h2><p>${esc(T.cuenta.favVacioTexto)}</p><a class="wk-btn wk-btn--noche" href="/tienda" data-link>${esc(T.cuenta.explorar)}<svg aria-hidden="true"><use href="#i-flecha"/></svg></a></div>`}
     </div></section>`;
   if (!lista.length) return;
   const items = (await Promise.all(lista.map((h) => tienda.productos.uno(h).catch(() => null)))).filter(Boolean);

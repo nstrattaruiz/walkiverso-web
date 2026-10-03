@@ -78,7 +78,7 @@ export async function catalogo(handle, buscarInicial = '') {
     const visibles = handle ? items : items.filter((p) => !(p.categories ?? []).some((x) => ocultas.has(typeof x === 'string' ? x : x?.handle)));
     const html = visibles.map(tarjeta).join('');
     if (sumar) lista.insertAdjacentHTML('beforeend', html);
-    else lista.innerHTML = html || `<p class="vacio"><span class="wk-vacio__orbe" aria-hidden="true"></span>${esc(T.tienda.vacio)}</p>`;
+    else lista.innerHTML = html || `<p class="vacio"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i>${esc(T.tienda.vacio)}</p>`;
     lista.classList.remove('is-cambiando');
     $('#resultado').textContent = st.buscar ? `${total} ${total === 1 ? 'resultado' : 'resultados'} para «${st.buscar}»` : '';
     $('#mas').hidden = st.pagina >= pages;

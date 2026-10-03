@@ -1,6 +1,20 @@
-// Contacto: escribís una carta; al enviarla se pliega, entra en un sobre, se sella y sale volando.
-import { tienda, T, $, $$, esc, app, estado, revelar, reducido, aviso, espera } from '../base.js';
+// Contacto: un sobre mensajero flota junto a la carta. Al enviar, el mensaje se dobla y entra en el sobre,
+// se sella con la mano y el sobre sale volando entre las estrellas dejando una estela de luz.
+import { tienda, T, $, esc, app, estado, revelar, reducido, aviso, espera } from '../base.js';
 import { rafaga } from '../polvo.js';
+
+const sobre = () => `
+  <div class="wk-mensajero" aria-hidden="true">
+    <span class="wk-mensajero__halo"></span>
+    <span class="wk-mensajero__chispas"><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="wk-mensajero__cuerpo">
+      <span class="wk-mensajero__fondo"></span>
+      <span class="wk-mensajero__papel"></span>
+      <span class="wk-mensajero__frente"></span>
+      <span class="wk-mensajero__solapa"></span>
+      <span class="wk-mensajero__lacre"><i class="wk-mano"></i></span>
+    </span>
+  </div>`;
 
 export function contacto() {
   document.title = `Contacto · ${estado.info.name}`;
@@ -32,13 +46,10 @@ export function contacto() {
         </div>
 
         <div class="wk-escritorio">
+          ${sobre()}
           <form class="wk-misiva" id="carta" data-rev>
-            <span class="wk-misiva__luz" aria-hidden="true"></span>
-            <span class="wk-misiva__rama wk-misiva__rama--a" aria-hidden="true"></span>
-            <span class="wk-misiva__rama wk-misiva__rama--b" aria-hidden="true"></span>
             <div class="wk-misiva__cab">
-              <span class="wk-lacre" aria-hidden="true">W</span>
-              <div><p class="wk-antetitulo">${esc(T.contacto.formAnte)}</p><h2>${esc(T.contacto.formTitulo)}</h2></div>
+              <p class="wk-antetitulo">${esc(T.contacto.formAnte)}</p><h2>${esc(T.contacto.formTitulo)}</h2>
             </div>
             <div class="wk-misiva__campos">
               <label class="wk-flotante"><input name="name" required autocomplete="name" placeholder=" "><span>Nombre</span></label>
@@ -49,12 +60,11 @@ export function contacto() {
             </div>
             <div class="wk-misiva__pie">
               <small>${esc(T.contacto.nota)}</small>
-              <button class="wk-lacre-boton"><span class="wk-lacre" aria-hidden="true">W</span><span>${esc(T.contacto.enviar)}</span></button>
+              <button class="wk-btn wk-btn--luz wk-btn--grande-hero"><span>${esc(T.contacto.enviar)}</span><svg aria-hidden="true"><use href="#i-flecha"/></svg></button>
             </div>
           </form>
-          <div class="wk-sobre" aria-hidden="true"><span class="wk-sobre__fondo"></span><span class="wk-sobre__frente"></span><span class="wk-sobre__solapa"></span><span class="wk-lacre wk-sobre__lacre">W</span></div>
           <div class="wk-carta-enviada" id="enviada" tabindex="-1" hidden>
-            <span class="wk-carta-enviada__estela" aria-hidden="true"></span>
+            <i class="wk-mano wk-mano--vacio" aria-hidden="true"></i>
             <h2>${esc(T.contacto.exito)}</h2>
             <p>${esc(T.contacto.exitoTexto)}</p>
             <button type="button" class="wk-btn wk-btn--linea" id="otra-carta">${esc(T.contacto.otro)}</button>
@@ -66,57 +76,67 @@ export function contacto() {
   const form = $('#carta');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const b = form.querySelector('.wk-lacre-boton');
+    const b = form.querySelector('button');
     b.disabled = true;
     try {
       await tienda.contacto(Object.fromEntries(new FormData(form)));
-      await volarCarta();
+      await enviarSobre();
+      form.hidden = true;
       $('#enviada').hidden = false;
       $('#enviada').focus({ preventScroll: true });
       rafaga($('#enviada h2'), 30);
     } catch (err) { aviso(err.message); }
     b.disabled = false;
   });
-  $('#otra-carta').addEventListener('click', () => {
+  $('#otra-carta').addEventListener('click', async () => {
     form.reset();
     $('#enviada').hidden = true;
-    $('.wk-escritorio').classList.remove('is-enviada');
+    form.hidden = false;
     form.getAnimations().forEach((a) => a.cancel());
-    $('.wk-sobre').getAnimations().forEach((a) => a.cancel());
-    $('.wk-sobre').classList.remove('is-cerrado', 'is-visible');
-    form.querySelector('textarea').focus();
+    const m = $('.wk-mensajero');
+    m.getAnimations().forEach((a) => a.cancel());
+    m.className = 'wk-mensajero is-vuelve';
+    await espera(900);
+    m.className = 'wk-mensajero';
+    form.querySelector('input').focus();
   });
   revelar();
 }
 
-/** Plegar la carta → sobre → lacre → vuelo. */
-async function volarCarta() {
-  const esc = $('.wk-escritorio');
-  const carta = $('#carta');
-  const sobre = $('.wk-sobre');
-  if (reducido) { esc.classList.add('is-enviada'); return; }
-  // Primero la carta queda en el centro de la pantalla, para ver todo el viaje
-  carta.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  await espera(550);
-  esc.classList.add('is-enviada');
-  const fin = { fill: 'forwards', easing: 'cubic-bezier(0.6, 0, 0.3, 1)' };
-  // 1. La carta se pliega en tres y se achica al tamaño del sobre
-  await carta.animate([
-    { transform: 'none', opacity: 1 },
-    { transform: 'perspective(900px) rotateX(18deg) scaleY(0.36)', opacity: 1, offset: 0.5 },
-    { transform: 'perspective(900px) translateY(40px) scale(0.5, 0.18)', opacity: 0 },
-  ], { duration: 900, ...fin }).finished;
-  // 2. Aparece el sobre, se cierra la solapa y cae el lacre
-  sobre.classList.add('is-visible');
-  await espera(350);
-  sobre.classList.add('is-cerrado');
+/** El mensaje se dobla y entra al sobre → se sella → el sobre vuela. */
+async function enviarSobre() {
+  const form = $('#carta');
+  const m = $('.wk-mensajero');
+  if (reducido) return;
+  m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  await espera(500);
+  const a = form.getBoundingClientRect();
+  const b = m.querySelector('.wk-mensajero__cuerpo').getBoundingClientRect();
+  // 1. Se abre el sobre y el contenido de la carta se dobla volando hacia él
+  m.classList.add('is-abierto');
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+  const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+  await form.animate([
+    { transform: 'none', opacity: 1, filter: 'none' },
+    { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 40}px) perspective(900px) rotateX(35deg) scale(0.55)`, opacity: 0.8, offset: 0.55 },
+    { transform: `translate(${dx}px, ${dy}px) scale(0.06)`, opacity: 0, filter: 'blur(4px)' },
+  ], { duration: 950, easing: 'cubic-bezier(0.6, 0, 0.3, 1)', fill: 'forwards' }).finished;
+  // 2. Se cierra la solapa y la mano sella
+  m.classList.add('is-cargado');
+  await espera(380);
+  m.classList.add('is-cerrado');
+  await espera(520);
+  m.classList.add('is-sellado');
+  rafaga(m.querySelector('.wk-mensajero__lacre'), 22);
   await espera(650);
-  rafaga(sobre.querySelector('.wk-sobre__lacre'), 18);
-  await espera(350);
-  // 3. Sale volando entre las estrellas
-  await sobre.animate([
-    { transform: 'translate(-50%, -50%)', opacity: 1 },
-    { transform: 'translate(-40%, -70%) rotate(-6deg) scale(0.95)', opacity: 1, offset: 0.25 },
-    { transform: 'translate(160%, -420%) rotate(18deg) scale(0.2)', opacity: 0 },
-  ], { duration: 1300, ...fin }).finished;
+  // 3. Vuela en arco dejando una estela de luz
+  const estela = setInterval(() => rafaga(m.querySelector('.wk-mensajero__cuerpo'), 6), 90);
+  await m.animate([
+    { transform: 'none', opacity: 1 },
+    { transform: 'translate(-30px, 30px) rotate(-8deg) scale(1.04)', opacity: 1, offset: 0.15 },
+    { transform: 'translate(40vw, -55vh) rotate(16deg) scale(0.55)', opacity: 0.9, offset: 0.7 },
+    { transform: 'translate(70vw, -95vh) rotate(24deg) scale(0.2)', opacity: 0 },
+  ], { duration: 1700, easing: 'cubic-bezier(0.45, 0, 0.3, 1)', fill: 'forwards' }).finished;
+  clearInterval(estela);
+  m.className = 'wk-mensajero is-ido';
 }

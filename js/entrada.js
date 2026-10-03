@@ -126,15 +126,12 @@ function raicesEntrada(svg, w, h) {
   svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
   const chico = w < 750;
   const alcance = Math.min(w, h) * (chico ? 0.62 : 0.5);
+  // Pocas y en las esquinas: enmarcan sin robar la escena
   const seeds = chico ? [
-    [0, h * 0.2, 0.3, alcance, 1], [w, h * 0.12, Math.PI - 0.3, alcance * 0.9, -1],
-    [0, h * 0.78, -0.3, alcance * 0.95, -1], [w, h * 0.88, Math.PI + 0.3, alcance, 1],
-    [w * 0.5, 0, Math.PI / 2, alcance * 0.7, 1], [w * 0.45, h, -Math.PI / 2, alcance * 0.7, -1],
+    [0, h * 0.08, 0.45, alcance * 0.7, 1], [w, h * 0.92, Math.PI + 0.45, alcance * 0.7, 1],
   ] : [
-    [0, h * 0.14, 0.35, alcance, 1], [0, h * 0.62, -0.1, alcance * 0.85, -1],
-    [w, h * 0.1, Math.PI - 0.35, alcance * 0.95, -1], [w, h * 0.7, Math.PI + 0.1, alcance * 0.9, 1],
-    [w * 0.3, h, -1.3, alcance * 0.8, 1], [w * 0.72, h, -Math.PI + 1.3, alcance * 0.8, -1],
-    [w * 0.34, 0, 1.25, alcance * 0.7, -1], [w * 0.66, 0, Math.PI - 1.25, alcance * 0.72, 1],
+    [0, h * 0.1, 0.45, alcance * 0.62, 1], [w, h * 0.9, Math.PI + 0.45, alcance * 0.62, 1],
+    [w, h * 0.08, Math.PI - 0.5, alcance * 0.45, -1],
   ];
   growBranches(svg, { w, h, seeds, delay: 0.15, gap: chico ? 16 : 36 });
 }
@@ -163,13 +160,15 @@ export function crearPortada(seccion, { esperarToque = false, alAbrir } = {}) {
   let fase = 'creciendo', espera = 0;
 
   // Fotos del hero: se alternan solas
-  const fotos = [...hero.querySelectorAll('.wk-hero__foto')];
+  const fotos = [...hero.querySelectorAll('.wk-hero__figura')];
   let actual = 0;
   const rotar = fotos.length > 1 ? setInterval(() => {
     fotos[actual].classList.remove('is-activa');
     actual = (actual + 1) % fotos.length;
     fotos[actual].classList.add('is-activa');
-  }, 6000) : 0;
+  }, 7000) : 0;
+  // Saca la noche previa (la que evita ver la web antes de la entrada)
+  document.documentElement.classList.remove('con-entrada');
 
   const medirVelo = () => raicesEntrada(svgVelo, velo.clientWidth, velo.clientHeight);
   let anchoHero = 0;
@@ -241,9 +240,14 @@ export const marcadoPortada = ({ esc, T, info, imagenes }) => `
   <section class="wk-portada" id="entrada" aria-label="${esc(info.name)}">
     <div class="wk-hero">
       <div class="wk-hero__fondo" aria-hidden="true">
-        ${imagenes.map((src, i) => `<img class="wk-hero__foto${i === 0 ? ' is-activa' : ''}" src="${esc(src)}" alt="" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>`).join('')}
         <span class="wk-hero__aura"></span>
-        <span class="wk-hero__sombra"></span>
+        <span class="wk-hero__niebla"><i></i><i></i></span>
+      </div>
+      <div class="wk-hero__escena" aria-hidden="true">
+        <span class="wk-hero__halo"></span>
+        <span class="wk-hero__anillo"></span>
+        ${imagenes.map((src, i) => `<img class="wk-hero__figura${i === 0 ? ' is-activa' : ''}" src="${esc(src)}" alt="" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>`).join('')}
+        <span class="wk-hero__piso"></span>
       </div>
       <svg class="wk-hero__raices" aria-hidden="true" focusable="false"></svg>
       <canvas class="wk-hero__polvo" aria-hidden="true"></canvas>
@@ -264,7 +268,7 @@ export const marcadoPortada = ({ esc, T, info, imagenes }) => `
       <span class="wk-velo__luna" aria-hidden="true"></span>
       <svg class="wk-velo__raices" aria-hidden="true" focusable="false"></svg>
       <canvas class="wk-velo__luces" aria-hidden="true"></canvas>
-      <p class="wk-velo__nombre" aria-hidden="true">${[...info.name].map((c, i) => `<span style="--i:${i}">${esc(c)}</span>`).join('')}</p>
+      <p class="wk-velo__nombre"><img src="img/logo.svg" alt="${esc(info.name)}" width="600" height="160"></p>
       <p class="wk-velo__lema" aria-hidden="true">${esc(T.entrada.lema)}</p>
       <button type="button" class="wk-velo__tocar" hidden><span class="wk-velo__luciernaga" aria-hidden="true"></span>${esc(T.entrada.tocar)}</button>
       <button type="button" class="wk-velo__saltar">${esc(T.entrada.saltar)}</button>

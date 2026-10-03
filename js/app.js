@@ -12,7 +12,6 @@ import { cursos } from './paginas/cursos.js';
 import { iniciarCuenta, favoritosPagina, cuentaPagina, repintarFavoritos } from './cuenta.js';
 import { cubrir, descubrir } from './transicion.js';
 import { ramasDeFondo } from './ramas.js';
-import { coser } from './costuras.js';
 import { contacto } from './paginas/contacto.js';
 
 let rutaActual = '';
@@ -29,9 +28,9 @@ async function arrancar() {
   const [info, categorias] = await Promise.all([tienda.info(), tienda.categorias()]);
   Object.assign(estado, { info, categorias });
   document.title = info.seo.title || info.name;
-  $('#marca').textContent = info.name;
+  $('#marca').alt = info.name;
   if (info.logo) $('#marca').outerHTML = `<img src="${esc(info.logo.url ?? info.logo)}" alt="${esc(info.name)}" height="36">`;
-  $('#pie-marca').textContent = info.name;
+  $('#pie-marca').alt = info.name;
   $('#pie-bajada').textContent = info.seo.description || '';
   $('#pie-nombre').textContent = `© ${new Date().getFullYear()} ${info.name}`;
   if (info.colors?.primary) document.documentElement.style.setProperty('--celeste', info.colors.primary);
@@ -41,6 +40,7 @@ async function arrancar() {
   if (tienda.demo) $('#demo').hidden = false;
 
   pintarMenus();
+  pintarCinta();
   pintarHablemos();
   pintarCookies();
   pintarMundo();
@@ -102,6 +102,13 @@ function pintarMundo() {
     mundo.enfocar(siguiente % n);
     siguiente++;
   });
+}
+
+// ---------------------------------------------------------------- cinta del final (texto calado que se desliza)
+function pintarCinta() {
+  const frases = ['Arte', 'Magia', 'Reciclaje', estado.info.name];
+  const vuelta = frases.map((f) => `<span>${esc(f)}</span><i class="wk-mano" aria-hidden="true"></i>`).join('');
+  $('.wk-cinta-final__pista').innerHTML = vuelta.repeat(4);
 }
 
 // ---------------------------------------------------------------- menús (con desplegable de colecciones)
@@ -306,7 +313,6 @@ async function ruta() {
   }
   repintarFavoritos();
   ramasDeFondo(app);
-  coser(app);
   revelar();
   app.focus({ preventScroll: true });
 }
@@ -466,7 +472,7 @@ function pintarCarrito(c) {
         <span class="cantidad"><button data-linea="${l.line}" data-cant="${l.quantity - 1}" aria-label="Quitar uno">−</button>${l.quantity}<button data-linea="${l.line}" data-cant="${l.quantity + 1}" aria-label="Agregar uno"${l.maxQuantity !== null && l.quantity >= l.maxQuantity ? ' disabled' : ''}>+</button></span>
       </div>
       <strong>${tienda.formatear(l.total, c.currency)}</strong>
-    </div>`).join('') : `<div class="carrito__vacio"><span class="wk-sinfoto" data-tono="1" aria-hidden="true"><svg><use href="#i-chispa"/></svg></span><p>Tu carrito está vacío… por ahora.</p><a class="wk-btn wk-btn--linea" href="/tienda" data-link>Explorar la tienda</a></div>`;
+    </div>`).join('') : `<div class="carrito__vacio"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><p>Tu carrito está vacío… por ahora.</p><a class="wk-btn wk-btn--linea" href="/tienda" data-link>Explorar la tienda</a></div>`;
   $('#carrito-pie').innerHTML = c.lines.length
     ? `<div class="carrito__total"><span>Total</span><strong>${tienda.formatear(c.total, c.currency)}</strong></div>
        <button class="wk-btn wk-btn--noche wk-btn--grande" id="finalizar">Finalizar compra</button>`

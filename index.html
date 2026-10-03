@@ -12,20 +12,23 @@
   <link rel="icon" type="image/png" href="walkiver/assets/wk-favicon-64.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Jost:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <link rel="modulepreload" href="js/vendor/three.module.min.js">
   <link rel="stylesheet" href="css/ns-firma.css">
   <link rel="stylesheet" href="css/walkiverso.css">
   <link rel="stylesheet" href="css/secciones.css">
   <link rel="stylesheet" href="css/experiencias.css">
   <link rel="stylesheet" href="css/organico.css">
-  <link rel="stylesheet" href="css/costuras.css">
+  <link rel="stylesheet" href="css/rediseno.css">
   <script>
     // Antes de pintar: si la página lleva el planeta, para que no parpadee
-    (function () { var s = location.pathname.slice(window.WK_BASE.length).split('/').filter(Boolean)[0] || ''; if (s === 'walkurio') document.documentElement.classList.add('arranca-con-mundo'); })();
+    (function () { var s = location.pathname.slice(window.WK_BASE.length).split('/').filter(Boolean)[0] || ''; if (s === 'walkurio') document.documentElement.classList.add('arranca-con-mundo');
+      // En el inicio, la noche de la entrada se pinta desde el primer instante (sin ver la web antes)
+      if ((s === '' || s === 'index.html') && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('con-entrada'); })();
   </script>
 </head>
 <body>
+  <div class="wk-previo" aria-hidden="true"><img src="img/logo.svg" alt=""></div>
   <!-- Walkiverso · web para la plataforma (Kit NS). Los datos salen de la tienda con el SDK: ver js/app.js. -->
 
   <!-- Iconos reutilizables -->
@@ -71,8 +74,9 @@
       <span class="ns-menu-btn__lines" aria-hidden="true"><span></span><span></span></span>
     </button>
     <div class="ns-bar">
-      <a class="ns-brand" href="/" data-link aria-label="Ir al inicio"><span id="marca">Walkiverso</span></a>
+      <a class="ns-brand" href="/" data-link aria-label="Walkiverso, ir al inicio"><img class="wk-logo" id="marca" src="img/logo.svg" alt="Walkiverso" width="150" height="40"></a>
       <nav class="ns-nav" aria-label="Principal" id="nav"></nav>
+      <div class="wk-acciones">
       <button class="wk-icono-btn" type="button" id="abrir-busqueda" aria-label="Buscar en el Walkiverso" title="Buscar ( / )"><svg aria-hidden="true"><use href="#i-buscar"/></svg></button>
       <a class="wk-icono-btn wk-icono-btn--extra" href="/favoritos" data-link id="abrir-favoritos" aria-label="Mis favoritos"><svg aria-hidden="true"><use href="#i-corazon"/></svg><b class="wk-icono-btn__num" id="contador-fav" hidden>0</b></a>
       <a class="wk-icono-btn wk-icono-btn--extra" href="/cuenta" data-link id="abrir-cuenta" aria-label="Ingresar a mi cuenta"><svg aria-hidden="true"><use href="#i-usuario"/></svg></a>
@@ -80,6 +84,7 @@
         <svg aria-hidden="true"><use href="#i-bag"/></svg>
         <span>Carrito</span><b class="contador" id="contador">0</b>
       </button>
+      </div>
     </div>
     <div class="ns-panel" id="ns-panel" aria-hidden="true">
       <nav class="ns-panel__nav" aria-label="Menú" id="panel-nav"></nav>
@@ -110,10 +115,11 @@
 
   <main id="app" tabindex="-1"></main>
 
+  <div class="wk-cinta-final" aria-hidden="true"><div class="wk-cinta-final__pista"></div></div>
   <footer class="pie">
     <div class="pie__estrellas" aria-hidden="true"></div>
     <div class="pie__arriba">
-      <p class="pie__marca" id="pie-marca">Walkiverso</p>
+      <img class="pie__logo" src="img/logo.svg" alt="Walkiverso" width="300" height="80" id="pie-marca">
       <p class="pie__bajada" id="pie-bajada"></p>
     </div>
     <div class="pie__grilla" id="pie-menu"></div>

@@ -48,7 +48,9 @@ export const foto = (img, alt, ancho = 640, clase = '', sizes = '(max-width: 700
   : '';
 export const hash = (t) => [...String(t)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 /** Mientras no haya foto: un "retrato" de luz con la inicial, en los tonos de la marca. */
-export const sinFoto = (titulo, clase = '') => `<span class="wk-sinfoto ${clase}" data-tono="${hash(titulo) % 3}" aria-hidden="true"><svg><use href="#i-chispa"/></svg><b>${esc(String(titulo).replace(/^(duende|mandrágora|bitácora)\s+(del?\s+)?(·\s*)?/i, '').trim()[0] ?? '')}</b></span>`;
+export const sinFoto = (titulo, clase = '') => `<span class="wk-sinfoto ${clase}" data-tono="${hash(titulo) % 3}" aria-hidden="true"><i class="wk-mano"></i></span>`;
+/** El sello de la mano (img/mano.png), pintado con el color del texto. */
+export const mano = (clase = '') => `<i class="wk-mano ${clase}" aria-hidden="true"></i>`;
 export const precio = (p) => `<span class="precio">${tienda.formatear(p.price, p.currency)}${p.compareAtPrice > p.price ? `<s>${tienda.formatear(p.compareAtPrice, p.currency)}</s>` : ''}</span>`;
 export const textoPlano = (html, max = 140) => {
   const t = String(html ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();

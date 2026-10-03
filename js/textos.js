@@ -49,6 +49,7 @@ export const textos = {
     conocer: 'Conocerlo',
     todos: 'Conocer a todos los duendes',
   },
+  cinta: ['Arte, magia y reciclaje', 'Piezas únicas', 'Hecho a mano', 'Con nombre propio', 'Desde Walkurio'],
   recientes: {
     antetitulo: 'Novedades', titulo: 'Recién salidos del taller',
     bajada: 'Cada criatura es única e irrepetible: cuando encuentra hogar, no vuelve a existir otra igual.',

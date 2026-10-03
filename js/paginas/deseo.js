@@ -91,7 +91,7 @@ export const seccionDeseo = ({ pagina = false } = {}) => `
         </form>
 
         <div class="wk-deseo__paso wk-deseo__listo" data-paso="listo" tabindex="-1">
-          <span class="wk-deseo__estrella" aria-hidden="true"><svg><use href="#i-chispa"/></svg></span>
+          <i class="wk-mano wk-mano--vacio" aria-hidden="true"></i>
           <h3>${esc(T.deseo.exito)}</h3>
           <p>${esc(T.deseo.exitoTexto)}</p>
           <button type="button" class="wk-btn wk-btn--vidrio" data-ir="1">${esc(T.deseo.otro)}</button>

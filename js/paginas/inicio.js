@@ -19,6 +19,8 @@ export async function inicio() {
   app.innerHTML = `
     ${marcadoPortada({ esc, T, info: estado.info, imagenes: heroImagenes })}
 
+    <div class="wk-cinta-hero" aria-hidden="true"><div class="wk-cinta-hero__pista">${[...T.cinta, ...T.cinta, ...T.cinta].map((t) => `<span>${esc(t)}</span><i class="wk-mano"></i>`).join('')}</div></div>
+
     ${puertas.length ? `
     <section class="wk-seccion wk-puertas-sec" id="recorrer">
       <span class="wk-ramas-fondo" data-esquinas="tl,r" data-semilla="5"></span>
@@ -60,7 +62,7 @@ export async function inicio() {
       ${navCarrusel('pista-duendes', T.duendes.girar)}
     </section>` : ''}
 
-    <section class="wk-seccion wk-recientes">
+    <section class="wk-seccion wk-recientes wk-panel">
       <span class="wk-ramas-fondo" data-esquinas="tr,bl" data-semilla="11"></span>
       <div class="contenedor">
         <div class="wk-titulo" data-rev>
@@ -84,7 +86,7 @@ export async function inicio() {
           <div><p class="wk-antetitulo">${esc(T.videos.antetitulo)}</p><h2 id="videos-titulo">${esc(T.videos.titulo)}</h2><p class="wk-titulo__bajada">${esc(T.videos.bajada)}</p></div>
           <a class="wk-btn wk-btn--linea" href="${esc(estado.info.contact.instagram || enlaces.instagram)}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ig"/></svg>${esc(T.videos.boton)}</a>
         </div>
-        <ul class="wk-reels" id="pista-reels" role="list">
+        <ul class="wk-reels" id="pista-reels" role="list" style="--n:${videos.length}">
           ${videos.map((v, i) => {
             const id = idYoutube(v.url);
             return `<li class="wk-reel" style="--i:${i}">
@@ -449,7 +451,7 @@ function activarResenas() {
         const d = Object.fromEntries(new FormData(e.target));
         await tienda.contacto({ ...d, tipo: 'Reseña', message: `★${d.estrellas} · ${d.message}` });
         rafaga(b, 40);
-        e.target.innerHTML = `<div class="wk-gracias"><span class="wk-gracias__orbe" aria-hidden="true"></span><h2>${esc(T.resenas.gracias)}</h2></div>`;
+        e.target.innerHTML = `<div class="wk-gracias"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><h2>${esc(T.resenas.gracias)}</h2></div>`;
       } catch (err) { aviso(err.message); b.disabled = false; }
     });
   });
