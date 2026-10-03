@@ -14,6 +14,7 @@ import { iniciarCuenta, favoritosPagina, cuentaPagina, repintarFavoritos } from 
 import { cubrir, descubrir } from './transicion.js';
 import { ramasDeFondo } from './ramas.js';
 import { contacto } from './paginas/contacto.js';
+import { checkout, pedido } from './paginas/compra.js';
 import { crearBosque } from './bosque.js';
 import { preguntas } from './config.js';
 import { lindeDelBosque } from './paisaje.js';
@@ -329,7 +330,7 @@ async function ruta() {
   cuerpo.toggle('es-inicio', ['', 'index.html'].includes(seccion));
   cuerpo.toggle('es-walkurio', seccion === 'walkurio');
   // Tienda, ficha y cuenta: claras como papel. El resto vive en el bosque de noche.
-  const clara = ['tienda', 'categoria', 'producto', 'favoritos', 'cuenta', 'legal', 'carrito'].includes(seccion);
+  const clara = ['tienda', 'categoria', 'producto', 'favoritos', 'cuenta', 'legal', 'carrito', 'checkout', 'pedido'].includes(seccion);
   cuerpo.toggle('tema-claro', clara);
   ui.bosque?.activo(!clara && seccion !== 'walkurio');
   if (!['', 'index.html'].includes(seccion)) ui.bosque?.abrir(true);
@@ -357,6 +358,8 @@ async function ruta() {
     else if (seccion === 'contacto') contacto();
     else if (seccion === 'legal' && valor) await legal(valor);
     else if (seccion === 'carrito') await carritoRuta(valor);
+    else if (seccion === 'checkout') await checkout();
+    else if (seccion === 'pedido') await pedido(params.get('pedido'));
     else if (['', 'index.html'].includes(seccion)) await inicio();
     else throw new Error('404');
   } catch (e) {
@@ -550,15 +553,13 @@ $('#carrito-lineas').addEventListener('click', async (e) => {
 });
 $('#carrito-pie').addEventListener('click', (e) => {
   const b = e.target.closest('#finalizar');
-  if (b) finalizarCompra(b);
+  if (b) finalizarCompra();
 });
 
-/** Finalizar compra: la plataforma arma el pedido y el pago (pagos, envíos, cupones del panel). Mientras no tenga checkout, se avisa. */
-async function finalizarCompra(boton) {
-  if (typeof tienda.checkout !== 'function') { aviso('El pago se habilita en la próxima etapa de la plataforma.'); return; }
-  boton.classList.add('is-loading');
-  try { const r = await tienda.checkout(); if (r?.url) location.href = r.url; } catch (err) { aviso(err.message); }
-  boton.classList.remove('is-loading');
+/** Finalizar compra: lleva a la página de compra (/checkout). Pagos, envíos y cupones los aplica la plataforma. */
+function finalizarCompra() {
+  cerrarCarrito();
+  navegar('/checkout');
 }
 
 arrancar();
