@@ -23,6 +23,21 @@ async function pixeles(src, ancho) {
   return { img, w: c.width, h: c.height, d: x.getImageData(0, 0, c.width, c.height).data };
 }
 
+/** Un texto en la tipografía de los títulos, como si fuera una imagen (para que el polvo lo escriba). */
+async function textoPixeles(lineas, ancho = 900) {
+  const fuente = '700 160px "Cormorant Garamond"';
+  try { await document.fonts.load(fuente); } catch { /* sin la fuente, usa la de respaldo */ }
+  const c = document.createElement('canvas');
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.font = fuente;
+  const anchoTexto = Math.max(...lineas.map((l) => x.measureText(l).width));
+  const k = ancho / (anchoTexto + 40);
+  c.width = Math.round((anchoTexto + 40) * k); c.height = Math.round((lineas.length * 168 + 30) * k);
+  x.scale(k, k); x.font = fuente; x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+  lineas.forEach((l, i) => x.fillText(l, (anchoTexto + 40) / 2, 150 + i * 168));
+  return { img: c, w: c.width, h: c.height, d: x.getImageData(0, 0, c.width, c.height).data };
+}
+
 /** Puntos sobre la parte visible de una imagen (alfa), con el color y una profundidad según el brillo. */
 function desdeImagen({ w, h, d }, n, alto, profundidad = 0.5) {
   const llenos = [];
@@ -149,7 +164,7 @@ const FRAG = /* glsl */`
  * Crea el viaje en un canvas fijo. `formas`: rutas de las imágenes de las criaturas (sin fondo).
  * Devuelve { destruir }.
  */
-export async function crearViaje(canvas, { logo, criaturas }) {
+export async function crearViaje(canvas, { logo, texto, criaturas }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   const escena = new THREE.Scene();
@@ -157,7 +172,7 @@ export async function crearViaje(canvas, { logo, criaturas }) {
   camara.position.set(0, 0, 8);
 
   const N = chico() ? 9000 : 18000;
-  const [imgLogo, ...imgs] = await Promise.all([pixeles(logo, 520), ...criaturas.map((c) => pixeles(c, 340))]);
+  const [imgLogo, ...imgs] = await Promise.all([texto ? textoPixeles(chico() ? texto.movil : texto.lineas, 900) : pixeles(logo, 520), ...criaturas.map((c) => pixeles(c, 340))]);
   // Capítulo I: la mitad del polvo forma la criatura (izquierda) y la otra mitad el objeto (derecha)
   const SEP = chico() ? 0.62 : 2.1, ALTO_DUO = chico() ? 1.45 : 2.5;
   const izq = desdeImagen(imgs[0], N / 2, ALTO_DUO, 0.3), der = desdeImagen(imgs[1] ?? imgs[0], N / 2, ALTO_DUO * 0.9, 0.25);
@@ -168,7 +183,7 @@ export async function crearViaje(canvas, { logo, criaturas }) {
     duo.pos.set([der.pos[i * 3] + SEP, der.pos[i * 3 + 1], der.pos[i * 3 + 2]], j * 3); duo.col.set(der.col.subarray(i * 3, i * 3 + 3), j * 3);
   }
   const estrellas = cielo(N);
-  const formas = [desdeImagen(imgLogo, N, 1.1, 0.2), duo, arbol(N), planeta(N), estrellas, estrellas];
+  const formas = [desdeImagen(imgLogo, N, texto ? (chico() ? 1.5 : 1.55) : 1.1, 0.15), duo, arbol(N), planeta(N), estrellas, estrellas];
   // El nombre arranca con un brillo celeste parejo
   for (let i = 0; i < N; i++) formas[0].col.set(azar() < 0.25 ? [0.6, 0.86, 1] : [0.85, 0.9, 1], i * 3);
 
@@ -203,8 +218,8 @@ export async function crearViaje(canvas, { logo, criaturas }) {
 
   // Dónde se ubica la forma en cada capítulo (deja lugar al texto)
   const lugares = () => chico()
-    ? [[0, 0.75, 0.42], [0, -0.32, 1], [0, 0.55, 0.4], [0, 1, 0.6], [0, 0, 1], [0, 0, 1]]
-    : [[0, 0.5, 1.35], [0, -0.2, 1], [1.6, -0.35, 0.78], [1.55, 0, 1], [0, 0, 1], [0, 0, 1]];
+    ? [[0, 0.95, 0.78], [0, -0.32, 1], [0, 0.55, 0.4], [0, 1, 0.6], [0, 0, 1], [0, 0, 1]]
+    : [[0, 0.82, 1.35], [0, -0.2, 1], [1.6, -0.35, 0.78], [1.55, 0, 1], [0, 0, 1], [0, 0, 1]];
 
   const medir = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;

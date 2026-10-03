@@ -49,6 +49,18 @@ export const textos = {
     conocer: 'Conocerlo',
     todos: 'Conocer a todos los duendes',
   },
+  portal2: { // (P)
+    ante: 'Walkiverso · Taller de criaturas',
+    bajada: 'Criaturas y objetos únicos, esculpidos a mano con materiales reciclados. Cada pieza existe una sola vez.',
+    tienda: 'Ver la tienda', criaturas: 'Conocer las criaturas',
+    confianza: ['Piezas únicas', 'Hecho a mano en Uruguay', 'Envíos a todo el país'],
+  },
+  accesos: { // (P)
+    ante: 'Explorá el Walkiverso', titulo: '¿Qué estás buscando?',
+    tienda: 'Tienda', tiendaTexto: 'Todas las piezas disponibles',
+    criaturasTexto: 'Seres con nombre propio', duendesTexto: 'Del bosque de Milarko',
+    cursosTexto: 'Aprendé en el taller', contactoTexto: 'Escribinos y te respondemos',
+  },
   viaje: { // (P) todo el bloque
     lema: 'Arte, magia y reciclaje',
     bajar: 'Bajá al bosque',

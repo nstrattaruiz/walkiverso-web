@@ -585,3 +585,45 @@ body .wv-toast { color: #fff; }
 .wk-orbe__lienzo { position: relative; z-index: 1; width: 100% !important; height: 100% !important; aspect-ratio: 1; }
 .wk-orbe__pedestal { display: none !important; }
 @keyframes wv-orbe-flota { 50% { transform: translateY(-10px); } }
+
+/* =========================================================
+   Portal comercial: el polvo escribe la frase; debajo, qué es y a dónde ir
+   ========================================================= */
+.wv-portal { height: 100svh; min-height: 620px; }
+.wv-portal__texto { position: absolute; inset: 0; height: 100%; display: grid; align-content: end; justify-items: center; text-align: center; gap: 0; padding: 0 var(--gutter) clamp(90px, 14svh, 150px); pointer-events: auto; }
+.wv-portal__ante { position: absolute; top: clamp(110px, 15svh, 150px); left: 0; right: 0; margin: 0; font-size: .7rem; font-weight: 600; letter-spacing: .32em; text-transform: uppercase; color: var(--musgo); animation: wv-nace 1.6s .4s var(--ease) both; }
+.wv-portal__frase { margin: 0 0 auto; font-family: var(--font-display); font-weight: 700; font-size: clamp(3.2rem, 9vw, 8rem); line-height: .92; color: #fff; text-shadow: 0 0 50px rgb(138 216 255 / .35); }
+body.con-viaje .wv-portal__frase { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wv-portal__bajada { margin: 0; max-width: 36rem; font-size: clamp(1rem, 1.4vw, 1.18rem); line-height: 1.6; color: rgb(232 238 250 / .82); text-shadow: 0 2px 20px rgb(2 4 12 / .9); animation: wv-nace 1.6s 1.4s var(--ease) both; }
+.wv-portal__ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 26px; animation: wv-nace 1.6s 1.7s var(--ease) both; }
+.wv-portal__confianza { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 26px; margin: 22px 0 0; padding: 0; list-style: none; font-size: .78rem; letter-spacing: .06em; color: rgb(232 238 250 / .66); animation: wv-nace 1.6s 2s var(--ease) both; }
+.wv-portal__confianza li { display: inline-flex; align-items: center; gap: 8px; }
+.wv-portal__confianza .i { width: 13px; height: 13px; color: var(--oro); }
+.wv-portal__bajar { top: auto; bottom: 22px; }
+body:not(.con-viaje) .wv-portal__texto { align-content: center; gap: 18px; }
+
+/* ¿Qué estás buscando? */
+.wv-accesos { position: relative; padding: clamp(70px, 9vw, 120px) 0 clamp(40px, 6vw, 80px); }
+.wv-accesos .wv-head { margin-bottom: clamp(26px, 3vw, 40px); }
+.wv-accesos__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.wv-acceso { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; padding: 22px 22px; border-radius: 22px; overflow: hidden; isolation: isolate;
+  color: #fff; text-decoration: none; background: linear-gradient(180deg, rgb(12 22 50 / .72), rgb(4 8 22 / .78)); box-shadow: inset 0 0 0 1px var(--line); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition: transform .8s var(--ease), box-shadow .8s var(--ease-organica); }
+.wv-acceso::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(240px circle at var(--mx, 0%) var(--my, 0%), rgb(138 216 255 / .18), transparent 60%); opacity: 0; transition: opacity .6s; }
+.wv-acceso:hover { transform: translateY(-4px); box-shadow: inset 0 0 0 1px rgb(138 216 255 / .45), 0 24px 50px -24px #000, 0 0 40px -14px rgb(138 216 255 / .5); }
+.wv-acceso:hover::before { opacity: 1; }
+.wv-acceso__icono { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; background: rgb(138 216 255 / .12); color: var(--oro); box-shadow: inset 0 0 0 1px rgb(138 216 255 / .25); }
+.wv-acceso__icono .i { width: 22px; height: 22px; }
+.wv-acceso__texto { display: grid; gap: 2px; min-width: 0; }
+.wv-acceso__texto strong { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1.05; }
+.wv-acceso__texto small { font-size: .84rem; color: var(--ink-2); }
+.wv-acceso__ir { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); transition: transform .7s var(--ease), color .4s, background-color .4s; }
+.wv-acceso__ir .i { width: 18px; height: 18px; }
+.wv-acceso:hover .wv-acceso__ir { transform: translateX(4px); color: #050a1c; background: var(--ink); }
+@media (max-width: 1099px) { .wv-accesos__grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 749px) {
+  .wv-accesos__grid { grid-template-columns: 1fr; gap: 10px; }
+  .wv-acceso { padding: 16px 18px; }
+  .wv-portal__ctas .wv-btn { flex: 1 1 100%; }
+  .wv-portal__confianza { gap: 6px 16px; font-size: .72rem; }
+}

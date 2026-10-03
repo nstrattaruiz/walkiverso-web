@@ -140,7 +140,8 @@ const enlace = (l, extra = '') => {
 function pintarMenus() {
   const info = estado.info;
   const main = info.menus.main.length ? info.menus.main
-    : [{ label: 'Tienda', kind: 'catalog', children: [] }, { label: 'Walkurio', kind: 'url', url: '/walkurio', children: [] }, { label: 'Contacto', kind: 'url', url: '/contacto', children: [] }];
+    // Si el panel todavía no tiene menú cargado, la web muestra el recorrido completo
+    : [{ label: 'Tienda', kind: 'catalog', children: [] }, { label: 'Walkurio', kind: 'url', url: '/walkurio', children: [] }, { label: 'Cursos', kind: 'url', url: '/cursos', children: [] }, { label: 'Walkiver', kind: 'url', url: '/walkiver/', children: [] }, { label: 'Contacto', kind: 'url', url: '/contacto', children: [] }];
   $('#nav').innerHTML = main.map((l) => `${enlace(l)}${esc(l.label)}</a>`).join('');
   $('#panel-nav').innerHTML = [...main, { label: T.cuenta.favoritos, url: '/favoritos' }].map((l, i) =>
     `${enlace(l, ` style="--i:${i}"`)}<small>${String(i + 1).padStart(2, '0')}</small><span>${esc(l.label)}</span><i class="wv-menu__go" aria-hidden="true"></i></a>`).join('');
@@ -469,7 +470,7 @@ document.addEventListener('keydown', (e) => {
 if (!tactil && !reducido) {
   let actual = null;
   document.addEventListener('pointermove', (e) => {
-    const t = e.target.closest?.('.wv-card:not(.wv-card--fantasma), .wk-carta, .wv-cat, .wv-spin__card');
+    const t = e.target.closest?.('.wv-card:not(.wv-card--fantasma), .wk-carta, .wv-cat, .wv-spin__card, .wv-acceso');
     if (actual && actual !== t) { actual.style.removeProperty('--mx'); actual.style.removeProperty('--my'); actual.style.removeProperty('--rx'); actual.style.removeProperty('--ry'); actual = null; }
     if (!t) return;
     actual = t;

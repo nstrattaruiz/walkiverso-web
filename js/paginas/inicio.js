@@ -18,6 +18,15 @@ export async function inicio() {
   const objetos = categoriasObjeto.map(categoria).filter((c) => c?.productCount);
   const hrefObjetos = objetos.length === 1 ? `/categoria/${objetos[0].handle}` : '/tienda';
   const [cap1, cap2, cap3] = T.viaje.capitulos;
+  const piezas = (c) => (c?.productCount ? T.categorias.piezas(c.productCount) : '');
+  const accesos = [
+    { titulo: T.accesos.tienda, texto: T.accesos.tiendaTexto, href: '/tienda', icono: 'i-bag' },
+    criaturas && { titulo: criaturas.name, texto: piezas(criaturas) || T.accesos.criaturasTexto, href: `/categoria/${criaturas.handle}`, icono: 'i-criatura' },
+    objetos.length && { titulo: T.viaje.lados.objetos.titulo, texto: objetos.map((c) => c.name).join(' · '), href: hrefObjetos, icono: 'i-bitacora' },
+    duendes && { titulo: duendes.name, texto: piezas(duendes) || T.accesos.duendesTexto, href: `/categoria/${duendes.handle}`, icono: 'i-chispa' },
+    categoria('cursos') && { titulo: T.cursos.titulo, texto: T.accesos.cursosTexto, href: '/cursos', icono: 'i-pluma' },
+    { titulo: 'Contacto', texto: T.accesos.contactoTexto, href: '/contacto', icono: 'i-mail' },
+  ].filter(Boolean);
   const tabs = [['nuevos', T.recientes.pestanas.nuevos], ['ofertas', T.recientes.pestanas.ofertas],
     ...pestanasExtra.map(categoria).filter((c) => c?.productCount).map((c) => [c.handle, c.name])];
   const lado = (k, href, n, i) => `
@@ -36,10 +45,33 @@ export async function inicio() {
 
     <section class="wv-portal" data-capitulo="0" aria-label="${esc(info.name)}">
       <div class="wv-portal__texto">
-        <h1 class="wv-portal__nombre"><img src="img/logo.svg" alt="${esc(info.name)}" width="600" height="160"></h1>
-        <p class="wv-portal__lema">${esc(T.viaje.lema)}</p>
+        <p class="wv-portal__ante">${esc(T.portal2.ante)}</p>
+        <h1 class="wv-portal__frase">${esc(T.hero.titulo)}</h1>
+        <p class="wv-portal__bajada">${esc(T.portal2.bajada)}</p>
+        <div class="wv-portal__ctas">
+          <a class="wv-btn wv-btn--luz wv-btn--lg" href="/tienda" data-link>${esc(T.portal2.tienda)}${flecha()}</a>
+          ${criaturas ? `<a class="wv-btn wv-btn--outline-light wv-btn--lg" href="/categoria/${esc(criaturas.handle)}" data-link>${esc(T.portal2.criaturas)}</a>` : ''}
+        </div>
+        <ul class="wv-portal__confianza">${T.portal2.confianza.map((c) => `<li>${icono('i-chispa')}${esc(c)}</li>`).join('')}</ul>
       </div>
-      <a class="wv-portal__bajar" href="#cap-1"><span>${esc(T.viaje.bajar)}</span><i aria-hidden="true"></i></a>
+      <a class="wv-portal__bajar" href="#accesos"><span>${esc(T.viaje.bajar)}</span><i aria-hidden="true"></i></a>
+    </section>
+
+    <section class="wv-accesos" id="accesos" aria-labelledby="accesos-titulo">
+      <div class="wv-container">
+        <div class="wv-head wv-head--center" data-rev>
+          <p class="wv-eyebrow wv-eyebrow--luz">${esc(T.accesos.ante)}</p>
+          <h2 class="wv-h2" id="accesos-titulo">${esc(T.accesos.titulo)}</h2>
+        </div>
+        <nav class="wv-accesos__grid" aria-label="${esc(T.accesos.titulo)}">
+          ${accesos.map((a, k) => `
+            <a class="wv-acceso" href="${esc(a.href)}"${a.aparte ? '' : ' data-link'} data-rev style="--d:${k * 70}ms">
+              <span class="wv-acceso__icono">${icono(a.icono)}</span>
+              <span class="wv-acceso__texto"><strong>${esc(a.titulo)}</strong><small>${esc(a.texto)}</small></span>
+              <span class="wv-acceso__ir">${icono('i-flecha')}</span>
+            </a>`).join('')}
+        </nav>
+      </div>
     </section>
 
     <section class="wv-duo" id="cap-1" data-capitulo="1" aria-labelledby="cap-1-titulo">
@@ -155,7 +187,7 @@ export async function inicio() {
   let viaje = null;
   ui.alSalir = () => { viaje?.destruir(); document.body.classList.remove('con-viaje', 'en-entrada'); };
   import('../viaje.js')
-    .then(({ crearViaje }) => crearViaje($('#viaje'), { logo: 'img/logo.svg', criaturas: heroImagenes }))
+    .then(({ crearViaje }) => crearViaje($('#viaje'), { texto: { lineas: ['Arte, Magia', 'y Reciclaje'], movil: ['Arte,', 'Magia y', 'Reciclaje'] }, criaturas: heroImagenes }))
     .then((v) => { if ($('#viaje')) { viaje = v; document.body.classList.add('con-viaje'); } else v.destruir(); })
     .catch((e) => console.warn('Sin viaje 3D:', e));
   // El lado que señalás se acerca

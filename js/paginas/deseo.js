@@ -112,7 +112,7 @@ export function activarDeseo(raiz) {
   if (!raiz) return;
   // La bola en 3D; si el navegador no puede, la de antes
   let orbe;
-  try { orbe = crearOrbe3D(raiz.querySelector('.wk-orbe__lienzo')); } catch { orbe = crearOrbe(raiz.querySelector('.wk-orbe__lienzo')); }
+  orbe = crearOrbe3D(raiz.querySelector('.wk-orbe__lienzo'), crearOrbe);
   const form = raiz.querySelector('form');
   const pasos = $$('[data-paso]', raiz);
   acordeon(raiz.querySelector('.wk-deseo__preguntas'));

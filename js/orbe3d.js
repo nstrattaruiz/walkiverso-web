@@ -23,7 +23,7 @@ const FRAG = /* glsl */`
     return mix(mix(mix(hash(i), hash(i + vec3(1,0,0)), f.x), mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
                mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x), mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
   }
-  float fbm(vec3 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * ruido(p); p = p * 2.03 + 1.7; a *= 0.5; } return v; }
+  float fbm(vec3 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * ruido(p); p = p * 2.03 + 1.7; a *= 0.5; } return v; }
   mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
   void main() {
     vec3 ro = cameraPosition, rd = normalize(vMundo - cameraPosition);
@@ -32,7 +32,7 @@ const FRAG = /* glsl */`
     h = sqrt(h);
     float t0 = -b - h, t1 = -b + h;
     vec3 col = vec3(0.0); float alfa = 0.0;
-    const int PASOS = 30;
+    const int PASOS = 22;
     float paso = (t1 - t0) / float(PASOS);
     float vel = 0.12 + uE * 0.35;
     for (int i = 0; i < PASOS; i++) {
@@ -62,7 +62,7 @@ const FRAG = /* glsl */`
     gl_FragColor = vec4(col, alfa);
   }`;
 
-export function crearOrbe3D(lienzo) {
+function montarOrbe(lienzo) {
   const renderer = new THREE.WebGLRenderer({ canvas: lienzo, alpha: true, antialias: true, premultipliedAlpha: false });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   const escena = new THREE.Scene();
@@ -147,5 +147,29 @@ export function crearOrbe3D(lienzo) {
       await espera(900);
     },
     destruir() { vivo = false; cancelAnimationFrame(raf); renderer.dispose(); },
+  };
+}
+
+/**
+ * La bola recién se arma cuando su sección se acerca a la pantalla: crear un gráfico 3D cuesta,
+ * y así no le roba tiempo a lo primero que se ve. Si el navegador no puede, usa la bola de respaldo.
+ */
+export function crearOrbe3D(lienzo, respaldo) {
+  let real = null, energia = 0.2;
+  const montar = () => {
+    try { real = montarOrbe(lienzo); } catch { real = respaldo ? respaldo(lienzo) : null; }
+    real?.energia(energia);
+  };
+  const io = new IntersectionObserver(([en]) => {
+    if (!en.isIntersecting || real) return;
+    io.disconnect();
+    setTimeout(montar, 0);
+  }, { rootMargin: '500px 0px' });
+  io.observe(lienzo);
+  return {
+    energia(v) { energia = v; real?.energia(v); },
+    pulso(v) { real?.pulso(v); },
+    async soltar(el) { if (real) await real.soltar(el); },
+    destruir() { io.disconnect(); real?.destruir?.(); },
   };
 }
