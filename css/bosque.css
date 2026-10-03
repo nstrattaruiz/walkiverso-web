@@ -528,3 +528,9 @@ body .wv-toast { color: #fff; }
 .wv-menu .ns-panel__nav a, .wv-menu__cat strong, .wv-empty h3, .wk-vacio-fav h2, .wv-review blockquote, .wk-carta__cara--dorso h3,
 .wv-escuela__cab .wv-cap__titulo, .wk-mundo h1, .wk-deseo h2, .wk-contacto-pag h1, .wk-misiva__cab h2 { font-weight: 700; }
 .wv-review blockquote { font-weight: 600; }
+
+/* La cara que no se ve no recibe clics (si no, el frente tapa los botones del dorso) */
+.wk-carta.is-girada .wk-carta__cara--frente { pointer-events: none; }
+.wk-carta:not(.is-girada) .wk-carta__cara--dorso { pointer-events: none; }
+.wv-ritual__elegida .wk-carta--grande { cursor: pointer; }
+.wv-ritual__hojas, .wv-ritual__hoja, .wv-ritual__luz { pointer-events: none; }

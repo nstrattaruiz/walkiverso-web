@@ -356,6 +356,12 @@ async function ritualDuende(lista) {
     repintarFavoritos();
     const grande = capa.querySelector('.wk-carta--grande');
     rafaga(grande, 40);
+    // Tocar la carta la da vuelta (salvo que toques un botón o enlace)
+    grande.addEventListener('click', (e) => {
+      if (e.target.closest('a, button')) return;
+      grande.classList.toggle('is-girada');
+      rafaga(grande, 14);
+    });
     setTimeout(() => { if (capa.isConnected) { grande.classList.add('is-girada'); rafaga(grande, 30); } }, reducido ? 0 : 1100);
   }
 }
