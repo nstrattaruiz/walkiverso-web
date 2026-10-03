@@ -228,7 +228,7 @@ export async function crearViaje(canvas, { logo, criaturas }) {
     objetivo = e;
     // Pasado el último capítulo, el cielo queda de fondo, tenue
     const ultimo = capitulos[capitulos.length - 1].getBoundingClientRect();
-    luz = ultimo.bottom < innerHeight * 0.4 ? 0.45 : 1;
+    luz = 1 - 0.68 * Math.min(1, Math.max(0, (innerHeight * 0.5 - ultimo.top) / innerHeight));
   };
   addEventListener('scroll', leer, { passive: true });
   leer();

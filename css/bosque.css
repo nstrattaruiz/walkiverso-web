@@ -470,3 +470,28 @@ body .wv-modal-acceso input { background: rgb(232 238 250 / .05); color: #fff; b
 body .wv-modal-acceso .wv-btn--primary { --bg: var(--ink); --fg: #050a1c; }
 body .wv-modal-acceso .wv-btn--primary:hover { --bg: #fff; }
 body .wv-modal-acceso .wk-modal__cerrar { color: #fff; background: rgb(232 238 250 / .08); }
+
+/* Entre el planeta y la tienda: un tramo de cielo donde el planeta se deshace en estrellas */
+.wv-umbral { height: 60svh; pointer-events: none; }
+.wv-cielo { padding-top: clamp(40px, 6vw, 80px); }
+.wv-footer .wv-faq__col { display: grid; gap: 10px; align-content: start; }
+.wv-footer .wv-faq__item p { animation: wv-respuesta .7s var(--ease) both; }
+@keyframes wv-respuesta { from { opacity: 0; transform: translateY(-6px); } }
+
+/* Menú grande: tres columnas que arrancan a la misma altura */
+.wv-menu { align-items: start; }
+.wv-menu .ns-panel__label { display: block; margin: 0 0 16px; line-height: 1; }
+.wv-menu__col, .wv-menu__cats, .wv-menu__side { align-self: start; }
+.wv-menu .ns-panel__nav { border-top: 1px solid rgb(232 238 250 / .12); }
+.wv-menu .ns-panel__nav a:first-child { padding-top: 13px; }
+.ns-panel__info > .wv-menu__promo { margin: 0 0 22px; }
+.wv-menu__side .ns-panel__label + .wv-menu__promo + .ns-panel__label { margin-top: 0; }
+
+/* Páginas claras: el papel termina en la linde de un bosque azul y ahí empieza la noche del pie */
+.wv-pie__linde { display: none; }
+body.tema-claro .wv-footer { --linde: clamp(110px, 11vw, 180px); background: linear-gradient(180deg, transparent 0 calc(var(--linde) - 2px), #02040c calc(var(--linde) - 2px)); padding-top: calc(var(--linde) + clamp(40px, 5vw, 70px)); }
+body.tema-claro .wv-pie__linde { display: block; position: absolute; left: 0; top: 0; width: 100%; height: var(--linde); z-index: -1; }
+body.tema-claro .wv-pie__luciernagas i:nth-child(-n+5) { display: none; }
+.wv-menu .wv-btn--luz, body.tema-claro .wv-menu .wv-btn--luz { --bg: #e8eefa; --fg: #050a1c; color: #050a1c; }
+.wv-menu .wv-btn--luz:hover { --bg: #fff; }
+body .wv-footer { --musgo: #a7bde6; }

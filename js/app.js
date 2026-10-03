@@ -16,6 +16,7 @@ import { ramasDeFondo } from './ramas.js';
 import { contacto } from './paginas/contacto.js';
 import { crearBosque } from './bosque.js';
 import { preguntas } from './config.js';
+import { lindeDelBosque } from './paisaje.js';
 import { iniciarFluidez } from './fluidez.js';
 
 let rutaActual = '';
@@ -145,7 +146,7 @@ function pintarMenus() {
     `${enlace(l, ` style="--i:${i}"`)}<small>${String(i + 1).padStart(2, '0')}</small><span>${esc(l.label)}</span><i class="wv-menu__go" aria-hidden="true"></i></a>`).join('');
   $('#menu-cats').innerHTML = colecciones().filter((c) => c.productCount).slice(0, 6).map((c, i) => `
     <a class="wv-menu__cat wv-tono--${tonoColeccion(i)}" href="/categoria/${esc(c.handle)}" data-link style="--i:${i}">
-      <span class="wv-menu__cat-img">${imagenColeccion(c)}</span>
+      ${imagenColeccion(c).includes('wv-orbe-luz') ? '' : `<span class="wv-menu__cat-img">${imagenColeccion(c)}</span>`}
       <strong>${esc(c.name)}</strong><span>${esc(T.categorias.piezas(c.productCount))}</span>
     </a>`).join('');
 }
@@ -167,6 +168,7 @@ function pintarPie() {
   const c = info.contact;
   const redes = [['instagram', 'i-ig', 'Instagram'], ['facebook', 'i-fb', 'Facebook']].filter(([k]) => c[k]);
   $('#pie').innerHTML = `
+    ${lindeDelBosque()}
     <span class="wk-ramas-fondo wk-ramas-fondo--luz wv-pie__raices" data-esquinas="bl,br" data-semilla="77"></span>
     <div class="wv-pie__luciernagas" aria-hidden="true">${Array.from({ length: 16 }, (_, i) => `<i style="--x:${(i * 61) % 100}%;--y:${20 + ((i * 37) % 70)}%;--d:${(i % 7) * -1.3}s;--t:${7 + (i % 5) * 1.6}s"></i>`).join('')}</div>
     <div class="wv-container wv-pie__preguntas">
@@ -177,11 +179,11 @@ function pintarPie() {
         <p class="wv-pie__otra">${esc(T.preguntas.otra)} <a href="/contacto" data-link>${esc(T.preguntas.escribinos)} →</a></p>
       </div>
       <div class="wv-faq" id="faq">
-        ${preguntas.map(([q, a], i) => `
+        ${[0, 1].map((col) => `<div class="wv-faq__col">${preguntas.filter((_, k) => k % 2 === col).map(([q, a]) => `
           <details class="wv-faq__item" data-texto="${esc(`${q} ${a}`.toLowerCase())}">
             <summary>${esc(q)}<span class="wv-faq__icon" aria-hidden="true">${icono('i-mas')}</span></summary>
             <p>${esc(a)}</p>
-          </details>`).join('')}
+          </details>`).join('')}</div>`).join('')}
         <p class="wv-search__none" id="faq-nada" hidden><strong>${esc(T.preguntas.nada)}</strong></p>
       </div>
     </div>

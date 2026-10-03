@@ -76,7 +76,9 @@ export async function inicio() {
       </div>
     </section>
 
-    <section class="wv-section wv-cielo" data-capitulo="4" aria-labelledby="recientes-titulo">
+    <div class="wv-umbral" data-capitulo="4" aria-hidden="true"></div>
+
+    <section class="wv-section wv-cielo" aria-labelledby="recientes-titulo">
       <div class="wv-container">
         <div class="wv-head wv-head--split" data-rev>
           <div><p class="wv-eyebrow wv-eyebrow--luz">${esc(T.recientes.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="recientes-titulo">${esc(T.recientes.titulo)}</h2><p class="wv-lead">${esc(T.recientes.bajada)}</p></div>

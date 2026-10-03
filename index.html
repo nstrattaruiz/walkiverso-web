@@ -105,15 +105,18 @@
 
     <!-- Menú grande: comportamiento de la firma NS, diseño propio (3 columnas, colecciones en tarjetas) -->
     <div class="ns-panel wv-menu" id="ns-panel" aria-hidden="true">
-      <nav class="ns-panel__nav" aria-label="Menú" id="panel-nav"></nav>
+      <div class="wv-menu__col">
+        <p class="ns-panel__label">Menú</p>
+        <nav class="ns-panel__nav" aria-label="Menú" id="panel-nav"></nav>
+      </div>
       <div class="wv-menu__cats">
         <p class="ns-panel__label">Colecciones</p>
         <div class="wv-menu__grid" id="menu-cats"></div>
       </div>
       <div class="ns-panel__info wv-menu__side" id="hablemos">
+        <p class="ns-panel__label">Walkurio</p>
         <a class="wv-menu__promo" href="/walkurio" data-link>
           <span class="wv-menu__planeta" aria-hidden="true"></span>
-          <span class="wv-menu__promo-tag">Cartografía</span>
           <strong>Recorré Walkurio, el planeta de las criaturas</strong>
           <span class="wv-menu__promo-link">Explorar el planeta</span>
         </a>

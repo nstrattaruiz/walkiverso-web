@@ -82,3 +82,11 @@ export function moverPaisaje(raiz) {
   pintar();
   return () => removeEventListener('scroll', alScroll);
 }
+
+/** La linde del bosque: silueta de árboles donde termina el papel y empieza la noche (pie en páginas claras). */
+export function lindeDelBosque() {
+  return `<svg class="wv-pie__linde" viewBox="0 0 ${ANCHO} 260" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+    <path d="${bosque(41, 230, 150, 34, 0.45).replace(/1040/g, '300')}" fill="#6f84b8" opacity=".35" transform="translate(0,-28)"/>
+    <path d="${bosque(13, 250, 190, 26, 0.5).replace(/1040/g, '300')}" fill="#02040c"/>
+  </svg>`;
+}
