@@ -2,6 +2,7 @@
 // El deseo llega al panel como mensaje de contacto (tipo "Solicitud").
 import { tienda, T, $, $$, esc, app, estado, revelar, acordeon, romano, reducido, aviso, espera } from '../base.js';
 import { rafaga } from '../polvo.js';
+import { crearOrbe3D } from '../orbe3d.js';
 
 export const seccionDeseo = ({ pagina = false } = {}) => `
   <section class="wk-deseo${pagina ? ' wk-deseo--pagina' : ''}" id="deseo" aria-labelledby="deseo-titulo">
@@ -109,7 +110,9 @@ export async function deseos() {
 
 export function activarDeseo(raiz) {
   if (!raiz) return;
-  const orbe = crearOrbe(raiz.querySelector('.wk-orbe__lienzo'));
+  // La bola en 3D; si el navegador no puede, la de antes
+  let orbe;
+  try { orbe = crearOrbe3D(raiz.querySelector('.wk-orbe__lienzo')); } catch { orbe = crearOrbe(raiz.querySelector('.wk-orbe__lienzo')); }
   const form = raiz.querySelector('form');
   const pasos = $$('[data-paso]', raiz);
   acordeon(raiz.querySelector('.wk-deseo__preguntas'));

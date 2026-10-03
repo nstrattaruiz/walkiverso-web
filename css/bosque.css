@@ -577,3 +577,11 @@ body .wv-toast { color: #fff; }
 .wk-carta .wk-carta__cara--dorso .wk-carta__link { color: rgb(232 238 250 / .75); font-size: .88rem; }
 .wk-carta .wk-carta__cara--dorso .wk-carta__link:hover { color: var(--oro); }
 .wk-escritorio .wk-carta-enviada h2 { font-family: var(--font-display) !important; font-weight: 700; letter-spacing: 0; }
+
+/* ---------- Bola de cristal 3D: sin pedestal ni contorno, flota con su halo ---------- */
+.wk-orbe { filter: none; position: relative; width: min(420px, 82vw); aspect-ratio: 1; margin-bottom: 10px; animation: wv-orbe-flota 7s ease-in-out infinite; }
+.wk-orbe::before { content: ''; position: absolute; inset: -18%; z-index: 0; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgb(138 216 255 / .28), rgb(61 95 158 / .14) 45%, transparent 75%); filter: blur(10px); animation: wv-respira 5s ease-in-out infinite; }
+.wk-orbe__lienzo { position: relative; z-index: 1; width: 100% !important; height: 100% !important; aspect-ratio: 1; }
+.wk-orbe__pedestal { display: none !important; }
+@keyframes wv-orbe-flota { 50% { transform: translateY(-10px); } }
