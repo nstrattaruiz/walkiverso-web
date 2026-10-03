@@ -1,0 +1,56 @@
+/* =========================================================
+   Walkiverso · costuras entre secciones (js/costuras.js)
+   Cada sección empieza con un borde de colinas que se apoya sobre la anterior,
+   con un hilo de luz y luciérnagas que pasan de una a la otra.
+   ========================================================= */
+:root { --ola-h: 70px; --ola-w: max(1100px, 100vw); }
+@media (max-width: 749px) { :root { --ola-h: 44px; --ola-w: 900px; } }
+
+.wk-cosida {
+  position: relative; z-index: 2;
+  margin-top: calc(var(--ola-h) * -1) !important;
+  border-top: var(--ola-h) solid transparent;
+  -webkit-mask: var(--ola) calc(var(--ola-x, 0px) + var(--desliz, 0px)) 0 / var(--ola-w) var(--ola-h) repeat-x, linear-gradient(#000 0 0) 0 var(--ola-h) / 100% 100% no-repeat;
+  mask: var(--ola) calc(var(--ola-x, 0px) + var(--desliz, 0px)) 0 / var(--ola-w) var(--ola-h) repeat-x, linear-gradient(#000 0 0) 0 var(--ola-h) / 100% 100% no-repeat;
+}
+/* Sin los cortes redondeados de antes: ahora el borde lo dan las colinas */
+.wk-cabecera, .pie { border-radius: 0 !important; }
+.pie.wk-cosida { margin-top: calc(var(--ola-h) * -1 + 40px) !important; }
+
+/* Hilo de luz y luciérnagas sobre el borde */
+.wk-borde { position: relative; z-index: 3; height: 0; pointer-events: none; }
+.wk-borde__hilo {
+  position: absolute; left: 0; right: 0; top: 0; height: var(--ola-h);
+  background: var(--hilo) calc(var(--ola-x, 0px) + var(--desliz, 0px)) 0 / var(--ola-w) var(--ola-h) repeat-x;
+  opacity: 0.35; filter: drop-shadow(0 0 6px rgb(138 216 255 / 0.9));
+  -webkit-mask: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); mask: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+  animation: hilo-respira 6s ease-in-out infinite;
+}
+.wk-borde--oscuro .wk-borde__hilo { opacity: 0.6; }
+@keyframes hilo-respira { 50% { opacity: 0.15; } }
+.wk-borde__luces { position: absolute; left: 0; right: 0; top: calc(var(--ola-h) * 0.5); height: 0; }
+.wk-borde__luces i {
+  position: absolute; left: var(--x); top: 0; width: 5px; height: 5px; border-radius: 50%;
+  background: #e9f8ff; box-shadow: 0 0 8px 2px rgb(138 216 255 / 0.9), 0 0 22px 6px rgb(138 216 255 / 0.35);
+  opacity: 0; animation: sube-luz var(--t, 6s) ease-in-out var(--d, 0s) infinite;
+}
+.wk-borde:not(.wk-borde--oscuro) .wk-borde__luces i { background: #8ad8ff; box-shadow: 0 0 8px 2px rgb(79 179 240 / 0.7); }
+@keyframes sube-luz {
+  0% { opacity: 0; transform: translate(0, 30px) scale(0.6); }
+  20% { opacity: 1; }
+  60% { opacity: 0.8; transform: translate(14px, -70px) scale(1); }
+  100% { opacity: 0; transform: translate(-6px, -150px) scale(0.5); }
+}
+
+/* Aparición más natural: sube, se aclara y se enfoca */
+[data-rev] { opacity: 0; transform: translateY(34px); filter: blur(6px); transition: opacity 1.1s var(--ease), transform 1.2s var(--ease), filter 1.1s var(--ease); transition-delay: var(--d, 0ms); }
+[data-rev].is-in { opacity: 1; transform: none; filter: none; }
+/* Los títulos de sección aparecen con un brillo suave */
+.wk-titulo[data-rev].is-in h2, .wk-videos__cab[data-rev].is-in h2 { animation: titulo-luz 2.4s var(--ease) 0.3s both; }
+@keyframes titulo-luz { 0% { text-shadow: 0 0 0 rgb(138 216 255 / 0); } 40% { text-shadow: 0 0 28px rgb(138 216 255 / 0.55); } 100% { text-shadow: 0 0 0 rgb(138 216 255 / 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .wk-borde__luces, .wk-borde__hilo { animation: none; }
+  .wk-borde__luces i { display: none; }
+  [data-rev] { filter: none; }
+}

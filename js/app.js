@@ -12,6 +12,7 @@ import { cursos } from './paginas/cursos.js';
 import { iniciarCuenta, favoritosPagina, cuentaPagina, repintarFavoritos } from './cuenta.js';
 import { cubrir, descubrir } from './transicion.js';
 import { ramasDeFondo } from './ramas.js';
+import { coser } from './costuras.js';
 import { contacto } from './paginas/contacto.js';
 
 let rutaActual = '';
@@ -305,6 +306,7 @@ async function ruta() {
   }
   repintarFavoritos();
   ramasDeFondo(app);
+  coser(app);
   revelar();
   app.focus({ preventScroll: true });
 }
