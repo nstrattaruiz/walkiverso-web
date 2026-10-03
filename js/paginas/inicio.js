@@ -183,11 +183,11 @@ export async function inicio() {
 
   // El viaje (WebGL). Sin WebGL quedan el logo y las fotos de respaldo.
   let viaje = null;
-  ui.alSalir = () => { viaje?.destruir(); document.body.classList.remove('con-viaje', 'en-entrada'); };
+  ui.alSalir = () => { viaje?.destruir(); document.body.classList.remove('con-viaje', 'en-entrada', 'sin-viaje'); };
   import('../viaje.js')
     .then(({ crearViaje }) => crearViaje($('#viaje'), { texto: { lineas: ['Arte, Magia', 'y Reciclaje'], movil: ['Arte,', 'Magia y', 'Reciclaje'] }, criaturas: heroImagenes }))
     .then((v) => { if ($('#viaje')) { viaje = v; document.body.classList.add('con-viaje'); } else v.destruir(); })
-    .catch((e) => console.warn('Sin viaje 3D:', e));
+    .catch((e) => { console.warn('Sin viaje 3D:', e); document.body.classList.add('sin-viaje'); });
   // El lado que señalás se acerca
   $$('[data-lado]', app).forEach((a) => {
     a.addEventListener('pointerenter', () => viaje?.enfocar(Number(a.dataset.lado)));
@@ -329,41 +329,49 @@ async function ritualDuende(lista) {
   capa.querySelector('.wv-ritual__cerrar').focus({ preventScroll: true });
   requestAnimationFrame(() => capa.classList.add('is-abierta'));
 
-  // Cada carta es una hoja con su propio ritmo: ángulo, radio, altura, balanceo
+  // Cada carta es una hoja con su propio ritmo. Todo se mueve con suavizado continuo (nada salta):
+  // posición, tamaño, giro y brillo siempre se acercan a su objetivo.
   const hojas = $$('.wv-ritual__hoja', capa).map((el, i) => ({
-    el, a: (i / n) * Math.PI * 2 + Math.random() * 0.6, r: 0.9 + Math.random() * 0.5, y: (Math.random() - 0.5) * 0.5,
-    fase: Math.random() * 6.28, vel: 0.12 + Math.random() * 0.1, op: 0, polvo: 0, x: 0, yy: 0,
+    el, a: (i / n) * Math.PI * 2, r: 0.92 + Math.random() * 0.3, y: (Math.random() - 0.5) * 0.35,
+    fase: Math.random() * 6.28, op: 0, polvo: 0, x: 0, yy: 0, s: 0.6, rot: 0, sube: 0,
   }));
-  const W = () => Math.min(innerWidth * 0.42, 520), H = () => Math.min(innerHeight * 0.3, 260);
-  let t = 0, fase = 'flota', ultimo = performance.now();
-  const duracion = reducido ? 0.1 : 5.4;
+  const W = () => Math.min(innerWidth * 0.4, 500), H = () => Math.min(innerHeight * 0.28, 240);
+  let t = 0, fase = 'flota', ultimo = performance.now(), vel = 0;
+  const duracion = reducido ? 0.1 : 5.2;
   const elegida = hojas[k];
+  const suave = (actual, objetivo, rapidez, dt) => actual + (objetivo - actual) * (1 - Math.exp(-rapidez * dt));
   const cuadro = (now) => {
     if (!vivo) return;
     const dt = Math.min((now - ultimo) / 1000, 0.05); ultimo = now; t += dt;
-    // 0–1.4 s flotan suspendidas · 1.4–5.4 s orbitan y las órbitas se cierran · después se elige
-    const giro = Math.min(1, Math.max(0, (t - 1.4) / (duracion - 1.4)));
-    const cierre = 1 - giro * giro * (3 - 2 * giro) * 0.55;
+    // La rueda acelera despacio, gira, y frena despacio (velocidad con inercia, sin cambios bruscos)
+    const g = Math.min(1, t / duracion);
+    const velObjetivo = fase === 'elige' ? 0 : 0.25 + Math.sin(g * Math.PI) * 1.5;
+    vel = suave(vel, velObjetivo, fase === 'elige' ? 2.2 : 1.4, dt);
+    const cierre = 1 - (g * g * (3 - 2 * g)) * 0.45;
     for (const h of hojas) {
       const esta = h === elegida;
-      h.op += (1 - h.op) * Math.min(1, dt * 2);
-      h.a += dt * (h.vel + Math.sin(giro * Math.PI) * 1.6) * (1 - (fase === 'elige' ? 1 : 0));
+      h.a += dt * vel;
       const rx = W() * h.r * cierre, ry = H() * h.r * cierre;
-      let x = Math.cos(h.a) * rx, y = Math.sin(h.a) * ry * 0.55 + h.y * H() + Math.sin(t * 1.3 + h.fase) * 10;
-      const z = (Math.sin(h.a) + 1) / 2; // adelante / atrás
-      let esc2 = 0.72 + z * 0.4, rot = Math.sin(t * 0.9 + h.fase) * 8 + Math.cos(h.a) * 10;
+      const z = (Math.sin(h.a) + 1) / 2; // atrás 0 · adelante 1
+      let tx = Math.cos(h.a) * rx, ty = Math.sin(h.a) * ry * 0.5 + h.y * H() + Math.sin(t * 1.1 + h.fase) * 8;
+      let ts = 0.7 + z * 0.38, trot = Math.sin(t * 0.8 + h.fase) * 6 + Math.cos(h.a) * 8, top = 0.45 + z * 0.55;
       if (fase === 'elige') {
-        if (esta) { h.x += (0 - h.x) * Math.min(1, dt * 2.4); h.yy += (0 - h.yy) * Math.min(1, dt * 2.4); x = h.x; y = h.yy; esc2 = 1.25; rot *= 0.2; }
-        else h.polvo = Math.min(1, h.polvo + dt * 1.2);
-      } else { h.x = x; h.yy = y; }
-      h.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${rot.toFixed(2)}deg) scale(${esc2.toFixed(3)})`;
+        if (esta) { tx = 0; ty = -36; ts = Math.min(300, innerWidth * 0.7) / (h.el.offsetWidth || 150); trot = 0; top = 1; }
+        else { h.polvo = Math.min(1, h.polvo + dt * 0.9); top = 0; }
+      }
+      const rapidez = fase === 'elige' && esta ? 3.2 : 9;
+      h.x = suave(h.x, tx, rapidez, dt); h.yy = suave(h.yy, ty, rapidez, dt);
+      h.s = suave(h.s, ts, fase === 'elige' && esta ? 3.2 : 6, dt);
+      h.rot = suave(h.rot, trot, 4, dt);
+      h.op = suave(h.op, top, fase === 'elige' ? 2.5 : 3, dt);
+      h.sube = h.polvo * 60;
+      h.el.style.transform = `translate3d(${h.x.toFixed(1)}px, ${(h.yy - h.sube).toFixed(1)}px, 0) rotate(${h.rot.toFixed(2)}deg) scale(${(h.s * (1 - h.polvo * 0.25)).toFixed(3)})`;
       h.el.style.zIndex = esta && fase === 'elige' ? 99 : Math.round(z * 50);
-      h.el.style.opacity = (h.op * (1 - h.polvo)).toFixed(3);
-      h.el.style.filter = h.polvo ? `blur(${(h.polvo * 8).toFixed(1)}px) brightness(${(1 + h.polvo).toFixed(2)})` : (z < 0.4 ? `blur(${((0.4 - z) * 4).toFixed(1)}px)` : '');
-      if (h.polvo > 0 && !h.deshecha) { h.deshecha = true; rafaga(h.el, 14); }
+      h.el.style.opacity = h.op.toFixed(3);
+      if (h.polvo > 0 && !h.deshecha) { h.deshecha = true; rafaga(h.el, 12); }
     }
     if (fase === 'flota' && t > duracion) { fase = 'elige'; capa.classList.add('is-eligiendo'); }
-    if (fase === 'elige' && t > duracion + 1.6) { revelarElegida(); return; }
+    if (fase === 'elige' && t > duracion + 1.8) { revelarElegida(); return; }
     raf = requestAnimationFrame(cuadro);
   };
   raf = requestAnimationFrame(cuadro);
@@ -372,7 +380,7 @@ async function ritualDuende(lista) {
     const p = candidatos[k];
     capa.classList.add('is-revela');
     capa.querySelector('.wv-ritual__texto').textContent = T.duendes.elegido(p.title);
-    elegida.el.style.opacity = '0';
+    elegida.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 700, fill: 'forwards' });
     capa.insertAdjacentHTML('beforeend', `
       <div class="wv-ritual__elegida">
         <article class="wk-carta wk-carta--grande">

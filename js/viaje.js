@@ -219,7 +219,7 @@ export async function crearViaje(canvas, { logo, texto, criaturas }) {
   // Dónde se ubica la forma en cada capítulo (deja lugar al texto)
   const lugares = () => chico()
     ? [[0, 0.95, 0.78], [0, -0.32, 1], [0, 0.55, 0.4], [0, 1, 0.6], [0, 0, 1], [0, 0, 1]]
-    : [[0, 0.82, 1.35], [0, -0.2, 1], [1.6, -0.35, 0.78], [1.55, 0, 1], [0, 0, 1], [0, 0, 1]];
+    : [[0, 0.55, 1.3], [0, -0.2, 1], [1.6, -0.35, 0.78], [1.55, 0, 1], [0, 0, 1], [0, 0, 1]];
 
   const medir = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;

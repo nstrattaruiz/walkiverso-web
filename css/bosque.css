@@ -645,3 +645,23 @@ body { font-family: var(--font-body); font-weight: 300; font-size: 17px; letter-
 :root { --ns-font-body: var(--font-ui); }
 body.tema-claro { font-weight: 400; }
 .wv-filter__cats a, .wv-filter__cats button, .wv-crumbs { font-family: var(--font-ui); }
+
+/* Ritual fluido: la carta grande aparece encima de la elegida, con un fundido suave */
+.wv-ritual__hoja { will-change: transform, opacity; filter: none !important; }
+.wv-ritual__elegida { top: 50%; animation: wv-elegida-suave 1s var(--ease-organica) both; }
+@keyframes wv-elegida-suave { from { opacity: 0; } }
+.wv-ritual__elegida .wk-carta--grande { width: min(300px, 70vw); }
+.wv-ritual__texto { transition: opacity 1.2s var(--ease-organica); }
+
+/* ---------- Letra del texto: Raleway (moderna y liviana) ---------- */
+:root { --font-body: 'Raleway', 'Helvetica Neue', Arial, sans-serif; }
+body { font-weight: 400; font-size: 16.5px; letter-spacing: .01em; font-variant-numeric: lining-nums; }
+.wv-lead, .wv-cap__bajada, .wv-portal__bajada, .wv-duo__texto, .wv-pdp__short, .wv-faq__item p, .wv-review figcaption, .wv-acceso__texto small { font-weight: 400; }
+body.tema-claro { font-weight: 500; }
+
+/* ---------- Portada: el polvo y la frase juntos, centrados ---------- */
+.wv-portal__frase { display: none; }
+body.sin-viaje .wv-portal__frase { display: block; }
+.wv-portal__texto { align-content: end; padding-bottom: clamp(120px, 20svh, 210px); }
+.wv-portal__bajada { margin-top: 0; }
+@media (max-width: 749px) { .wv-portal__texto { padding-bottom: clamp(100px, 16svh, 150px); } }
