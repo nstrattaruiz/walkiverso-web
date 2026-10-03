@@ -64,7 +64,7 @@ export function contacto() {
             </div>
           </form>
           <div class="wk-carta-enviada" id="enviada" tabindex="-1" hidden>
-            <i class="wk-mano wk-mano--vacio" aria-hidden="true"></i>
+            <i class="wv-orbe-luz wv-orbe-luz--grande" aria-hidden="true"></i>
             <h2>${esc(T.contacto.exito)}</h2>
             <p>${esc(T.contacto.exitoTexto)}</p>
             <button type="button" class="wv-btn wv-btn--ghost" id="otra-carta">${esc(T.contacto.otro)}</button>

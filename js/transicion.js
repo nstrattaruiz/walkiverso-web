@@ -8,7 +8,7 @@ function preparar() {
   velo = document.createElement('div');
   velo.className = 'wk-hechizo';
   velo.setAttribute('aria-hidden', 'true');
-  velo.innerHTML = '<span class="wk-hechizo__niebla"><i></i><i></i><i></i></span><span class="wk-hechizo__sello"><i class="wk-mano"></i></span>';
+  velo.innerHTML = '<span class="wk-hechizo__niebla"><i></i><i></i><i></i></span><span class="wk-hechizo__brillo"></span>';
   document.body.append(velo);
 }
 const espera = (ms) => new Promise((r) => setTimeout(r, ms));

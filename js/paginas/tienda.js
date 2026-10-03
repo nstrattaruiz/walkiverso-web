@@ -34,7 +34,6 @@ export async function catalogo(handle, buscarInicial = '') {
           <div class="wv-filter__cats">${zonas.map((x) => filtro(x, 'i-pin').replace(`${icono('i-pin')}`, `${icono('i-pin')}<small>${numeroRegion(x)}</small> `)).join('')}</div>
         </nav>` : ''}
         <a class="wv-filter__promo" href="/walkurio" data-link>
-          <i class="wk-mano" aria-hidden="true"></i>
           <strong>${esc(T.walkurio.titulo)}</strong>
           <p>${esc(T.hero.planeta)}</p>
           <span class="wv-btn wv-btn--luz wv-btn--sm">${esc(T.walkurio.boton)}${flecha()}</span>
@@ -65,7 +64,7 @@ export async function catalogo(handle, buscarInicial = '') {
     const visibles = handle ? items : items.filter((p) => !(p.categories ?? []).some((x) => ocultas.has(typeof x === 'string' ? x : x?.handle)));
     const html = visibles.map(tarjeta).join('');
     if (sumar) lista.insertAdjacentHTML('beforeend', html);
-    else lista.innerHTML = html || `<div class="wv-empty" style="grid-column:1/-1"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><h3>${esc(T.tienda.vacio)}</h3><p>Probá con otra palabra o explorá otra colección.</p><a class="wv-btn wv-btn--primary" href="/tienda" data-link>${esc(T.categorias.todas)}${flecha()}</a></div>`;
+    else lista.innerHTML = html || `<div class="wv-empty" style="grid-column:1/-1"><i class="wv-orbe-luz wv-orbe-luz--grande" aria-hidden="true"></i><h3>${esc(T.tienda.vacio)}</h3><p>Probá con otra palabra o explorá otra colección.</p><a class="wv-btn wv-btn--primary" href="/tienda" data-link>${esc(T.categorias.todas)}${flecha()}</a></div>`;
     lista.style.opacity = '';
     const n = handle || st.buscar ? total : Math.max(0, total - sinOcultas);
     $('#resultado').textContent = st.buscar ? `${total} ${total === 1 ? 'resultado' : 'resultados'} para «${st.buscar}»` : `${n} ${n === 1 ? 'pieza' : 'piezas'}`;

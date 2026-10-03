@@ -28,7 +28,7 @@ export async function cursos() {
         <span class="wk-grimorio__polvo"><i></i><i></i><i></i><i></i><i></i><i></i></span>
       </span>
       <span class="wk-grimorio__info">
-        ${i === 0 ? `<span class="wk-grimorio__sello"><i class="wk-mano"></i>Nuevo</span>` : ''}
+        ${i === 0 ? `<span class="wk-grimorio__sello">Nuevo</span>` : ''}
         <strong>${esc(p.title)}</strong>
         ${texto ? `<span class="wk-grimorio__texto">${esc(texto)}</span>` : ''}
         ${meta ? `<span class="wk-grimorio__meta">${meta.split('·').map((m) => `<em>${esc(m.trim())}</em>`).join('')}</span>` : ''}
@@ -36,6 +36,6 @@ export async function cursos() {
       </span>
     </a>`;
   }).join('')}
-    <div class="wk-grimorio wk-grimorio--pronto" data-rev><i class="wk-mano" aria-hidden="true"></i><strong>${esc(T.cursos.pronto)}</strong></div>`;
+    <div class="wk-grimorio wk-grimorio--pronto" data-rev><i class="wv-orbe-luz" aria-hidden="true"></i><strong>${esc(T.cursos.pronto)}</strong></div>`;
   revelar();
 }

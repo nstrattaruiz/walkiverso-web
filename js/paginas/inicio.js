@@ -1,159 +1,81 @@
-// Inicio con la estructura de PULSO y la magia de Walkiverso:
-// entrada "El bosque despierta" → hero (texto + mosaico de piezas) → banda → colecciones en mosaico →
-// tres piezas destacadas → duendes (cartas) → recién salidos → cómo nace una criatura → reseñas →
-// deseo (bola de cristal) → espejos (videos) → preguntas → Walkiver.
-import { tienda, T, $, $$, esc, app, estado, categoria, colecciones, regiones, foto, sinFoto, precio, precioBloque, tarjeta, fantasmas, revelar, contarHasta, textoPlano, modal, aviso, reducido, tactil, espera, botonFavorito, icono, flecha, insignias, imagenColeccion, tonoColeccion, esObjeto, ui } from '../base.js';
+// Inicio: "El viaje".
+// Un paisaje nocturno en capas (parallax) donde el polvo de hadas forma el nombre del Walkiverso;
+// al bajar entrás al bosque y el polvo se transforma, capítulo a capítulo, en las criaturas reales,
+// una bitácora, el árbol de raíces de Milarko y Walkurio. Al final se deshace en el cielo de la tienda:
+// recién salidos → deseo (bola de cristal) → espejos (videos) → voces → preguntas → Walkiver.
+import { tienda, T, $, $$, esc, app, estado, categoria, colecciones, foto, sinFoto, precio, tarjeta, fantasmas, revelar, contarHasta, textoPlano, modal, aviso, reducido, tactil, espera, botonFavorito, icono, flecha, ui } from '../base.js';
 import { videos, resenas, preguntas, enlaces, pestanas as pestanasExtra, heroImagenes } from '../config.js';
 import { seccionDeseo, activarDeseo } from './deseo.js';
-import { crearPortada, marcadoVelo } from '../entrada.js';
+import { marcadoPaisaje, moverPaisaje } from '../paisaje.js';
 import { repintarFavoritos } from '../cuenta.js';
 import { rafaga } from '../polvo.js';
 
-const primeraVez = () => { try { return sessionStorage.getItem('wk-entrada') !== '1'; } catch { return true; } };
-const linea = (texto, i, extra = '') => `<span class="wv-hero__line${extra}"><span style="--l:${i}">${texto}</span></span>`;
+const lado = ['', 'izq', 'der', 'izq', 'izq'];
 
 export async function inicio() {
   const info = estado.info;
   document.title = info.seo.title || info.name;
+  document.documentElement.classList.remove('con-entrada');
   const duendes = categoria('duendes');
-  const cols = colecciones().filter((c) => c.productCount)
-    .sort((a, b) => (b.handle === 'criaturas') - (a.handle === 'criaturas'))
-    .slice(0, 6);
-  const total = cols.reduce((n, c) => n + (c.handle === 'criaturas' ? 0 : c.productCount), 0) || cols[0]?.productCount || 0;
+  const cols = colecciones().filter((c) => c.productCount);
+  const destino = [categoria('criaturas'), categoria('bitacoras'), duendes, null];
+  const otras = cols.filter((c) => !['criaturas', 'bitacoras', duendes?.handle].includes(c.handle));
   const tabs = [['nuevos', T.recientes.pestanas.nuevos], ['ofertas', T.recientes.pestanas.ofertas],
     ...pestanasExtra.map(categoria).filter((c) => c?.productCount).map((c) => [c.handle, c.name])];
-  const deCol = (h) => (categoria(h)?.productCount ? `/categoria/${h}` : '/tienda');
-  const [pal1, pal2, ...resto] = T.hero.titulo.split(' ');
 
   app.innerHTML = `
-    <section class="wk-portada" id="entrada" aria-label="${esc(info.name)}">
-      <div class="wv-hero">
-        <div class="wv-hero__estrellas" aria-hidden="true">${Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 37) % 100}%;top:${(i * 53) % 100}%;animation-delay:${-(i % 7) * 0.6}s"></i>`).join('')}</div>
-        <svg class="wv-hero__raices wk-hero__raices" aria-hidden="true" focusable="false"></svg>
-        <canvas class="wv-hero__polvo" aria-hidden="true"></canvas>
-        <div class="wv-container wv-hero__grid">
-          <div class="wv-hero__copy">
-            <p class="wv-hero__eyebrow"><span class="wv-live" aria-hidden="true"></span>${esc(T.hero.antetitulo)}</p>
-            <h1 class="wv-hero__title" aria-label="${esc(T.hero.titulo)}">
-              <span aria-hidden="true">${linea(esc(pal1), 0)}${linea(`${esc(pal2)} <i class="wk-mano"></i>`, 1, ' wv-hero__line--accent')}${linea(`${esc(resto.join(' '))}.`, 2)}</span>
-            </h1>
-            <p class="wv-hero__lead">${esc(T.hero.bajada)}</p>
-            <div class="wv-hero__ctas">
-              <a class="wv-btn wv-btn--luz wv-btn--lg" href="/tienda" data-link>${esc(T.hero.boton)}${flecha()}</a>
-              <a class="wv-btn wv-btn--outline-light wv-btn--lg" href="/walkurio" data-link>${icono('i-planeta')}${esc(T.hero.boton2)}</a>
-            </div>
-            <ul class="wv-hero__proof">
-              <li><strong id="prueba-piezas">${total}</strong>${esc(T.prueba.piezas)}</li>
-              <li><strong>100%</strong>${esc(T.prueba.mano)}</li>
-              ${regiones().length ? `<li><strong>${regiones().length}</strong>${esc(T.prueba.regiones)}</li>` : ''}
-            </ul>
-          </div>
-          <div class="wv-hero__art">
-            <a class="wv-tile wv-tile--a wv-tile--recorte" href="${deCol('mandragoras')}" data-link aria-label="Mandrágoras"><img src="${esc(heroImagenes[0])}" alt="" fetchpriority="high"><span class="wv-tile__tag">Mandrágoras</span></a>
-            <a class="wv-tile wv-tile--b wv-tile--recorte" href="${deCol('bitacoras')}" data-link aria-label="Bitácoras"><img src="${esc(heroImagenes[1] ?? heroImagenes[0])}" alt=""><span class="wv-tile__tag">Bitácoras</span></a>
-            <a class="wv-tile wv-tile--c" href="/tienda" data-link id="hero-pieza" aria-label="${esc(T.recientes.titulo)}">${sinFoto('Walkiverso')}</a>
-            <span class="wv-tile wv-tile--d" aria-hidden="true"><i class="wk-mano"></i></span>
-            <span class="wv-chipf wv-chipf--1">${icono('i-chispa')}${esc(T.chips.unicas)}</span>
-            <span class="wv-chipf wv-chipf--2">${icono('i-camion')}${esc(T.chips.envios)}</span>
-            <span class="wv-chipf wv-chipf--3">${icono('i-hoja')}${esc(T.chips.reciclado)}</span>
-            <span class="wv-chipf wv-chipf--4">${esc(T.chips.uno)}</span>
-          </div>
-        </div>
+    <canvas class="wv-viaje" id="viaje" aria-hidden="true"></canvas>
+
+    <section class="wv-portal" data-capitulo="0" aria-label="${esc(info.name)}">
+      ${marcadoPaisaje()}
+      <div class="wv-portal__texto">
+        <h1 class="wv-portal__nombre"><img src="img/logo.svg" alt="${esc(info.name)}" width="600" height="160"></h1>
+        <p class="wv-portal__lema">${esc(T.viaje.lema)}</p>
       </div>
-      ${marcadoVelo({ esc, T, info })}
+      <a class="wv-portal__bajar" href="#cap-1"><span>${esc(T.viaje.bajar)}</span><i aria-hidden="true"></i></a>
     </section>
 
-    <div class="wv-band-wrap" aria-hidden="true"><div class="wv-band"><div class="wv-band__track">${[...T.cinta, ...T.cinta, ...T.cinta, ...T.cinta].map((t) => `<span>${esc(t)}</span><i class="wk-mano"></i>`).join('')}</div></div></div>
+    ${T.viaje.capitulos.map((c, i) => {
+      const n = i + 1;
+      const col = destino[i];
+      const href = n === 4 ? '/walkurio' : col ? `/categoria/${col.handle}` : '/tienda';
+      return `
+      <section class="wv-cap wv-cap--${lado[n]}" id="cap-${n}" data-capitulo="${n}" aria-labelledby="cap-${n}-titulo">
+        <div class="wv-cap__texto">
+          <p class="wv-cap__ante" data-rev>${esc(c.ante)}</p>
+          <h2 class="wv-cap__titulo" id="cap-${n}-titulo" data-rev style="--d:80ms">${esc(c.titulo)}</h2>
+          <p class="wv-cap__bajada" data-rev style="--d:160ms">${esc(c.texto)}</p>
+          ${n === 3 ? '<p class="wv-cap__contador" id="contador-duendes" aria-live="polite"></p>' : ''}
+          <div class="wv-cap__acciones" data-rev style="--d:240ms">
+            ${n === 3
+              ? `<button type="button" class="wv-btn wv-btn--luz wv-btn--lg" id="elegir-duende">${esc(c.boton)}</button>${duendes ? `<a class="wv-btn wv-btn--outline-light wv-btn--lg" href="/categoria/${esc(duendes.handle)}" data-link>${esc(T.duendes.todos)}</a>` : ''}`
+              : `<a class="wv-btn wv-btn--luz wv-btn--lg" href="${href}" data-link>${esc(c.boton)}${flecha()}</a>`}
+          </div>
+          ${n === 1 && otras.length ? `<p class="wv-cap__tambien" data-rev style="--d:320ms"><span>${esc(T.viaje.tambien)}</span>${otras.map((x) => `<a href="/categoria/${esc(x.handle)}" data-link>${esc(x.name)}</a>`).join('')}</p>` : ''}
+        </div>
+        ${n <= 2 ? `<img class="wv-cap__respaldo" src="${esc(heroImagenes[n - 1] ?? heroImagenes[0])}" alt="" loading="lazy">` : ''}
+      </section>`;
+    }).join('')}
 
-    ${cols.length ? `
-    <section class="wv-section" id="recorrer" aria-labelledby="cols-titulo">
+    <section class="wv-section wv-cielo" data-capitulo="5" aria-labelledby="recientes-titulo">
       <div class="wv-container">
         <div class="wv-head wv-head--split" data-rev>
-          <div><p class="wv-eyebrow">${icono('i-chispa')}${esc(T.categorias.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="cols-titulo">${esc(T.categorias.titulo)}</h2></div>
-          <a class="wv-link" href="/tienda" data-link>${esc(T.categorias.todas)} ${icono('i-flecha')}</a>
-        </div>
-        <div class="wv-cats">
-          ${cols.map((c, i) => `
-            <a class="wv-cat wv-tono--${tonoColeccion(i)}" href="/categoria/${esc(c.handle)}" data-link data-rev style="--d:${i * 70}ms" data-col="${esc(c.handle)}">
-              <span class="wv-cat__img" aria-hidden="true">${imagenColeccion(c)}</span>
-              <span class="wv-cat__arrow" aria-hidden="true">${icono('i-diagonal')}</span>
-              <span class="wv-cat__count">${esc(T.categorias.piezas(c.productCount))}</span>
-              <strong class="wv-cat__name">${esc(c.name)}</strong>
-              ${c.description ? `<span class="wv-cat__desc">${esc(textoPlano(c.description, 90))}</span>` : ''}
-            </a>`).join('')}
-        </div>
-      </div>
-    </section>` : '<span id="recorrer"></span>'}
-
-    <section class="wv-section wv-spin" aria-labelledby="spin-titulo">
-      <span class="wk-ramas-fondo" data-esquinas="tr" data-semilla="5"></span>
-      <div class="wv-container">
-        <div class="wv-head wv-head--split" data-rev>
-          <div><p class="wv-eyebrow">${icono('i-chispa')}${esc(T.destacadas.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="spin-titulo">${esc(T.destacadas.titulo)}</h2><p class="wv-lead">${esc(T.destacadas.bajada)}</p></div>
-          <a class="wv-btn wv-btn--ghost" href="/tienda" data-link>${esc(T.recientes.boton)}${flecha()}</a>
-        </div>
-        <div class="wv-spin__grid" id="destacadas">${'<span class="wv-spin__card wv-card--fantasma" aria-hidden="true"></span>'.repeat(3)}</div>
-      </div>
-    </section>
-
-    ${duendes?.productCount ? `
-    <section class="wk-duendes" aria-labelledby="duendes-titulo">
-      <span class="wk-ramas-fondo wk-ramas-fondo--luz" data-esquinas="tr,bl" data-semilla="9"></span><div class="wk-duendes__bosque" aria-hidden="true">${'<i></i>'.repeat(18)}</div>
-      <div class="wv-container wk-duendes__cab" data-rev>
-        <p class="wv-eyebrow wv-eyebrow--luz">${icono('i-chispa')}${esc(T.duendes.antetitulo)}</p>
-        <h2 class="wv-h2 wv-h2--xl" id="duendes-titulo">${esc(T.duendes.titulo)}</h2>
-        <p class="wk-duendes__bajada">${esc(T.duendes.bajada)}</p>
-        <p class="wk-duendes__contador" id="contador-duendes" aria-live="polite"></p>
-        <div class="wk-duendes__acciones">
-          <button type="button" class="wv-btn wv-btn--luz wv-btn--lg" id="elegir-duende">${icono('i-chispa')}<span>${esc(T.duendes.elegir)}</span></button>
-          <a class="wv-btn wv-btn--outline-light wv-btn--lg" href="/categoria/${esc(duendes.handle)}" data-link>${esc(T.duendes.todos)}${flecha()}</a>
-        </div>
-      </div>
-      <div class="wk-carrusel">
-        <div class="wk-carrusel__pista" id="pista-duendes" tabindex="0" aria-label="Duendes">${'<span class="wk-carta wk-carta--fantasma"></span>'.repeat(5)}</div>
-      </div>
-      ${navCarrusel('pista-duendes', T.duendes.girar)}
-    </section>` : ''}
-
-    <section class="wv-section" aria-labelledby="recientes-titulo">
-      <div class="wv-container">
-        <div class="wv-head wv-head--split" data-rev>
-          <div><p class="wv-eyebrow">${icono('i-chispa')}${esc(T.recientes.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="recientes-titulo">${esc(T.recientes.titulo)}</h2><p class="wv-lead">${esc(T.recientes.bajada)}</p></div>
+          <div><p class="wv-eyebrow wv-eyebrow--luz">${esc(T.recientes.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="recientes-titulo">${esc(T.recientes.titulo)}</h2><p class="wv-lead">${esc(T.recientes.bajada)}</p></div>
           <div class="wv-chips" role="tablist" aria-label="${esc(T.recientes.titulo)}" id="pestanas">
             ${tabs.map(([k, v], i) => `<button type="button" class="wv-chip" role="tab" data-pestana="${esc(k)}" aria-selected="${i === 0}">${esc(v)}</button>`).join('')}
           </div>
         </div>
         <div class="wv-grid" id="recientes" role="tabpanel">${fantasmas(4)}</div>
-      </div>
-    </section>
-
-    <section class="wv-section wv-steps-wrap" aria-labelledby="pasos-titulo">
-      <span class="wk-ramas-fondo wk-ramas-fondo--luz" data-esquinas="tl,br" data-semilla="17"></span>
-      <div class="wv-container">
-        <div class="wv-head" data-rev><p class="wv-eyebrow">${icono('i-chispa')}${esc(T.pasos.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="pasos-titulo">${esc(T.pasos.titulo)}</h2><p class="wv-lead">${esc(T.pasos.bajada)}</p></div>
-        <ol class="wv-steps">
-          ${T.pasos.lista.map(([t, p], i) => `<li class="wv-step" data-rev style="--d:${i * 90}ms"><span class="wv-step__n">${String(i + 1).padStart(2, '0')}</span><h3>${esc(t)}</h3><p>${esc(p)}</p></li>`).join('')}
-        </ol>
-      </div>
-    </section>
-
-    <section class="wv-section" aria-labelledby="resenas-titulo">
-      <div class="wv-container">
-        <div class="wv-head wv-head--split" data-rev>
-          <div><p class="wv-eyebrow">${icono('i-chispa')}${esc(T.resenas.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="resenas-titulo">${esc(T.resenas.titulo)}</h2></div>
-          <button type="button" class="wv-btn wv-btn--ghost" id="dejar-resena">${icono('i-pluma')}${esc(T.resenas.boton)}</button>
-        </div>
-        <div class="wv-reviews">${resenas.slice(0, 3).map(resena).join('')}</div>
+        <div class="wv-cielo__todo"><a class="wv-btn wv-btn--outline-light wv-btn--lg" href="/tienda" data-link>${esc(T.recientes.boton)}${flecha()}</a></div>
       </div>
     </section>
 
     ${seccionDeseo()}
 
     <section class="wk-videos" aria-labelledby="videos-titulo">
-      <span class="wk-ramas-fondo wk-ramas-fondo--luz" data-esquinas="tl,br" data-semilla="23"></span>
       <div class="wv-container">
         <div class="wv-head wv-head--split" data-rev>
-          <div><p class="wv-eyebrow wv-eyebrow--luz">${icono('i-chispa')}${esc(T.videos.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="videos-titulo">${esc(T.videos.titulo)}</h2><p class="wv-lead">${esc(T.videos.bajada)}</p></div>
+          <div><p class="wv-eyebrow wv-eyebrow--luz">${esc(T.videos.antetitulo)}</p><h2 class="wv-h2 wv-h2--xl" id="videos-titulo">${esc(T.videos.titulo)}</h2><p class="wv-lead">${esc(T.videos.bajada)}</p></div>
           <a class="wv-btn wv-btn--outline-light" href="${esc(info.contact.instagram || enlaces.instagram)}" target="_blank" rel="noopener">${icono('i-ig')}${esc(T.videos.boton)}</a>
         </div>
         <ul class="wk-reels" id="pista-reels" role="list" style="--n:${videos.length}">
@@ -173,10 +95,21 @@ export async function inicio() {
       </div>
     </section>
 
+    <section class="wv-section wv-voces" aria-labelledby="resenas-titulo">
+      <div class="wv-container">
+        <div class="wv-head wv-head--center" data-rev>
+          <p class="wv-eyebrow wv-eyebrow--luz">${esc(T.resenas.antetitulo)}</p>
+          <h2 class="wv-h2 wv-h2--xl" id="resenas-titulo">${esc(T.resenas.titulo)}</h2>
+        </div>
+        <div class="wv-reviews">${resenas.slice(0, 3).map(resena).join('')}</div>
+        <div class="wv-cielo__todo"><button type="button" class="wv-btn wv-btn--outline-light" id="dejar-resena">${icono('i-pluma')}${esc(T.resenas.boton)}</button></div>
+      </div>
+    </section>
+
     <section class="wv-section" aria-labelledby="faq-titulo">
       <div class="wv-container wv-faq-wrap">
-        <div class="wv-head" data-rev>
-          <p class="wv-eyebrow">${icono('i-chispa')}${esc(T.preguntas.antetitulo)}</p>
+        <div class="wv-head wv-head--center" data-rev>
+          <p class="wv-eyebrow wv-eyebrow--luz">${esc(T.preguntas.antetitulo)}</p>
           <h2 class="wv-h2 wv-h2--xl" id="faq-titulo">${esc(T.preguntas.titulo)}</h2>
           <label class="wv-toolbar__search wv-oraculo"><span class="wk-oraculo__orbe" aria-hidden="true"></span><input type="search" id="oraculo" placeholder="${esc(T.preguntas.oraculo)}" aria-label="${esc(T.preguntas.oraculo)}" autocomplete="off"></label>
         </div>
@@ -188,15 +121,14 @@ export async function inicio() {
             </details>`).join('')}
           <p class="wv-search__none" id="faq-nada" hidden><strong>${esc(T.preguntas.nada)}</strong></p>
         </div>
-        <p class="wv-lead">${esc(T.preguntas.otra)} <a class="wv-link" href="/contacto" data-link>${esc(T.preguntas.escribinos)} ${icono('i-flecha')}</a></p>
+        <p class="wv-lead wv-faq__otra">${esc(T.preguntas.otra)} <a class="wv-link wv-link--luz" href="/contacto" data-link>${esc(T.preguntas.escribinos)} ${icono('i-flecha')}</a></p>
       </div>
     </section>
 
     <section class="wv-walkiver" aria-labelledby="walkiver-titulo">
-      <span class="wk-ramas-fondo wk-ramas-fondo--luz" data-esquinas="tl" data-semilla="31"></span>
       <div class="wv-container wv-walkiver__grid">
         <div data-rev>
-          <p class="wv-eyebrow">${icono('i-pluma')}${esc(T.walkiverBanda.antetitulo)}</p>
+          <p class="wv-eyebrow wv-eyebrow--luz">${esc(T.walkiverBanda.antetitulo)}</p>
           <h2 class="wv-h2" id="walkiver-titulo">${esc(T.walkiverBanda.titulo)}</h2>
           <p>${esc(T.walkiverBanda.bajada)}</p>
           <div class="wv-walkiver__ctas">
@@ -206,24 +138,18 @@ export async function inicio() {
         </div>
         <div class="wv-walkiver__float" aria-hidden="true">
           <img class="wv-float wv-float--libro" src="walkiver/assets/wkv-ebook-portada.webp" alt="" loading="lazy">
-          <img class="wv-float wv-float--a" src="img/mandragora.webp" alt="" loading="lazy">
-          <img class="wv-float wv-float--b" src="img/bitacora.webp" alt="" loading="lazy">
-          <span class="wv-float wv-float--sello"><i class="wk-mano"></i></span>
         </div>
       </div>
     </section>`;
 
-  // Entrada: la primera vez en la sesión espera que la toques; después se abre sola
-  const seccion = $('#entrada');
-  document.body.classList.add('en-entrada');
-  const entrada = crearPortada(seccion, {
-    esperarToque: primeraVez(),
-    alAbrir: () => {
-      document.body.classList.remove('en-entrada');
-      try { sessionStorage.setItem('wk-entrada', '1'); } catch { /* sin almacenamiento */ }
-    },
-  });
-  ui.alSalir = () => { entrada.destruir(); document.body.classList.remove('en-entrada'); };
+  // El viaje (WebGL). Sin WebGL quedan el logo y las fotos de respaldo.
+  const soltarPaisaje = moverPaisaje(app.querySelector('.wv-portal'));
+  let viaje = null;
+  ui.alSalir = () => { viaje?.destruir(); soltarPaisaje(); document.body.classList.remove('con-viaje'); };
+  import('../viaje.js')
+    .then(({ crearViaje }) => crearViaje($('#viaje'), { logo: 'img/logo.svg', criaturas: heroImagenes }))
+    .then((v) => { if ($('#viaje')) { viaje = v; document.body.classList.add('con-viaje'); } else v.destruir(); })
+    .catch((e) => console.warn('Sin viaje 3D:', e));
 
   activarDeseo(app.querySelector('.wk-deseo'));
   activarCarrusel($('#pista-reels'));
@@ -232,62 +158,10 @@ export async function inicio() {
   activarResenas();
   activarPreguntas();
   revelar();
-  contarHasta($('#prueba-piezas'), total, String);
-  destacadas(duendes);
-  fotosColecciones(cols);
-  if (duendes?.productCount) await activarDuendes(duendes);
-}
-
-// ---------------------------------------------------------------- tres piezas destacadas (+ foto del hero)
-async function destacadas(duendes) {
-  const caja = $('#destacadas');
-  const [nuevas, ofertas, dd] = await Promise.all([
-    tienda.productos.listar({ porPagina: 8, soloDisponibles: true }).then((r) => r.items).catch(() => []),
-    tienda.productos.listar({ porPagina: 48, soloDisponibles: true }).then((r) => r.items.filter((p) => p.compareAtPrice > p.price)).catch(() => []),
-    duendes ? tienda.productos.listar({ categoria: duendes.handle, porPagina: 4, soloDisponibles: true }).then((r) => r.items).catch(() => []) : [],
-  ]);
-  if (!caja?.isConnected) return;
-  const usadas = new Set();
-  const tomar = (lista) => { const p = lista.find((x) => !usadas.has(x.handle)); if (p) usadas.add(p.handle); return p; };
-  const elegidas = [
-    [tomar(nuevas), T.destacadas.nueva, 'luz'],
-    [tomar(ofertas) ?? tomar(nuevas), ofertas.length ? T.destacadas.oferta : T.destacadas.unica, 'pantano'],
-    [tomar(dd) ?? tomar(nuevas), dd.length ? T.destacadas.duende : T.destacadas.nueva, 'azul'],
-  ].filter(([p]) => p);
-  caja.innerHTML = elegidas.map(([p, tag, tono], i) => `
-    <article class="wv-spin__card wv-spin__card--${tono}" data-rev style="--d:${i * 90}ms">
-      <span class="wv-spin__tag">${esc(tag)}</span>
-      ${botonFavorito(p)}
-      <a class="wv-spin__img" href="/producto/${esc(p.handle)}" data-link tabindex="-1" aria-hidden="true">${foto(p.image, p.title, 960) || sinFoto(p.title)}<span class="wv-card__luz"></span></a>
-      <div class="wv-spin__body">
-        <h3><a href="/producto/${esc(p.handle)}" data-link>${esc(p.title)}</a></h3>
-        <p class="wv-spin__note">${esc(textoPlano(p.description, 110))}</p>
-        <div class="wv-spin__row">
-          ${precioBloque(p)}
-          <button type="button" class="wv-btn wv-btn--primary wv-btn--sm" data-agregar="${esc(p.handle)}">${esc(esObjeto(p) ? T.ficha.agregarObjeto : T.ficha.agregar)}${flecha()}</button>
-        </div>
-      </div>
-    </article>`).join('');
-  repintarFavoritos();
-  revelar();
-  // La foto chica del hero: la pieza más nueva
-  const p = nuevas[0];
-  const tile = $('#hero-pieza');
-  if (p && tile) {
-    tile.href = `/producto/${p.handle}`;
-    tile.setAttribute('aria-label', p.title);
-    tile.innerHTML = `${foto(p.image, p.title, 640) || sinFoto(p.title)}<span class="wv-tile__tag">${esc(p.title)}</span>`;
-  }
-}
-
-/** Colecciones sin recorte propio: la foto de una de sus piezas, como una carta flotando. */
-function fotosColecciones(cols) {
-  for (const c of cols) {
-    const caja = $(`[data-col="${CSS.escape(c.handle)}"] .wv-cat__img`, app);
-    if (!caja || caja.querySelector('img')) continue;
-    tienda.productos.listar({ categoria: c.handle, porPagina: 1, soloDisponibles: true }).then(({ items }) => {
-      if (items[0]?.image && caja.isConnected) { caja.classList.add('wv-cat__img--foto'); caja.innerHTML = foto(items[0].image, '', 640); }
-    }).catch(() => {});
+  if (duendes?.productCount) {
+    const { items } = await tienda.productos.listar({ categoria: duendes.handle, porPagina: 16, soloDisponibles: true }).catch(() => ({ items: [], total: 0 }));
+    contarHasta($('#contador-duendes'), items.length, T.duendes.contador);
+    $('#elegir-duende')?.addEventListener('click', () => ritualDuende(items));
   }
 }
 
@@ -325,41 +199,6 @@ function activarCarrusel(pista) {
   actualizar();
 }
 
-// ---------------------------------------------------------------- duendes
-async function activarDuendes(duendes) {
-  const pista = $('#pista-duendes');
-  const [{ items }, disponibles] = await Promise.all([
-    tienda.productos.listar({ categoria: duendes.handle, porPagina: 16 }),
-    tienda.productos.listar({ categoria: duendes.handle, soloDisponibles: true, porPagina: 1 }).catch(() => null),
-  ]);
-  if (!pista?.isConnected) return;
-  const orden = [...items.filter((p) => p.available), ...items.filter((p) => !p.available)];
-  pista.innerHTML = orden.map((p, i) => carta(p, i)).join('');
-  repintarFavoritos();
-  const quedan = disponibles?.total ?? orden.filter((p) => p.available).length;
-  contarHasta($('#contador-duendes'), quedan, T.duendes.contador);
-
-  pista.addEventListener('click', (e) => {
-    if (e.target.closest('a, [data-agregar], [data-fav]')) return;
-    const c = e.target.closest('.wk-carta');
-    if (!c || pista.dataset.arrastro === '1') return;
-    c.classList.toggle('is-girada');
-    c.querySelector('.wk-carta__girar')?.setAttribute('aria-pressed', String(c.classList.contains('is-girada')));
-  });
-  activarCarrusel(pista);
-  $('#elegir-duende').addEventListener('click', () => ritualDuende(orden.filter((p) => p.available)));
-}
-
-function carta(p, i) {
-  const nombre = p.title.replace(/^duende\s+(de(l)?\s+)?/i, '');
-  return `
-  <article class="wk-carta${p.available ? '' : ' is-hogar'}" data-nombre="${esc(p.title)}" style="--i:${i}">
-    <div class="wk-carta__giro">
-      <div class="wk-carta__cara wk-carta__cara--frente">${frente(p, nombre, i)}</div>
-      <div class="wk-carta__cara wk-carta__cara--dorso">${dorso(p)}</div>
-    </div>
-  </article>`;
-}
 const frente = (p, nombre, i) => `
   <span class="wk-carta__foto">${foto(p.image, p.title, 640) || sinFoto(p.title)}</span>
   <span class="wk-carta__marco" aria-hidden="true"></span>
@@ -550,7 +389,7 @@ function activarResenas() {
         const d = Object.fromEntries(new FormData(e.target));
         await tienda.contacto({ ...d, tipo: 'Reseña', message: `★${d.estrellas} · ${d.message}` });
         rafaga(b, 40);
-        e.target.innerHTML = `<div class="wv-empty"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><h3>${esc(T.resenas.gracias)}</h3></div>`;
+        e.target.innerHTML = `<div class="wv-empty"><i class="wv-orbe-luz wv-orbe-luz--grande" aria-hidden="true"></i><h3>${esc(T.resenas.gracias)}</h3></div>`;
       } catch (err) { aviso(err.message); b.disabled = false; }
     });
   });

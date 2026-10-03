@@ -55,6 +55,7 @@ async function arrancar() {
 
 // ---------------------------------------------------------------- barra de anuncios (se va con el scroll)
 function pintarBarraAnuncios() {
+  if (!$('.wv-topbar')) { document.documentElement.style.setProperty('--wv-top', '0px'); return; }
   const a = estado.info.announcement;
   const frases = a?.text ? [a.text, ...T.cinta.slice(1, 3)] : T.cinta;
   $('#topbar-texto').textContent = frases.join('. ');
@@ -491,7 +492,7 @@ function pintarCarrito(c, saltar = true) {
         <button type="button" class="wv-line__remove" data-linea="${l.line}" data-cant="0" aria-label="Quitar ${esc(l.title)}">${icono('i-basura')}</button>
       </div>
     </div>`).join('')}</div>`
-    : `<div class="wv-empty"><i class="wk-mano wk-mano--vacio" aria-hidden="true"></i><h3>Tu carrito está vacío… por ahora</h3><p>Las criaturas esperan un hogar. Elegí la tuya.</p><a class="wv-btn wv-btn--primary" href="/tienda" data-link>Explorar la tienda${flecha()}</a></div>`;
+    : `<div class="wv-empty"><i class="wv-orbe-luz wv-orbe-luz--grande" aria-hidden="true"></i><h3>Tu carrito está vacío… por ahora</h3><p>Las criaturas esperan un hogar. Elegí la tuya.</p><a class="wv-btn wv-btn--primary" href="/tienda" data-link>Explorar la tienda${flecha()}</a></div>`;
   $('#carrito-pie').innerHTML = c.lines.length ? `
     <dl class="wv-totals">
       <div><dt>Total</dt><dd>${tienda.formatear(c.total, c.currency)}</dd></div>

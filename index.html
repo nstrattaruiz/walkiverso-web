@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="css/rediseno.css">
   <!-- Sistema de diseño (estructura de PULSO con la magia de Walkiverso): manda sobre todo lo anterior -->
   <link rel="stylesheet" href="css/wv.css">
+  <link rel="stylesheet" href="css/noche.css">
   <script>
     (function () {
       var s = location.pathname.slice(window.WK_BASE.length).split('/').filter(Boolean)[0] || '';
@@ -78,12 +79,6 @@
       <feDisplacementMap in="SourceGraphic" in2="ruido" scale="14" xChannelSelector="R" yChannelSelector="G"/>
     </filter>
   </svg>
-
-  <!-- Barra de anuncios (sale del aviso de la tienda; si no hay, frases de la marca) -->
-  <div class="wv-topbar" role="region" aria-label="Anuncios">
-    <p class="visually-hidden" id="topbar-texto"></p>
-    <div class="wv-topbar__track" id="topbar" aria-hidden="true"></div>
-  </div>
 
   <!-- ============ Firma NS: header píldora + ☰ en círculo + menú grande ============ -->
   <header class="ns-header" id="ns-header">

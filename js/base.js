@@ -48,7 +48,7 @@ export const foto = (img, alt, ancho = 640, clase = '', sizes = '(max-width: 700
   : '';
 export const hash = (t) => [...String(t)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 /** Mientras no haya foto: un "retrato" de luz con la inicial, en los tonos de la marca. */
-export const sinFoto = (titulo, clase = '') => `<span class="wk-sinfoto ${clase}" data-tono="${hash(titulo) % 3}" aria-hidden="true"><i class="wk-mano"></i></span>`;
+export const sinFoto = (titulo, clase = '') => `<span class="wk-sinfoto ${clase}" data-tono="${hash(titulo) % 3}" aria-hidden="true"><i class="wv-orbe-luz"></i></span>`;
 /** El sello de la mano (img/mano.png), pintado con el color del texto. */
 export const mano = (clase = '') => `<i class="wk-mano ${clase}" aria-hidden="true"></i>`;
 export const precio = (p) => `<span class="precio">${tienda.formatear(p.price, p.currency)}${p.compareAtPrice > p.price ? `<s>${tienda.formatear(p.compareAtPrice, p.currency)}</s>` : ''}</span>`;
@@ -67,7 +67,7 @@ export const coleccionDe = (p) => {
   return lista.find((y) => (p.categories ?? []).some((c) => handleDe(c) === y.handle)) ?? null;
 };
 /** Imagen de una colección: la del panel, la de config (recortes sin fondo) o el sello de la mano. */
-export const imagenColeccion = (c) => (c.image ? foto(c.image, c.name, 640) : imagenesColeccion[c.handle] ? `<img src="${esc(imagenesColeccion[c.handle])}" alt="" loading="lazy">` : '<i class="wk-mano"></i>');
+export const imagenColeccion = (c) => (c.image ? foto(c.image, c.name, 640) : imagenesColeccion[c.handle] ? `<img src="${esc(imagenesColeccion[c.handle])}" alt="" loading="lazy">` : '<i class="wv-orbe-luz"></i>');
 const tonos = ['noche', 'luz', 'pantano', 'azul', 'niebla', 'abismo'];
 export const tonoColeccion = (i) => tonos[i % tonos.length];
 export const esUnica = (p) => p.variants?.length === 1 && p.variants[0].stock === 1;
@@ -191,7 +191,7 @@ export function aviso(texto, { accion = '', href = '' } = {}) {
   const el = document.createElement('div');
   el.className = 'wv-toast';
   el.setAttribute('role', 'status');
-  el.innerHTML = `<span class="wv-toast__icon"><i class="wk-mano"></i></span><span class="wv-toast__text">${esc(texto)}</span>${accion ? `<a class="wv-toast__action" href="${esc(href)}" data-link>${esc(accion)}</a>` : ''}`;
+  el.innerHTML = `<span class="wv-toast__icon">${icono('i-chispa')}</span><span class="wv-toast__text">${esc(texto)}</span>${accion ? `<a class="wv-toast__action" href="${esc(href)}" data-link>${esc(accion)}</a>` : ''}`;
   caja.append(el);
   requestAnimationFrame(() => el.classList.add('is-in'));
   setTimeout(() => el.classList.add('is-out'), 3400);
