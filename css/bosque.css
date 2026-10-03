@@ -534,3 +534,46 @@ body .wv-toast { color: #fff; }
 .wk-carta:not(.is-girada) .wk-carta__cara--dorso { pointer-events: none; }
 .wv-ritual__elegida .wk-carta--grande { cursor: pointer; }
 .wv-ritual__hojas, .wv-ritual__hoja, .wv-ritual__luz { pointer-events: none; }
+
+/* ---------- Envío de mensaje: el hechizo ---------- */
+.wk-escritorio { position: relative; }
+.wk-mensajero { z-index: 6; }
+.wk-misiva.is-encantada .wk-flotante :is(input, select, textarea) { color: var(--oro); text-shadow: 0 0 12px rgb(138 216 255 / .9); box-shadow: inset 0 0 0 1px rgb(138 216 255 / .6), 0 0 30px -10px rgb(138 216 255 / .8); transition: color .6s, box-shadow .6s, text-shadow .6s; }
+.wk-misiva.is-encantada { box-shadow: 0 0 80px -20px rgb(138 216 255 / .6), inset 0 0 0 1px rgb(138 216 255 / .4); transition: box-shadow 1s var(--ease-organica); }
+.wv-estrella-envio { position: fixed; z-index: 120; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #fff; pointer-events: none;
+  box-shadow: 0 0 14px 5px rgb(138 216 255 / .9), 0 0 50px 18px rgb(138 216 255 / .35); animation: wv-estrella-envio 3.2s var(--ease-organica) forwards; }
+.wv-estrella-envio::before, .wv-estrella-envio::after { content: ''; position: absolute; left: 50%; top: 50%; width: 46px; height: 1px; translate: -50% -50%; background: linear-gradient(90deg, transparent, #fff, transparent); }
+.wv-estrella-envio::after { rotate: 90deg; }
+@keyframes wv-estrella-envio { 0% { scale: .2; opacity: 0; } 15% { scale: 1.6; opacity: 1; } 30%, 70% { scale: 1; opacity: 1; } 50% { scale: 1.3; } 100% { scale: .6; opacity: 0; } }
+.wk-carta-enviada { display: grid; justify-items: center; text-align: center; gap: 12px; padding: clamp(40px, 6vw, 70px) 24px; border-radius: 32px; outline: none !important;
+  background: radial-gradient(circle at 50% 0, rgb(138 216 255 / .16), transparent 60%), rgb(6 12 30 / .7); box-shadow: inset 0 0 0 1px var(--line), 0 50px 90px -50px #000; animation: wv-elegida 1.4s var(--ease) both; }
+.wk-carta-enviada h2 { margin: 6px 0 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 3.6vw, 3rem); line-height: 1.05; color: #fff; }
+.wk-carta-enviada p { margin: 0; color: var(--ink-2); }
+.wk-carta-enviada .wv-btn { margin-top: 12px; }
+.wk-carta-enviada__estrella { animation: wv-respira 3.2s ease-in-out infinite; }
+
+/* ---------- Ficha: la región es una ventanita al planeta ---------- */
+.wv-pdp__block--region, body.tema-claro .wv-pdp__block--region {
+  position: relative; overflow: hidden; isolation: isolate; color: #e8eefa; border-color: transparent; min-height: 240px;
+  background: radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent), radial-gradient(1px 1px at 70% 20%, #fff 50%, transparent), radial-gradient(1.5px 1.5px at 45% 70%, #cfe9ff 50%, transparent),
+    radial-gradient(circle at 0 0, rgb(61 95 158 / .5), transparent 60%), #050a1c;
+}
+.wv-pdp__block--region h2, body.tema-claro .wv-pdp__block--region h2 { color: var(--oro); }
+.wv-pdp__block--region p { position: relative; color: rgb(232 238 250 / .8); max-width: 26ch; }
+.wv-pdp__block--region .wv-link, body.tema-claro .wv-pdp__block--region .wv-link { position: relative; color: #fff; border-color: var(--oro); justify-self: start; }
+.wv-pdp__block--region::after { content: ''; position: absolute; z-index: -1; right: -40px; bottom: -50px; width: 170px; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d6efff 0%, #7fb4ec 20%, #2d5bb8 50%, #0b1c55 80%); box-shadow: 0 0 60px rgb(138 216 255 / .45), inset -14px -18px 30px rgb(2 6 20 / .7); transition: transform 1.4s var(--ease); }
+.wv-pdp__block--region::before { content: ''; position: absolute; z-index: -1; right: -70px; bottom: 20px; width: 260px; height: 50px; border-radius: 50%; border: 1px solid rgb(138 216 255 / .45); rotate: -18deg; }
+.wv-pdp__block--region:hover::after { transform: rotate(-25deg) scale(1.05); }
+
+/* ---------- Dorso de la carta del duende ---------- */
+.wk-carta .wk-carta__cara--dorso { align-content: center; gap: 12px; padding: 30px 24px; background: radial-gradient(circle at 50% 0, rgb(61 95 158 / .55), transparent 60%), #060c22; }
+.wk-carta .wk-carta__cara--dorso small { color: var(--oro); letter-spacing: .24em; }
+.wk-carta .wk-carta__cara--dorso h3 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(1.9rem, 3vw, 2.3rem); line-height: 1; color: #fff; }
+.wk-carta .wk-carta__cara--dorso p { font-size: .92rem; color: rgb(232 238 250 / .72); }
+.wk-carta .wk-carta__cara--dorso .precio { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-top: 4px; font-family: var(--font-body); font-weight: 800; font-size: 1.45rem; letter-spacing: -.02em; color: #fff; }
+.wk-carta .wk-carta__cara--dorso .precio s { font-size: .8rem; font-weight: 600; color: rgb(232 238 250 / .45); }
+.wk-carta .wk-carta__cara--dorso .wv-btn { min-width: 150px; }
+.wk-carta .wk-carta__cara--dorso .wk-carta__link { color: rgb(232 238 250 / .75); font-size: .88rem; }
+.wk-carta .wk-carta__cara--dorso .wk-carta__link:hover { color: var(--oro); }
+.wk-escritorio .wk-carta-enviada h2 { font-family: var(--font-display) !important; font-weight: 700; letter-spacing: 0; }

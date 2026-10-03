@@ -64,7 +64,7 @@ export function contacto() {
             </div>
           </form>
           <div class="wk-carta-enviada" id="enviada" tabindex="-1" hidden>
-            <i class="wv-orbe-luz wv-orbe-luz--grande" aria-hidden="true"></i>
+            <span class="wk-carta-enviada__estrella" aria-hidden="true"><i class="wv-orbe-luz wv-orbe-luz--grande"></i></span>
             <h2>${esc(T.contacto.exito)}</h2>
             <p>${esc(T.contacto.exitoTexto)}</p>
             <button type="button" class="wv-btn wv-btn--ghost" id="otra-carta">${esc(T.contacto.otro)}</button>
@@ -84,7 +84,7 @@ export function contacto() {
       form.hidden = true;
       $('#enviada').hidden = false;
       $('#enviada').focus({ preventScroll: true });
-      rafaga($('#enviada h2'), 30);
+      rafaga($('#enviada .wv-orbe-luz'), 30);
     } catch (err) { aviso(err.message); }
     b.disabled = false;
   });
@@ -103,40 +103,65 @@ export function contacto() {
   revelar();
 }
 
-/** El mensaje se dobla y entra al sobre → se sella → el sobre vuela. */
+/**
+ * El envío es un hechizo: las letras de la carta se encienden, el sobre baja al centro y crece,
+ * la carta se pliega y entra, se cierra y se sella, y el sobre sale volando en arco con una estela
+ * hasta convertirse en una estrella que titila.
+ */
 async function enviarSobre() {
   const form = $('#carta');
   const m = $('.wk-mensajero');
   if (reducido) return;
-  m.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  await espera(500);
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  await espera(550);
+  // 1. Las palabras se encienden y sueltan polvo, campo por campo
+  form.classList.add('is-encantada');
+  const campos = [...form.querySelectorAll('.wk-flotante')];
+  campos.forEach((c, i) => setTimeout(() => rafaga(c, 10), i * 140));
+  await espera(campos.length * 140 + 500);
+  // 2. El sobre baja al centro de la carta y crece
   const a = form.getBoundingClientRect();
-  const b = m.querySelector('.wk-mensajero__cuerpo').getBoundingClientRect();
-  // 1. Se abre el sobre y el contenido de la carta se dobla volando hacia él
+  const cuerpo = m.querySelector('.wk-mensajero__cuerpo').getBoundingClientRect();
+  const dx = a.left + a.width / 2 - (cuerpo.left + cuerpo.width / 2);
+  const dy = a.top + a.height / 2 - (cuerpo.top + cuerpo.height / 2);
+  const centro = `translate(${dx}px, ${dy}px) scale(2.1)`;
   m.classList.add('is-abierto');
-  const dx = b.left + b.width / 2 - (a.left + a.width / 2);
-  const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+  const bajar = m.animate([{ transform: 'none' }, { transform: centro }], { duration: 1000, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'forwards' });
+  // 3. La carta se pliega en tres y entra al sobre
+  await espera(350);
   await form.animate([
     { transform: 'none', opacity: 1, filter: 'none' },
-    { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 40}px) perspective(900px) rotateX(35deg) scale(0.55)`, opacity: 0.8, offset: 0.55 },
-    { transform: `translate(${dx}px, ${dy}px) scale(0.06)`, opacity: 0, filter: 'blur(4px)' },
-  ], { duration: 950, easing: 'cubic-bezier(0.6, 0, 0.3, 1)', fill: 'forwards' }).finished;
-  // 2. Se cierra la solapa y la mano sella
+    { transform: 'perspective(1000px) rotateX(55deg) scale(.7)', opacity: .9, filter: 'brightness(1.4)', offset: .45 },
+    { transform: 'perspective(1000px) rotateX(80deg) scale(.18) translateY(40px)', opacity: 0, filter: 'brightness(2) blur(6px)' },
+  ], { duration: 1100, easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'forwards' }).finished;
+  await bajar.finished;
+  rafaga(m.querySelector('.wk-mensajero__cuerpo'), 18);
+  // 4. Se cierra y se sella
   m.classList.add('is-cargado');
-  await espera(380);
+  await espera(420);
   m.classList.add('is-cerrado');
-  await espera(520);
+  await espera(560);
   m.classList.add('is-sellado');
-  rafaga(m.querySelector('.wk-mensajero__lacre'), 22);
-  await espera(650);
-  // 3. Vuela en arco dejando una estela de luz
-  const estela = setInterval(() => rafaga(m.querySelector('.wk-mensajero__cuerpo'), 6), 90);
+  rafaga(m.querySelector('.wk-mensajero__lacre'), 30);
+  await espera(800);
+  // 5. Vuela en arco con estela y se vuelve estrella
+  const fx = innerWidth * .38, fy = -innerHeight * .62;
+  const estela = setInterval(() => rafaga(m.querySelector('.wk-mensajero__cuerpo'), 7), 70);
   await m.animate([
-    { transform: 'none', opacity: 1 },
-    { transform: 'translate(-30px, 30px) rotate(-8deg) scale(1.04)', opacity: 1, offset: 0.15 },
-    { transform: 'translate(40vw, -55vh) rotate(16deg) scale(0.55)', opacity: 0.9, offset: 0.7 },
-    { transform: 'translate(70vw, -95vh) rotate(24deg) scale(0.2)', opacity: 0 },
-  ], { duration: 1700, easing: 'cubic-bezier(0.45, 0, 0.3, 1)', fill: 'forwards' }).finished;
+    { transform: centro },
+    { transform: `translate(${dx - 30}px, ${dy + 26}px) rotate(-10deg) scale(2.2)`, offset: .14 },
+    { transform: `translate(${dx + fx * .45}px, ${dy + fy * .55}px) rotate(14deg) scale(1.1)`, offset: .6 },
+    { transform: `translate(${dx + fx}px, ${dy + fy}px) rotate(26deg) scale(.08)`, opacity: .2 },
+  ], { duration: 2100, easing: 'cubic-bezier(.45, 0, .25, 1)', fill: 'forwards' }).finished;
   clearInterval(estela);
+  const fin = m.querySelector('.wk-mensajero__cuerpo').getBoundingClientRect();
+  const estrella = document.createElement('span');
+  estrella.className = 'wv-estrella-envio';
+  estrella.style.left = `${fin.left + fin.width / 2}px`;
+  estrella.style.top = `${Math.max(40, fin.top + fin.height / 2)}px`;
+  document.body.append(estrella);
+  setTimeout(() => estrella.remove(), 3200);
   m.className = 'wk-mensajero is-ido';
+  m.getAnimations().forEach((x) => x.cancel());
+  form.classList.remove('is-encantada');
 }

@@ -83,10 +83,16 @@ export function moverPaisaje(raiz) {
   return () => removeEventListener('scroll', alScroll);
 }
 
-/** La linde del bosque: silueta de árboles donde termina el papel y empieza la noche (pie en páginas claras). */
+/** El horizonte: colinas suaves entre bruma donde termina el papel y empieza la noche (pie en páginas claras). */
 export function lindeDelBosque() {
-  return `<svg class="wv-pie__linde" viewBox="0 0 ${ANCHO} 260" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
-    <path d="${bosque(41, 230, 150, 34, 0.45).replace(/1040/g, '300')}" fill="#6f84b8" opacity=".35" transform="translate(0,-28)"/>
-    <path d="${bosque(13, 250, 190, 26, 0.5).replace(/1040/g, '300')}" fill="#02040c"/>
+  const cerrar = (d) => d.split('1040').join('300');
+  const estrellas = Array.from({ length: 22 }, (_, i) => `<circle cx="${(i * 397) % 1600}" cy="${224 + ((i * 53) % 32)}" r="${i % 4 ? 1 : 1.6}" fill="#cfe6ff" opacity="${0.35 + (i % 3) * 0.2}"/>`).join('');
+  return `<svg class="wv-pie__linde" viewBox="0 0 ${ANCHO} 260" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <defs><linearGradient id="linde-bruma" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfe6f3" stop-opacity="0"/><stop offset="1" stop-color="#c6d2ea" stop-opacity=".9"/></linearGradient></defs>
+    <rect x="0" y="60" width="${ANCHO}" height="200" fill="url(#linde-bruma)"/>
+    <path d="${cerrar(cerros(7, 150, 34, [[0.8, 1], [2.1, 0.35]]))}" fill="#8f9fc6" opacity=".45"/>
+    <path d="${cerrar(cerros(19, 182, 26, [[1.1, 1], [2.7, 0.3]]))}" fill="#33467e" opacity=".75"/>
+    <path d="${cerrar(cerros(31, 212, 18, [[0.9, 1], [3.2, 0.25]]))}" fill="#02040c"/>
+    ${estrellas}
   </svg>`;
 }
