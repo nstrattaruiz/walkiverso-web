@@ -36,8 +36,11 @@ async function arrancar() {
   document.title = info.seo.title || info.name;
   $('#marca').alt = info.name;
   if (info.logo) $('#marca').outerHTML = `<img src="${esc(info.logo.url ?? info.logo)}" alt="${esc(info.name)}" height="36">`;
-  if (info.colors?.primary) document.documentElement.style.setProperty('--celeste', info.colors.primary);
-  if (info.colors?.dark) document.documentElement.style.setProperty('--noche', info.colors.dark);
+  // Colores de Apariencia (panel). Si la tienda todavía tiene los que trae el panel por defecto (negros), se dejan los
+  // de la marca: si no, las insignias y los botones celestes quedarían negro sobre negro.
+  const propio = (c, porDefecto) => c && c.toLowerCase() !== porDefecto;
+  if (propio(info.colors?.primary, '#111111')) document.documentElement.style.setProperty('--celeste', info.colors.primary);
+  if (propio(info.colors?.dark, '#141210')) document.documentElement.style.setProperty('--noche', info.colors.dark);
   if (info.favicon) document.head.insertAdjacentHTML('beforeend', `<link rel="icon" href="${esc(info.favicon)}">`);
   if (info.seo.description) $('meta[name=description]').content = info.seo.description;
   if (tienda.demo) $('#demo').hidden = false;

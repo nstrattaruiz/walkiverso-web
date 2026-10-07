@@ -153,7 +153,7 @@ export const textos = {
     orden: { recientes: 'Más nuevos', 'price-asc': 'Menor precio', 'price-desc': 'Mayor precio' },
   },
   ficha: {
-    agregar: 'Adoptar', agregarObjeto: 'Agregar al carrito', agotado: 'Ya encontró hogar', elegir: 'Elegí una opción',
+    agregar: 'Adoptar', agregarObjeto: 'Agregar al carrito', agregarCurso: 'Inscribirme', agotado: 'Ya encontró hogar', elegir: 'Elegí una opción',
     unica: 'Pieza única', relacionados: 'Vecinos de la misma región',
     certificado: 'Certificado de origen', origen: 'Región de origen', pieza: 'Pieza Nº',
     hecho: 'Hecha a mano con materiales reciclados', // (P)

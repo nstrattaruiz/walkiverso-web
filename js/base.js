@@ -39,8 +39,10 @@ export const regionDe = (p) => {
   return null;
 };
 export const esDe = (p, rol) => (p.categories ?? []).some((c) => handleDe(c) === (categoriasClave[rol] ?? rol));
-/** Los objetos (bitácoras) se agregan al carrito; las criaturas se adoptan. */
-export const esObjeto = (p) => (p.categories ?? []).some((c) => categoriasObjeto.includes(handleDe(c)));
+/** Los objetos (bitácoras), los cursos y los e-books se agregan al carrito; las criaturas se adoptan. */
+export const esObjeto = (p) => (p.categories ?? []).some((c) => categoriasObjeto.includes(handleDe(c)) || categoriasOcultas.includes(handleDe(c)));
+/** Texto del botón de compra: "Adoptar" una criatura, "Inscribirme" a un curso, "Agregar al carrito" lo demás. */
+export const textoAgregar = (p) => (esDe(p, 'cursos') ? T.ficha.agregarCurso : esObjeto(p) ? T.ficha.agregarObjeto : T.ficha.agregar);
 
 // ---------------------------------------------------------------- piezas
 export const foto = (img, alt, ancho = 640, clase = '', sizes = '(max-width: 700px) 50vw, 25vw') => img
@@ -112,7 +114,7 @@ export const tarjeta = (p, i = 0) => {
       <h3 class="wv-card__title"><a href="/producto/${esc(p.handle)}" data-link>${esc(p.title)}</a></h3>
       ${precioBloque(p)}
       ${p.available
-        ? `<button type="button" class="wv-btn wv-btn--primary wv-btn--sm wv-btn--block" data-agregar="${esc(p.handle)}">${esc(objeto ? T.ficha.agregarObjeto : T.ficha.agregar)}${flecha()}</button>`
+        ? `<button type="button" class="wv-btn wv-btn--primary wv-btn--sm wv-btn--block" data-agregar="${esc(p.handle)}">${esc(textoAgregar(p))}${flecha()}</button>`
         : `<a class="wv-btn wv-btn--ghost wv-btn--sm wv-btn--block" href="/producto/${esc(p.handle)}" data-link>${esc(T.ficha.agotado)}</a>`}
       <p class="wv-card__foot"><span>${icono('i-hoja')} Hecho a mano</span><span>${esUnica(p) ? '1 de 1' : p.available ? 'Disponible' : 'Adoptada'}</span></p>
     </div>

@@ -133,12 +133,12 @@ export async function inicio() {
       <ul class="wk-reels wv-espejos__pista" id="pista-reels" role="list" style="--n:${videos.length}">
         ${videos.map((v, i) => {
           const id = idYoutube(v.url);
-          return `<li class="wk-reel" style="--i:${i}">
+          return `<li class="wk-reel${id ? '' : ' wk-reel--pronto'}" style="--i:${i}">
             <${id ? `button type="button" data-video="${esc(id)}"` : `a href="${esc(v.url || info.contact.instagram || enlaces.instagram)}" target="_blank" rel="noopener"`} class="wk-reel__carta" aria-label="Ver video: ${esc(v.titulo)}">
               <span class="wk-reel__media">${id ? `<img src="https://i.ytimg.com/vi/${esc(id)}/oar2.jpg" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg'" alt="" loading="lazy">` : '<span class="wk-reel__dibujo" aria-hidden="true"></span>'}</span>
               <span class="wk-reel__sombra" aria-hidden="true"></span>
               <span class="wk-reel__play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span>
-              <span class="wk-reel__titulo">${esc(v.titulo)}</span>
+              <span class="wk-reel__titulo"><small>${esc(id ? T.videos.mirar : T.videos.pronto)}</small>${esc(v.titulo)}</span>
             </${id ? 'button' : 'a'}>
           </li>`;
         }).join('')}

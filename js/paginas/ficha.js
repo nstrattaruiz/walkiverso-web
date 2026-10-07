@@ -1,6 +1,6 @@
 // Ficha de producto (PDP de PULSO): galería con miniaturas a la izquierda, caja de precio con "Pieza única",
 // datos de origen, compra con vuelo al carrito, beneficios, tres bloques (descripción, certificado, región) y vecinos.
-import { tienda, T, $, $$, esc, app, estado, regionDe, coleccionDe, esObjeto, esUnica, botonFavorito, numeroRegion, foto, sinFoto, precioBloque, insignias, tarjeta, revelar, agregar, hash, icono, flecha, textoPlano } from '../base.js';
+import { tienda, T, $, $$, esc, app, estado, regionDe, coleccionDe, esObjeto, textoAgregar, esUnica, botonFavorito, numeroRegion, foto, sinFoto, precioBloque, insignias, tarjeta, revelar, agregar, hash, icono, flecha, textoPlano } from '../base.js';
 
 export async function ficha(handle) {
   const p = await tienda.productos.uno(handle);
@@ -12,7 +12,7 @@ export async function ficha(handle) {
   const unica = esUnica(p);
   const fotos = p.images?.length ? p.images : (p.image ? [p.image] : []);
   const numero = p.variants[0]?.sku || String(hash(p.handle) % 9000 + 1000);
-  const textoBoton = esCriatura ? T.ficha.agregar : T.ficha.agregarObjeto;
+  const textoBoton = textoAgregar(p);
   const corto = textoPlano(p.description, 180);
 
   app.innerHTML = `

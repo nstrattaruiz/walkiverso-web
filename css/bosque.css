@@ -176,6 +176,25 @@ body:not(.con-viaje) .wv-duo__lados { min-height: 90svh; }
 .wv-espejos__pista .wk-reel__carta:hover { transform: translateY(-10px); box-shadow: 0 0 0 1px rgb(138 216 255 / .7), 0 0 0 10px rgb(138 216 255 / .08), 0 0 70px -10px rgb(138 216 255 / .4), 0 40px 80px -40px #000; }
 .wv-espejos__pista .wk-reel__titulo { font-family: var(--font-display); font-size: clamp(1.3rem, 2vw, 1.8rem); font-weight: 500; }
 .wv-espejos .wk-nav-carrusel { margin-top: 26px; }
+/* Título de cada espejo: la letra de los títulos de la marca, centrado, con un hilo de luz y una línea chica arriba
+   ("Asomate al espejo" / "Muy pronto"). Los que todavía no tienen video no muestran el botón de reproducir. */
+.wv-espejos .wv-espejos__pista .wk-reel__sombra { background: linear-gradient(0deg, rgb(2 8 34 / .94) 0%, rgb(2 8 34 / .55) 30%, transparent 62%); }
+.wv-espejos .wv-espejos__pista .wk-reel__titulo {
+  left: 24px; right: 24px; bottom: clamp(24px, 3vw, 38px); text-align: center; text-wrap: balance;
+  font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(1.55rem, 2.3vw, 2.2rem); font-weight: 700; line-height: 1.08; letter-spacing: 0;
+  color: #fff; text-shadow: 0 2px 22px rgb(0 6 36 / .9);
+}
+.wv-espejos .wv-espejos__pista .wk-reel__titulo::before {
+  content: ''; display: block; width: 38px; height: 1px; margin: 0 auto 14px;
+  background: #8ad8ff; box-shadow: 0 0 14px 1px rgb(138 216 255 / .8);
+}
+.wv-espejos .wv-espejos__pista .wk-reel__titulo small {
+  display: block; margin-bottom: 8px; font-family: 'Plus Jakarta Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: .68rem; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: #8ad8ff; text-shadow: none;
+}
+.wv-espejos .wk-reel--pronto .wk-reel__play { display: none; }
+.wv-espejos .wk-reel--pronto .wk-reel__titulo { color: rgb(255 255 255 / .82); }
+.wv-espejos .wk-reel--pronto .wk-reel__titulo small { color: rgb(212 226 247 / .7); }
 
 /* Voces: un río de reseñas que corre solo (se detiene al pasar el mouse) */
 .wv-voces { overflow: hidden; }
